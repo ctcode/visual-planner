@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Module>
+<ModulePrefs title="visual-planner" description="Visual Planner for Google Calendar" author="Chris Thompson">
+<Require feature="google.calendar-0.5.read"/>
+<Require feature="views"/>
+<Require feature="settitle"/>
+<Require feature="setprefs"/>
+<Require feature="dynamic-height"/>
+</ModulePrefs>
+<UserPref name="show_single_col" datatype="bool" default_value="false"/>
+<UserPref name="multi_col_count" datatype="int" default_value="8"/>
+<UserPref name="fixed_cell_size" datatype="bool" default_value="false"/>
+<UserPref name="fixed_height" datatype="int" default_value="16"/>
+<UserPref name="fixed_width" datatype="int" default_value="144"/>
+<UserPref name="auto_scroll" datatype="bool" default_value="true"/>
+<UserPref name="start_month_offset" datatype="int" default_value="-1"/>
+<UserPref name="past_transparency" datatype="int" default_value="30"/>
+<UserPref name="proportional_events" datatype="bool" default_value="false"/>
+<UserPref name="evt_start_hour" datatype="int" default_value="8"/>
+<UserPref name="evt_end_hour" datatype="int" default_value="20"/>
+<UserPref name="show_event_title" datatype="bool" default_value="true"/>
+<UserPref name="show_evt_time" datatype="bool" default_value="false"/>
+<UserPref name="use_evt_colour" datatype="bool" default_value="false"/>
+<UserPref name="hide_evt_marker" datatype="bool" default_value="false"/>
+<UserPref name="show_all_day_evts" datatype="bool" default_value="true"/>
+<UserPref name="one_day_as_timed" datatype="bool" default_value="true"/>
+<UserPref name="multi_day_as_timed" datatype="bool" default_value="false"/>
+<UserPref name="show_timed_evts" datatype="bool" default_value="true"/>
+<UserPref name="multi_day_as_all_day" datatype="bool" default_value="false"/>
+<UserPref name="all_day_evt_width" datatype="int" default_value="3"/>
+<Content type="html">
+<![CDATA[
+<center>
+<button type="button" title="Multi-column View" onclick="show_view('multi_col');"><b>||||</b></button>
+<button type="button" title="Single-column View" onclick="toggle_single_col();"><b>|</b></button>
+<button id="btnSettings" type="button" title="Settings" onclick="show_view('settings');"><b>*</b></button>
+</center>
+<script type="text/javascript" src="https://ctcode.github.io/visual-planner/vip_analytics.js"></script>
+<script type="text/javascript" src="https://ctcode.github.io/visual-planner/vip_lib.js"></script>
+<script type="text/javascript" src="https://ctcode.github.io/visual-planner/vip_main.js"></script>
+]]>
+</Content>
+<Content type="html" view="canvas">
+<![CDATA[
+
+<div id="settings" style="visibility:hidden; font-family:Arial; margin:40px">
+	<div>
+		<b>Multi-column view</b>
+		<div style="margin-left:20px">
+			<div style="margin-top:30px">
+				<select id="multi_col_count" style="width: 50px">
+					<option value="4">4</option>
+					<option value="6">6</option>
+					<option value="8">8</option>
+					<option value="10">10</option>
+					<option value="12">12</option>
+				</select>
+				Number of columns to display.  More columns can be scrolled into view using the mouse wheel or cursor keys.
+			</div>
+			<div style="margin-top:30px">
+				<input id="auto_scroll" type="checkbox">
+				Auto-scroll to current month.  If not selected, the view will always start at the beginning of the year.
+				<div style="margin-left:30px; margin-top:10px">
+					<input id="start_month_offset" type="number" min="-12" max="12" style="width: 50px">
+					Auto-scroll offset.  For example, -2 will cause the date range to start from two months ago, 0 will start with the current month.
+				</div>
+			</div>
+			<div style="margin-top:30px">
+				<input id="fixed_cell_size" type="checkbox">
+				Use fixed size for each cell.  If not selected, the size will be calculated according to available space.
+				<div style="margin-left:30px; margin-top:10px">
+					<input id="fixed_height" type="number" min="8" max="20" style="width: 50px">
+					Fixed height.
+				</div>
+				<div style="margin-left:30px; margin-top:10px">
+					<input id="fixed_width" type="number" min="80" max="360" style="width: 50px">
+					Fixed width.
+				</div>
+			</div>
+			<div style="margin-top:30px">
+				<input id="past_transparency" type="number" min="0" max="100" style="width: 50px">
+				%  Transparency of past months.  Set to 0 to show past months without transparency.
+			</div>
+		</div>
+	</div>
+	<div style="margin-top: 40px">
+		<b>Events</b>
+		<div style="margin-left:20px">
+			<div style="margin-top:30px">
+				<input id="show_event_title" type="radio" name="event_group">
+				Display event titles.
+				<div style="margin-left:30px; margin-top:10px">
+					<input id="show_evt_time" type="checkbox">
+					Show time of event.
+				</div>
+				<div style="margin-left:30px; margin-top:10px">
+					<input id="use_evt_colour" type="checkbox">
+					Use event colour for title text.
+				</div>
+				<div style="margin-left:30px; margin-top:10px">
+					<input id="hide_evt_marker" type="checkbox">
+					Hide coloured event marker.
+				</div>
+			</div>
+			<div style="margin-top:30px">
+				<input id="proportional_events" type="radio" name="event_group">
+				Display event markers in proportion to their actual duration.  Some events may not be visible if this option is used.
+				<div style="margin-left:30px; margin-top:10px">
+					<input id="evt_start_hour" type="number" min="0" max="24" style="width: 50px">
+					Start hour of visible event range.
+				</div>
+				<div style="margin-left:30px; margin-top:10px">
+					<input id="evt_end_hour" type="number" min="0" max="24" style="width: 50px">
+					End hour of visible event range.
+				</div>
+			</div>
+			<div style="margin-top:30px">
+				<input id="basic_marker" type="radio" name="event_group">
+				Display basic event markers.
+			</div>
+			<div style="margin-top:30px">
+				<input id="show_all_day_evts" type="checkbox">
+				Show all-day events.
+				<div style="margin-left:30px; margin-top:10px">
+					<input id="one_day_as_timed" type="checkbox">
+					Display one-day all-day events as timed events.
+				</div>
+				<div style="margin-left:30px; margin-top:10px">
+					<input id="multi_day_as_timed" type="checkbox">
+					Display multi-day all-day events as timed events.
+				</div>
+				<div style="margin-left:30px; margin-top:10px; color:red; font-size:12px">
+					A known issue exists which prevents some all-day events being displayed.
+					<a href="https://groups.google.com/forum/#!topic/visual-planner-discuss/I9nNgvKWZj0" target="_blank">Read more...</a>
+				</div>
+			</div>
+			<div style="margin-top:30px">
+				<input id="show_timed_evts" type="checkbox">
+				Show timed events.
+				<div style="margin-left:30px; margin-top:10px">
+					<input id="multi_day_as_all_day" type="checkbox">
+					Display multi-day timed events as all-day events.
+				</div>
+			</div>
+			<div style="margin-top:30px">
+				<input id="all_day_evt_width" type="number" min="1" max="60" style="width: 50px">
+				Width of all-day events vertical bar.
+			</div>
+		</div>
+	</div>
+	<div id="save_btn" style="height:30; margin-top: 40px">
+		<button onclick="parent.onSaveSettings();">Save Settings</button>
+	</div>
+	<div style="text-align: center; margin-top: 40px">
+		This software project is funded by voluntary donation.
+		<div style="margin-top: 10px">
+			<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+			<input type="hidden" name="cmd" value="_s-xclick">
+			<input type="hidden" name="encrypted" value="-----BEGIN PKCS7-----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-----END PKCS7-----">
+			<input type="image" src="https://www.paypalobjects.com/en_US/GB/i/btn/btn_donateCC_LG.gif" border="0" name="submit" alt="PayPal � The safer, easier way to pay online.">
+			<img alt="" border="0" src="https://www.paypalobjects.com/en_GB/i/scr/pixel.gif" width="1" height="1">
+			</form>
+		</div>
+	</div>
+	<div style="margin-top: 40px">
+		<a href="https://groups.google.com/group/visual-planner-discuss" target="_blank">visual-planner discussion group</a>
+	</div>
+</div>
+
+<script type="text/javascript" src="https://ctcode.github.io/visual-planner/vip_analytics.js"></script>
+<script type="text/javascript" src="https://ctcode.github.io/visual-planner/vip_lib.js"></script>
+<script type="text/javascript" src="https://ctcode.github.io/visual-planner/vip_main.js"></script>
+]]>
+</Content>
+</Module>
