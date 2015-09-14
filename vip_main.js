@@ -269,6 +269,8 @@ function update_events()
 		while (vipcell)
 		{
 			vipcell.vipevts.ClearContent();
+			vipcell.updateEventInfo();
+
 			vipcell = vipcell.Next();
 		}
 
