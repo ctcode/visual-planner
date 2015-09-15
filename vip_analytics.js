@@ -8,3 +8,5 @@ ga('send', 'pageview');
 
 function ga_hit(category, action)
 {ga('send', 'event', {'eventCategory': category, 'eventAction': action.toString()});}
+
+//function ga_hit() {};
