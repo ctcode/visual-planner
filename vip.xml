@@ -33,7 +33,7 @@
 <center>
 <button type="button" title="Multi-column View" onclick="show_view('multi_col');"><b>||||</b></button>
 <button type="button" title="Single-column View" onclick="toggle_single_col();"><b>|</b></button>
-<button id="btnSettings" type="button" title="Settings" onclick="show_view('settings');"><b>*</b></button>
+<button type="button" title="Settings" onclick="show_view('settings');"><b>*</b></button>
 </center>
 <script type="text/javascript" src="https://ctcode.github.io/visual-planner/vip_analytics.js"></script>
 <script type="text/javascript" src="https://ctcode.github.io/visual-planner/vip_lib.js"></script>
