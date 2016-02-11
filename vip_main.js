@@ -93,7 +93,7 @@ function InitSingleColView()
 		vip.host.createSingleCol();
 
 		// calendar notifications
-		google.calendar.subscribeToDates(update_indicator);
+		google.calendar.subscribeToDates(update_dates);
 		google.calendar.subscribeToDataChange(update_events);
 
 		ga_hit('event_format', vip.events.format);
@@ -227,15 +227,21 @@ function install_event_handling()
 /////////////////////////////////////////////////////////////////
 // calendar event handlers
 
-function update_indicator(ind_dates)
+function update_dates(cal_dates)
 // callback when user changes calendar date range
+{
+	update_indicator(cal_dates);
+}
+
+function update_indicator(cal_dates)
+// redraw date range indicator
 {
 	var vipcol = vip.host.getFirstChild();
 	if (!vipcol) return;
 	vipcol.vipind.Align(null);
 
-	var vdt_start = new VipDate.GCal(ind_dates.startTime);
-	var vdt_end = new VipDate.GCal(ind_dates.endTime);
+	var vdt_start = new VipDate.GCal(cal_dates.startTime);
+	var vdt_end = new VipDate.GCal(cal_dates.endTime);
 
 	var cell_top = vip.host.getVipCell(vdt_start);
 	var cell_bottom = vip.host.getVipCell(vdt_end);
