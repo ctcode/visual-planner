@@ -432,7 +432,7 @@ VipCell.prototype.addEvent = function(event)
 	}
 
 	var vipevt = new VipSingleDayEvent(this, event);
-	this.vipevts.MoveLastBefore(vipsib);
+	this.vipevts.MoveLastBefore(vipsib);  // sort in time order
 
 	this.updateEventLayout();
 	this.updateEventInfo();
@@ -444,7 +444,7 @@ VipCell.prototype.updateEventLayout = function()
 		return;
 		
 	var sep = 2;
-	
+
 	var tot_width = 0;
 	var vipevt = this.vipevts.getFirstChild();
 	while (vipevt)
@@ -452,28 +452,33 @@ VipCell.prototype.updateEventLayout = function()
 		if (tot_width > 0)
 			tot_width += sep;
 		
-		vipevt.updateLayout();
-		tot_width += vipevt.evt_width;
+		vipevt.initLayout();
+		tot_width += vipevt.div.offsetWidth;
 
 		vipevt = vipevt.Next();
 	}
 
-	var ovr = (tot_width - this.vipevts.div.offsetWidth);
-	while (ovr > 0)
+	if (vip.events.title.show)
 	{
-		var widest = this.vipevts.getFirstChild();
-		var vipevt = widest.Next();
-		while (vipevt)
+		while (tot_width > this.vipevts.div.offsetWidth)
 		{
-			if (vipevt.evt_width > widest.evt_width)
-				widest = vipevt;
-				
-			vipevt = vipevt.Next();
+			var longest = this.vipevts.getFirstChild();
+			var vipevt = longest.Next();
+			while (vipevt)
+			{
+				if (vipevt.flex_title.length > longest.flex_title.length)
+					longest = vipevt;
+					
+				vipevt = vipevt.Next();
+			}
+			
+			if (longest.flex_title.length == 0)
+				break;
+
+			tot_width -= longest.div.offsetWidth;
+			longest.shortenTitle();
+			tot_width += longest.div.offsetWidth;
 		}
-
-		widest.adjustWidth(-1);
-
-		ovr--;
 	}
 
 	var x_off = 0;
@@ -485,7 +490,7 @@ VipCell.prototype.updateEventLayout = function()
 			x_off += sep;
 		
 		vipevt.div.style.left = x_off;
-		x_off += vipevt.evt_width;
+		x_off += vipevt.div.offsetWidth;
 
 		vipevt = vipevt.Next();
 	}
@@ -539,30 +544,6 @@ function VipClrBar(parent, id, clr, xpos, width)
 }
 
 VipClrBar.prototype = new VipObject;
-
-
-
-//////////////////////////////////////////////////////////////////////
-
-function VipFlexTxt(parent)
-{
-	this.createDiv(parent, "vipflextxt");
-
-	this.div.style.whiteSpace = "nowrap";
-	this.div.style.overflow = "hidden";
-	this.div.style.textOverflow = "ellipsis";
-
-	this.spn = document.createElement("span");
-	this.div.appendChild(this.spn);
-}
-
-VipFlexTxt.prototype = new VipObject;
-
-VipFlexTxt.prototype.setText = function(txt)
-{
-	this.spn.innerHTML = txt;
-	this.div.style.width = (this.spn.offsetWidth + 1);
-}
 
 
 
@@ -665,46 +646,58 @@ function VipSingleDayEvent(vipcell, event)
 
 	if (vip.events.title.show)
 	{
-		this.vipflx = new VipFlexTxt(this);
-		this.vipflx.setPos(x_off, y_off-2);
+		this.viptitle = new VipDiv(this, "viptitle");
+		this.viptitle.div.style.whiteSpace = "nowrap";
+		this.viptitle.setPos(x_off, y_off-2);
 
 		if (vip.events.title.colour)
-			this.vipflx.div.style.color = event.palette.medium;
+			this.viptitle.div.style.color = event.palette.medium;
 	}
 }
 
 VipSingleDayEvent.prototype = new VipObject;
 
-VipSingleDayEvent.prototype.updateLayout = function()
+VipSingleDayEvent.prototype.initLayout = function()
 {
-	if (this.vipflx)
+	if (this.viptitle)
 	{
-		var txt = "";
+		this.flex_title = "";
 
 		if (vip.events.title.time)
-			txt = this.evt_title_time;
+			this.flex_title += this.evt_title_time;
 
-		txt += this.evt_title;
+		this.flex_title += this.evt_title;
 		
 		if (vip.events.title.hide_marker)
 		if (this.Next())
-			txt += ',';
+			this.flex_title += ',';
 
-		this.vipflx.setText(txt);
+		this.viptitle.setText(this.flex_title);
 	}
 
-	if (this.vipflx)
-		this.evt_width = (this.vipflx.div.offsetLeft + this.vipflx.div.offsetWidth);
-	else if (this.vipmarker)
-		this.evt_width = this.vipmarker.div.offsetWidth;
-	else
-		this.evt_width = 0;
+	this.updateWidth();
 }
 
-VipSingleDayEvent.prototype.adjustWidth = function(adj)
+VipSingleDayEvent.prototype.updateWidth = function()
 {
-	this.vipflx.div.style.width = (this.vipflx.div.offsetWidth + adj);
-	this.evt_width += adj;
+	if (this.viptitle)
+		this.div.style.width = (this.viptitle.div.offsetLeft + this.viptitle.div.offsetWidth);
+	else if (this.vipmarker)
+		this.div.style.width = this.vipmarker.div.offsetWidth;
+	else
+		this.div.style.width = 0;
+}
+
+VipSingleDayEvent.prototype.shortenTitle = function()
+{
+	if (this.flex_title.length > 0)
+	{
+		this.flex_title = this.flex_title.substr(0, this.flex_title.length-1);
+		this.flex_title.trim();
+
+		this.viptitle.setText(this.flex_title + "...");
+		this.updateWidth();
+	}
 }
 
 
