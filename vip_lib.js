@@ -693,7 +693,7 @@ VipSingleDayEvent.prototype.shortenTitle = function()
 	if (this.flex_title.length > 0)
 	{
 		this.flex_title = this.flex_title.substr(0, this.flex_title.length-1);
-		this.flex_title.trim();
+		this.flex_title = this.flex_title.trim();
 
 		this.viptitle.setText(this.flex_title + "...");
 		this.updateWidth();
