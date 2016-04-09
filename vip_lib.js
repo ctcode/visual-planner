@@ -311,24 +311,55 @@ VipCol.prototype.addEvent = function(event, vipcell)
 	{
 		vipevt = new VipMultiDayEvent(this.vipevts, event, vipcell);
 		this.vipevts.MoveLastBefore(vipsib);
-		this.updateEventLayout();
 	}
 
 	vipevt.updateEvent(vipcell);
+	vipcell.updateEventInfo();
+	this.updateEventLayout();
 }
 
 VipCol.prototype.updateEventLayout = function()
 {
-	var x_off = vip.cell.width-2;
+	var x_off = (vip.events.allday.width + 2);
+	var fixed = [];
 
 	var vipsib = this.vipevts.getFirstChild();
 	while (vipsib)
 	{
-		x_off -= (vip.events.allday.width + 1);
-		vipsib.div.style.left = x_off;
+		vipsib.div.style.left = (vip.cell.width - x_off);
+		
+		while(true)
+		{
+			var shift = false;
 
+			for (var i=0; i < fixed.length; i++)
+			{
+				if (this.intersection(vipsib, fixed[i]))
+				{
+					shift = true;
+					break;
+				}
+			}
+			
+			if (shift)
+				vipsib.div.style.left = (vipsib.div.offsetLeft - x_off);
+			else
+				break;
+		}
+
+		fixed.push(vipsib);
 		vipsib = vipsib.Next();
 	}
+}
+
+VipCol.prototype.intersection = function(evt1, evt2)
+{
+	if (evt1.div.offsetLeft == evt2.div.offsetLeft)
+	if (evt1.div.offsetTop < (evt2.div.offsetTop + evt2.div.offsetHeight + 2))
+	if ((evt1.div.offsetTop + evt1.div.offsetHeight + 2) > evt2.div.offsetTop)
+		return true;
+
+	return false;
 }
 
 
@@ -434,8 +465,8 @@ VipCell.prototype.addEvent = function(event)
 	var vipevt = new VipSingleDayEvent(this, event);
 	this.vipevts.MoveLastBefore(vipsib);  // sort in time order
 
-	this.updateEventLayout();
 	this.updateEventInfo();
+	this.updateEventLayout();
 }
 
 VipCell.prototype.updateEventLayout = function()

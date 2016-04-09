@@ -354,18 +354,11 @@ function add_all_day_event(event)
 		if (vipcell)
 		{
 			if (vip.events.allday.one_day_as_timed && one_day_evt)
-			{
 				vipcell.addEvent(event);
-			}
 			else if (vip.events.allday.multi_day_as_timed && !one_day_evt)
-			{
 				vipcell.addEvent(event);
-			}
 			else
-			{
 				vipcell.vipcol.addEvent(event, vipcell);
-				vipcell.updateEventInfo();
-			}
 		}
 
 		vdt_start.MoveDays(1);
@@ -396,14 +389,9 @@ function add_timed_event(event)
 			if (vipcell)
 			{
 				if (vip.events.timed.multi_day_as_all_day)
-				{
 					vipcell.vipcol.addEvent(event, vipcell);
-					vipcell.updateEventInfo();
-				}
 				else
-				{
 					vipcell.addEvent(event);
-				}
 			}
 
 			vdt_start.MoveDays(1);
