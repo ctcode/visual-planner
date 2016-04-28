@@ -67,7 +67,7 @@
 			</div>
 			<div style="margin-top:30px">
 				<input id="fixed_cell_size" type="checkbox">
-				Use fixed size for each cell.  If not selected, the size will be calculated according to available space.
+				Use fixed size for each cell.  If not selected, the size will be calculated according to available space (currently <span id="available_space">n/a</span>).
 				<div style="margin-left:30px; margin-top:10px">
 					<input id="fixed_height" type="number" min="8" max="20" style="width: 50px">
 					Fixed height.

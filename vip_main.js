@@ -143,6 +143,8 @@ function InitSettingsView()
 	document.getElementById("multi_day_as_all_day").checked = prefs.getBool("multi_day_as_all_day");
 	document.getElementById("all_day_evt_width").value = prefs.getInt("all_day_evt_width");
 
+	document.getElementById("available_space").innerHTML = fmt("^x^", document.body.clientWidth, document.body.clientHeight);
+
 	var setdiv = document.getElementById('settings');
 
 	document.body.removeChild(setdiv);
@@ -194,9 +196,9 @@ function set_scale()
 	else
 	{
 		// reset dimensions depending on available space
-		vip.cell.height = Math.floor(window.innerHeight/(31+6+1));  // max days + max offset + month name
+		vip.cell.height = Math.floor(document.body.clientHeight/(31+6+1));  // max days + max offset + month name
 		if (vip.cell.height < 8) vip.cell.height = 8;
-		vip.cell.width = Math.floor(window.innerWidth/vip.multi_col.count);
+		vip.cell.width = Math.floor(document.body.clientWidth/vip.multi_col.count);
 		if (vip.cell.width < 60) vip.cell.width = 60;
 	}
 
