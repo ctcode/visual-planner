@@ -13,7 +13,6 @@ VipObject.prototype.createDiv = function(parent, id)
 	if (id)
 		div.id = id;
 
-	div.style.fontSize = vip.cell.fontsize;
 	div.style.position = "absolute";
 	div.style.pointerEvents = "none";
 	div.style.MozUserSelect = "none";  // ff fix
@@ -128,13 +127,15 @@ VipHost.prototype.createSingleCol = function()
 {
 	this.SingleCol = true;
 
+	vip.cell.width = document.body.offsetWidth;
+
+	this.scale_font();
+	
 	var vdt_start = new VipDate.Today();
 	vdt_start.MoveToStartOfWeek(1);  // monday this week
 
 	var vdt_end = new VipDate(vdt_start);
 	vdt_end.MoveDays(28);
-
-	vip.cell.width = document.body.offsetWidth;
 	
 	var vipcol = new VipCol(this, vdt_start, vdt_end);
 	vipcol.vipcelloffset.setPos(0, 5);
@@ -142,6 +143,25 @@ VipHost.prototype.createSingleCol = function()
 
 VipHost.prototype.createMultiCol = function()
 {
+	if (vip.multi_col.scale.fixed)
+	{
+		vip.cell.height = vip.multi_col.scale.height;
+		vip.cell.width = vip.multi_col.scale.width;
+	}
+	else
+	{
+		if (screen.orientation.type.includes("portrait"))
+			vip.multi_col.count = (vip.multi_col.count / 2);
+
+		// reset dimensions depending on available space
+		vip.cell.height = Math.floor(document.body.clientHeight/(31+6+1));  // max days + max offset + month name
+		vip.cell.width = Math.floor(document.body.clientWidth/vip.multi_col.count);
+	}
+
+	vip.cell.margin = vip.cell.height+4;
+
+	this.scale_font();
+	
 	var vdt_start = new VipDate.Today();
 	vdt_start.MoveToStartOfMonth();
 
@@ -163,6 +183,17 @@ VipHost.prototype.createMultiCol = function()
 	}
 
 	this.updateLayout();
+}
+
+VipHost.prototype.scale_font = function()
+{
+	this.div.style.fontSize = fmt("^px", Math.floor(0.7*vip.cell.height));
+
+	var a = document.createElement('div');
+	a.innerHTML = "a";
+	this.div.appendChild(a);
+	vip.cell.font_client = {width: a.clientWidth, height: a.clientHeight};
+	this.div.removeChild(a);
 }
 
 VipHost.prototype.scroll_col = function(offset)
@@ -237,8 +268,8 @@ function VipCol(parent, vdt_start, vdt_end)
 
 	this.vipseltip = new VipDiv(this.vipcelloffset, "vipseltip");
 	this.vipseltip.Show(false);
-	this.vipseltip.setSize(vip.cell.width, vip.cell.height);
-	this.vipseltip.div.style.fontSize = "6pt";
+	this.vipseltip.div.style.fontSize = fmt("^px", Math.floor(0.5*vip.cell.height));
+	this.vipseltip.div.style.width = vip.cell.width;
 	this.vipseltip.div.style.textAlign = "center";
 
 	this.vipsel.div.style.zIndex = "10";
@@ -284,7 +315,7 @@ VipCol.prototype.updateSelectionTip = function(vipcell_start, vipcell_end)
 	if (vipcell_start === vipcell_end) return;
 
 	this.vipseltip.div.innerHTML = vipcell_start.vipdate.TimespanTo(vipcell_end.vipdate);
-	this.vipseltip.setPos(vipcell_end.div.offsetLeft, vipcell_end.div.offsetTop+5);
+	this.vipseltip.setPos(vipcell_end.div.offsetLeft, vipcell_end.div.offsetTop + Math.floor((vipcell_end.div.clientHeight - this.vipseltip.div.clientHeight) / 2));
 	this.vipseltip.Show(true);
 }
 
@@ -320,12 +351,12 @@ VipCol.prototype.addEvent = function(event, vipcell)
 
 VipCol.prototype.updateEventLayout = function()
 {
-	var x_off = (vip.events.allday.width + 2);
 	var fixed = [];
 
 	var vipsib = this.vipevts.getFirstChild();
 	while (vipsib)
 	{
+		var x_off = (vipsib.div.clientWidth + 2);
 		vipsib.div.style.left = (vip.cell.width - x_off);
 		
 		while(true)
@@ -401,6 +432,7 @@ function VipCell(parent, col, vdt)
 	vipnum.setText(vdt.DayOfMonth());
 
 	var num = vipnum.div;
+	num.style.top = Math.floor((this.div.clientHeight - num.clientHeight) / 2);
 	num.style.width = vip.cell.height;
 	num.style.textAlign = "center";
 	num.style.cursor = "pointer";
@@ -590,7 +622,7 @@ function VipMultiDayEvent(parent, event, vipcell)
 	this.div.style.zIndex = "1";
 
 	var evt = this.div;
-	evt.style.width = vip.events.allday.width;
+	evt.style.width = vip.events.allday.width_chars * vip.cell.font_client.width;
 	evt.style.backgroundColor = event.palette.medium;
 
 	if (event.calendar)
@@ -635,12 +667,12 @@ function VipSingleDayEvent(vipcell, event)
 	this.tooltip += this.evt_title;
 
 	var x_off = 0;
-	var y_off = Math.floor(((vip.cell.height-1) - vip.events.timed.size) / 2);
+	var y_off = Math.floor((vip.cell.height - vip.cell.font_client.height) / 2);
 
 	if (!vip.events.title.show || !vip.events.title.hide_marker)
 	{
 		this.vipmarker = new VipDiv(this, "vipevtmarker");
-		this.vipmarker.setSize(vip.events.timed.size, vip.events.timed.size);
+		this.vipmarker.setSize(vip.cell.font_client.width, vip.cell.font_client.height);
 		this.vipmarker.setPos(0, y_off);
 		this.vipmarker.div.style.backgroundColor = event.palette.medium;
 
@@ -670,7 +702,7 @@ function VipSingleDayEvent(vipcell, event)
 		if ((off_right <= 0) || (this.vipmarker.div.offsetLeft >= vipcell.vipevts.div.offsetWidth))
 		{
 			var viphidden = new VipDiv(this, "viphiddenevt");
-			viphidden.setPos(0, y_off+0);
+			viphidden.setPos(0, y_off);
 			viphidden.setText("...");
 		}
 	}
@@ -679,7 +711,7 @@ function VipSingleDayEvent(vipcell, event)
 	{
 		this.viptitle = new VipDiv(this, "viptitle");
 		this.viptitle.div.style.whiteSpace = "nowrap";
-		this.viptitle.setPos(x_off, y_off-2);
+		this.viptitle.setPos(x_off, y_off);
 
 		if (vip.events.title.colour)
 			this.viptitle.div.style.color = event.palette.medium;
@@ -848,13 +880,12 @@ VipDate.prototype.isPastMonth = function()
 
 VipDate.prototype.TimespanTo = function(vdt_end)
 {
-	var s = (Date.UTC(this.dt.getFullYear(), this.dt.getMonth(), this.dt.getDate()) - Date.UTC(vdt_end.dt.getFullYear(), vdt_end.dt.getMonth(), vdt_end.dt.getDate()));
-	if (s < 0) s = (0 - s);
+	var s = Math.abs(Date.UTC(this.dt.getFullYear(), this.dt.getMonth(), this.dt.getDate()) - Date.UTC(vdt_end.dt.getFullYear(), vdt_end.dt.getMonth(), vdt_end.dt.getDate()));
 	var c = Math.floor(s/86400000);
 	var w = Math.floor(c/7);
 	var d = (c-(w*7));
 	
-	return (fmt("^-^", w, d));
+	return (w > 0 ? fmt("^, ^-^", c, w, d) : fmt("^", c));
 }
 
 VipDate.prototype.ShowInCalendar = function()

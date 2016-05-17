@@ -11,15 +11,16 @@ var vip = {
 		scale: {fixed: false, width: 144, height: 16},
 		past_transparency: 50
 	},
-	cell: {width: 144, height: 16, margin: 20, fontsize: '8pt'},
+	cell: {width: 144, height: 16, margin: 20, font_client: {}},
 	events: {
 		time_24hr: true,
 		proportional: {show: false, start_hour:8, end_hour:20},
 		title: {show: false, time: false, colour: false, hide_marker: false},
-		timed: {show: true, multi_day_as_all_day: false, size: 8},
-		allday: {show: true, one_day_as_timed: true, multi_day_as_timed: false, width: 3}
+		timed: {show: true, multi_day_as_all_day: false},
+		allday: {show: true, one_day_as_timed: true, multi_day_as_timed: false, width_chars: 1}
 	},
 	selection: {start: null, end: null},
+	touch: {id: null, start: {x:0, y:0}},
 	event_req: {queue: [], pending: false}
 };
 
@@ -46,7 +47,7 @@ function VipInit()
 	vip.events.allday.multi_day_as_timed = prefs.getBool("multi_day_as_timed");
 	vip.events.timed.show = prefs.getBool("show_timed_evts");
 	vip.events.timed.multi_day_as_all_day = prefs.getBool("multi_day_as_all_day");
-	vip.events.allday.width = prefs.getInt("all_day_evt_width");
+	vip.events.allday.width_chars = prefs.getInt("all_day_evt_width_chars");
 
 	if (vip.events.proportional.start_hour >= vip.events.proportional.end_hour)
 	{
@@ -105,7 +106,6 @@ function InitSingleColView()
 function InitMultiColView()
 {
 	document.body.removeChild(document.getElementById('settings'));
-	set_scale();
 	install_event_handling();
 
 	vip.host.createMultiCol();
@@ -141,7 +141,7 @@ function InitSettingsView()
 	document.getElementById("multi_day_as_timed").checked = prefs.getBool("multi_day_as_timed");
 	document.getElementById("show_timed_evts").checked = prefs.getBool("show_timed_evts");
 	document.getElementById("multi_day_as_all_day").checked = prefs.getBool("multi_day_as_all_day");
-	document.getElementById("all_day_evt_width").value = prefs.getInt("all_day_evt_width");
+	document.getElementById("all_day_evt_width_chars").value = prefs.getInt("all_day_evt_width_chars");
 
 	document.getElementById("available_space").innerHTML = fmt("^x^", document.body.clientWidth, document.body.clientHeight);
 
@@ -186,28 +186,6 @@ function receive_GCalPrefs(prefs)
 		vip.events.time_24hr = prefs.military;
 }
 
-function set_scale()
-{
-	if (vip.multi_col.scale.fixed)
-	{
-		vip.cell.height = vip.multi_col.scale.height;
-		vip.cell.width = vip.multi_col.scale.width;
-	}
-	else
-	{
-		// reset dimensions depending on available space
-		vip.cell.height = Math.floor(document.body.clientHeight/(31+6+1));  // max days + max offset + month name
-		if (vip.cell.height < 8) vip.cell.height = 8;
-		vip.cell.width = Math.floor(document.body.clientWidth/vip.multi_col.count);
-		if (vip.cell.width < 60) vip.cell.width = 60;
-	}
-
-	vip.events.timed.size = (vip.cell.height-8);
-	if (vip.events.timed.size < 4) vip.events.timed.size = 4;
-	vip.cell.margin = vip.cell.height+4;
-	vip.cell.fontsize = fmt("^pt", Math.floor(vip.cell.height/2));
-}
-
 function install_event_handling()
 {
 	// disable default selection behaviour
@@ -223,6 +201,12 @@ function install_event_handling()
 	window.addEventListener('mouseup', onmouseup, true);
 	window.addEventListener('mousewheel', onmousewheel, true);  // ch
 	window.addEventListener('DOMMouseScroll', onmousewheel, true);  // ff
+
+	// touch events
+	vip.host.div.addEventListener('touchstart', ontouchstart, false);
+	vip.host.div.addEventListener('touchmove', ontouchmove, false);
+	vip.host.div.addEventListener('touchend', ontouchend, false);
+	vip.host.div.addEventListener('touchcancel', ontouchcancel, false);
 }
 
 
@@ -430,7 +414,7 @@ function onSaveSettings()
 	prefs.set("multi_day_as_timed", setdoc.getElementById("multi_day_as_timed").checked.toString());
 	prefs.set("show_timed_evts", setdoc.getElementById("show_timed_evts").checked.toString());
 	prefs.set("multi_day_as_all_day", setdoc.getElementById("multi_day_as_all_day").checked.toString());
-	prefs.set("all_day_evt_width", setdoc.getElementById("all_day_evt_width").value);
+	prefs.set("all_day_evt_width_chars", setdoc.getElementById("all_day_evt_width_chars").value);
 
 	window.setTimeout(reload_calendar, 1000);
 }
@@ -500,29 +484,34 @@ function onmousewheel(event)
 
 function onmousedown(event)
 {
-	var cell = event.target;
+	var vipcell = getVipCell(event.target);
 	
-	if ("vipobj" in cell)
-	if (cell.vipobj instanceof VipCell)
-		init_selection(cell.vipobj);
+	if (vipcell)
+		init_selection(vipcell);
 }
 
 function onmousemove(event)
 {
-	var cell = event.target;
+	var vipcell = getVipCell(event.target);
 	
-	if ("vipobj" in cell)
-	if (cell.vipobj instanceof VipCell)
-		update_selection(cell.vipobj);
+	if (vipcell)
+		update_selection(vipcell);
 }
 
 function onmouseup(event)
 {
-	if (vip.selection.start)
-	if (! (vip.selection.start === vip.selection.end) )
-		create_calendar_event();
+	complete_selection("mouse");
+}
 
-	cancel_selection();
+function getVipCell(target)
+{
+	var vipcell = null;
+	
+	if ("vipobj" in target)
+	if (target.vipobj instanceof VipCell)
+		vipcell = target.vipobj;
+
+	return vipcell;
 }
 
 function init_selection(vipcell)
@@ -585,6 +574,18 @@ function update_selection(cell_upd)
 	cell_upd.vipcol.updateSelectionTip(vip.selection.start, vip.selection.end);
 }
 
+function complete_selection(ui_event)
+{
+	if (vip.selection.start)
+	if (! (vip.selection.start === vip.selection.end) )
+	{
+		ga_hit('create_calendar_event', ui_event);
+		create_calendar_event();
+	}
+
+	cancel_selection();
+}
+
 function cancel_selection()
 {
 	if (!vip.selection.start)
@@ -614,4 +615,82 @@ function create_calendar_event()
 	vdt_end.MoveDays(1);  // end date is exclusive
 
 	google.calendar.composeEvent({allDay: true, startTime: vdt_start.GCalDate(), endTime: vdt_end.GCalDate()});
+}
+
+function ontouchstart(event)
+{
+	if (event.touches.length == 1)
+	{
+		var t = event.touches[0];
+
+		vip.touch.id = t.identifier;
+		vip.touch.start.x = t.pageX;
+		vip.touch.start.y = t.pageY;
+	}
+}
+
+function ontouchmove(event)
+{
+	if (event.touches.length != 1)
+	{
+		ontouchcancel();
+		return;
+	}
+	
+	var t = event.touches[0];
+	
+	if (t.identifier != vip.touch.id)
+	{
+		ontouchcancel();
+		return;
+	}
+	
+	if (vip.selection.start)
+	{
+		var vipcell = getVipCell(document.elementFromPoint(t.pageX, t.pageY));
+		
+		if (vipcell)
+			update_selection(vipcell);
+	}
+
+	event.preventDefault();
+}
+
+function ontouchend(event)
+{
+	if (event.changedTouches.length != 1)
+	{
+		ontouchcancel();
+		return;
+	}
+	
+	var t = event.changedTouches[0];
+	
+	if (t.identifier != vip.touch.id)
+	{
+		ontouchcancel();
+		return;
+	}
+	
+	if (vip.selection.start)
+	{
+		complete_selection("touch");
+	}
+	else
+	{
+		var dx = Math.abs(vip.touch.start.x - t.pageX);
+		var dy = Math.abs(vip.touch.start.y - t.pageY);
+		
+		if (dx > dy)
+		if (dx > 30)
+			vip.host.scroll_col((vip.touch.start.x > t.pageX) ? 1 : -1);
+	}
+
+	ontouchcancel();
+}
+
+function ontouchcancel(event)
+{
+	vip.touch.id = null;
+	cancel_selection();
 }

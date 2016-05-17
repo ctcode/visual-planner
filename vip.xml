@@ -27,7 +27,7 @@
 <UserPref name="multi_day_as_timed" datatype="bool" default_value="false"/>
 <UserPref name="show_timed_evts" datatype="bool" default_value="true"/>
 <UserPref name="multi_day_as_all_day" datatype="bool" default_value="false"/>
-<UserPref name="all_day_evt_width" datatype="int" default_value="3"/>
+<UserPref name="all_day_evt_width_chars" datatype="int" default_value="1"/>
 <Content type="html">
 <![CDATA[
 <center>
@@ -143,8 +143,8 @@
 				</div>
 			</div>
 			<div style="margin-top:30px">
-				<input id="all_day_evt_width" type="number" min="1" max="60" style="width: 50px">
-				Width of all-day events vertical bar.
+				<input id="all_day_evt_width_chars" type="number" min="1" max="10" style="width: 50px">
+				Width of all-day events vertical bar, which is set to the width of the number of characters selected.
 			</div>
 		</div>
 	</div>
