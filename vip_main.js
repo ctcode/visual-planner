@@ -108,12 +108,12 @@ function InitMultiColView()
 	document.body.removeChild(document.getElementById('settings'));
 	install_event_handling();
 
-	vip.host.createMultiCol();
-
 	ga_hit('view', 'multi_col');
 	ga_hit('multi_col_count', vip.multi_col.count);
 	ga_hit('multi_col_scroll_offset', vip.multi_col.auto_scroll ? vip.multi_col.offset : 'n/a');
 	ga_hit('event_format', vip.events.format);
+
+	vip.host.createMultiCol();
 }
 
 function InitSettingsView()
