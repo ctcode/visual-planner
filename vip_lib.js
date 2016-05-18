@@ -432,7 +432,7 @@ function VipCell(parent, col, vdt)
 	vipnum.setText(vdt.DayOfMonth());
 
 	var num = vipnum.div;
-	num.style.top = Math.floor((this.div.clientHeight - num.clientHeight) / 2);
+	num.style.top = Math.floor((vip.cell.height - num.clientHeight) / 2);
 	num.style.width = vip.cell.height;
 	num.style.textAlign = "center";
 	num.style.cursor = "pointer";
