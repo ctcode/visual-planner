@@ -461,7 +461,7 @@ function onkeydown(event)
 			break;
 	}
 
-	vip.host.scroll_col(clicks);
+	vip.host.scroll_col(clicks, "key");
 
 	event.returnValue=false;
 }
@@ -474,10 +474,10 @@ function onmousewheel(event)
 	var delta = event.wheelDelta ? event.wheelDelta : -event.detail;
 	
 	if (delta > 0)
-		vip.host.scroll_col(-1);
+		vip.host.scroll_col(-1, "mouse");
 
 	if (delta < 0)
-		vip.host.scroll_col(1);
+		vip.host.scroll_col(1, "mouse");
 
 	event.preventDefault();
 }
@@ -683,7 +683,7 @@ function ontouchend(event)
 		
 		if (dx > dy)
 		if (dx > 30)
-			vip.host.scroll_col((vip.touch.start.x > t.pageX) ? 1 : -1);
+			vip.host.scroll_col((vip.touch.start.x > t.pageX) ? 1 : -1, "touch");
 	}
 
 	ontouchcancel();

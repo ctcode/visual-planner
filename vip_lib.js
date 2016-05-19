@@ -196,9 +196,11 @@ VipHost.prototype.scale_font = function()
 	this.div.removeChild(a);
 }
 
-VipHost.prototype.scroll_col = function(offset)
+VipHost.prototype.scroll_col = function(offset, ui_event)
 {
 	if (this.SingleCol) return;
+
+	ga_hit('scroll', ui_event);
 
 	var cols = this.div;
 	var ltor = (offset > 0);  // scroll direction
