@@ -26,7 +26,7 @@
 <UserPref name="one_day_as_timed" datatype="bool" default_value="true"/>
 <UserPref name="multi_day_as_timed" datatype="bool" default_value="false"/>
 <UserPref name="show_timed_evts" datatype="bool" default_value="true"/>
-<UserPref name="multi_day_as_all_day" datatype="bool" default_value="false"/>
+<UserPref name="multi_day_as_all_day" datatype="bool" default_value="true"/>
 <UserPref name="all_day_evt_width_chars" datatype="int" default_value="1"/>
 <Content type="html">
 <![CDATA[
