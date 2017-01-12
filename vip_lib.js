@@ -150,7 +150,12 @@ VipHost.prototype.createMultiCol = function()
 	}
 	else
 	{
-		if (screen.orientation.type.includes("portrait"))
+		var so = "n/a";
+		if (screen.orientation)
+			so = screen.orientation.type;
+		if (screen.msOrientation)  // edge, ie
+			so = screen.msOrientation;
+		if (so.includes("portrait"))
 			vip.multi_col.count = (vip.multi_col.count / 2);
 
 		// reset dimensions depending on available space
