@@ -243,6 +243,36 @@ VipHost.prototype.updateLayout = function()
 	}
 }
 
+VipHost.prototype.updateScale = function()
+{
+	var cellwidth = Math.floor(document.body.clientWidth/vip.multi_col.count) - 1;
+	var xpos=0;
+
+	var vipcol = this.getFirstChild();
+	while(vipcol)
+	{
+		vipcol.div.style.width = cellwidth;
+		vipcol.viphdr.div.style.width = cellwidth;
+
+		var vipcell = vipcol.vipcells.getFirstChild();
+		while(vipcell)
+		{
+			vipcell.div.style.width = cellwidth;
+			vipcell.vipevts.div.style.width = (cellwidth - vip.cell.margin);
+			vipcell.updateEventLayout();
+
+			vipcell = vipcell.Next();
+		}
+		
+		vipcol.updateEventLayout();
+
+		vipcol.div.style.left = xpos;
+		xpos += (cellwidth + 1);
+
+		vipcol = vipcol.Next();
+	}
+}
+
 VipHost.prototype.getVipCell = function(vdt)
 {
 	var div = document.getElementById(vdt.Datestamp());
@@ -262,6 +292,7 @@ function VipCol(parent, vdt_start, vdt_end)
 {
 	this.createDiv(parent, "vipcol");
 
+	this.div.style.width = vip.cell.width;
 	this.vipcelloffset = new VipDiv(this, "vipcelloffset");
 	this.vipcells = new VipCells(this.vipcelloffset, this, vdt_start, vdt_end);
 	this.vipevts = new VipDiv(this.vipcelloffset, "vipevts");
@@ -297,13 +328,14 @@ VipCol.prototype.addMonthHeader = function(vdt_month)
 	if (vdt_month.isPastMonth())
 		this.div.style.opacity = ((100 - vip.multi_col.past_transparency) / 100);
 
-	var viphdr = new VipDiv(this, "vipmonthhdr");
-	viphdr.setText(vdt_month.MonthTitle());
+	this.viphdr = new VipDiv(this, "vipmonthhdr");
+	this.viphdr.setSize(vip.cell.width, vip.cell.height);
+	this.viphdr.setText(vdt_month.MonthTitle());
 
-	var hdr = viphdr.div;
+	var hdr = this.viphdr.div;
 	hdr.setAttribute('onclick', "onclick_month_header(event);");
-	hdr.style.width = vip.cell.width;
 	hdr.style.textAlign = "center";
+	hdr.style.lineHeight = fmt("^px", vip.cell.height);  // vertical centre
 	hdr.style.pointerEvents = "all";
 	hdr.style.cursor = "pointer";
 }
@@ -359,7 +391,7 @@ VipCol.prototype.updateEventLayout = function()
 	while (vipsib)
 	{
 		var x_off = (vipsib.div.clientWidth + 2);
-		vipsib.div.style.left = (vip.cell.width - x_off);
+		vipsib.div.style.left = (this.div.offsetWidth - x_off);
 		
 		while(true)
 		{

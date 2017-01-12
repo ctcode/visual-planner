@@ -108,6 +108,15 @@ function InitMultiColView()
 	document.body.removeChild(document.getElementById('settings'));
 	install_event_handling();
 
+	// printing
+	if (window.matchMedia)
+	{
+	  var mql = window.matchMedia("print");
+	  
+	  if (mql)
+		mql.addListener(onMediaChange);
+	}
+
 	ga_hit('view', 'multi_col');
 	ga_hit('multi_col_count', vip.multi_col.count);
 	ga_hit('multi_col_scroll_offset', vip.multi_col.auto_scroll ? vip.multi_col.offset : 'n/a');
@@ -459,11 +468,14 @@ function onkeydown(event)
 		case 40:  // down
 			clicks = 1;
 			break;
+		default:
+			return;
 	}
 
 	vip.host.scroll_col(clicks, "key");
 
-	event.returnValue=false;
+	event.returnValue = false;
+	event.preventDefault();
 }
 
 function onmousewheel(event)
@@ -693,4 +705,13 @@ function ontouchcancel(event)
 {
 	vip.touch.id = null;
 	cancel_selection();
+}
+
+function onMediaChange(mql)
+{
+	if (vip.host)
+		vip.host.updateScale();
+
+	if (mql.matches)
+		ga_hit('media', 'print');
 }
