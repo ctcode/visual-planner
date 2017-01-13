@@ -152,6 +152,7 @@ VipHost.prototype.createMultiCol = function()
 	{
 		var so = "n/a";
 		if (screen.orientation)
+		if (screen.orientation.type)
 			so = screen.orientation.type;
 		if (screen.msOrientation)  // edge, ie
 			so = screen.msOrientation;
