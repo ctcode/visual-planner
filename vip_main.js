@@ -591,7 +591,9 @@ function complete_selection(ui_event)
 	if (vip.selection.start)
 	if (! (vip.selection.start === vip.selection.end) )
 	{
-		ga_hit('create_calendar_event', ui_event);
+		if (ui_event == "touch")
+			ga_hit(ui_event, 'create_calendar_event');
+
 		create_calendar_event();
 	}
 
