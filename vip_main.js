@@ -592,7 +592,7 @@ function complete_selection(ui_event)
 	if (! (vip.selection.start === vip.selection.end) )
 	{
 		if (ui_event == "touch")
-			ga_hit(ui_event, 'create_calendar_event');
+			ga_hit('no_category', 'touch_create');
 
 		create_calendar_event();
 	}
@@ -715,5 +715,5 @@ function onMediaChange(mql)
 		vip.host.updateScale();
 
 	if (mql.matches)
-		ga_hit('media', 'print');
+		ga_hit('no_category', 'print');
 }
