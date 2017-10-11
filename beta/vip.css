@@ -1,0 +1,147 @@
+.vipgrid {
+	--cellheight: 0;
+	--cellnumpadding: 0;
+	--markerwidth: 0;
+	--markerpadding: 0;
+	pointer-events: all;
+	user-select: none;
+	outline: none;
+	flex-basis: 100%;
+	display: flex;
+	flex-direction: row;
+}
+.vipcol {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+}
+.vipcol.indicator {
+	padding-left: 2px;
+}
+.vipmonthhdr {
+	text-align: center;
+	height: var(--cellheight);
+	line-height: var(--cellheight);
+	cursor: pointer;
+	pointer-events: all;
+}
+.vipcoloffset {
+	--offsetday: 0;
+	margin-top: calc(var(--cellheight) * var(--offsetday));
+	height: 100%;
+	position: relative;
+}
+.vipcells {
+	width: 100%;
+	position: absolute;
+}
+.vipsel {
+	width: 100%;
+	position: absolute;
+	background-color: rgba(255,255,127,0.6);
+	pointer-events: none;
+	z-index: 10;
+}
+.vipseltip {
+	width: 100%;
+	position: absolute;
+	font-size: 0.8em;
+	text-align: center;
+	pointer-events: none;
+	z-index: 10;
+}
+.vipind {
+	left: -2px;
+	width: 2px;
+	position: absolute;
+	background-color: rgba(0,0,0,0.2);
+}
+.vipcolevts {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	padding-right: 1px;
+	pointer-events: none;
+	box-sizing: border-box;
+}
+.vipmultidayevent {
+	--start: 0;
+	--extent: 0;
+	--slot: 0;
+	width: var(--markerwidth);
+	height: calc((var(--cellheight) * var(--extent)) - 1px);
+	left: calc(100% - (var(--slot) * var(--markerwidth)));
+	top: calc(var(--cellheight) * var(--start));
+	padding-right: 2px;
+	box-sizing: border-box;
+	background-clip: content-box;
+	position: absolute;
+	z-index: 1;
+	pointer-events: all;
+}
+.vipcell {
+	height: var(--cellheight);
+	padding-left: 1px;
+	padding-bottom: 1px;
+	box-sizing: border-box;
+	background-clip: content-box;
+	background-color: #eaeaea;
+	pointer-events: all;
+}
+.vipcell.weekend {
+	background-color: #d8d8d8;
+}
+.vipcellnum {
+	float: left;
+	width: 1.6em;
+	height: 100%;
+	padding-top: var(--cellnumpadding);
+	padding-bottom: var(--cellnumpadding);
+	text-align: center;
+	box-sizing: border-box;
+	background-clip: content-box;
+	cursor: pointer;
+	pointer-events: all;
+}
+.vipcellnum.today {
+	font-weight: bold;
+	color: white;
+	background-color: red;
+}
+.vipcellevts {
+	float: left;
+	width: calc(100% - 1.6em);
+	height: 100%;
+	box-sizing: border-box;
+	pointer-events: none;
+	display: flex;
+	flex-direction: row;
+	position: relative;
+}
+.vipsingledayevent {
+	overflow: hidden;
+	z-index: 2;
+}
+.vipeventtext {
+	padding-top: var(--cellnumpadding);
+	padding-bottom: var(--cellnumpadding);
+	padding-left: 2px;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	position: relative;
+}
+.vipeventmarker {
+	float: left;
+	height: 100%;
+	width: var(--markerwidth);
+	padding-top: var(--markerpadding);
+	padding-bottom: var(--markerpadding);
+	padding-left: 2px;
+	box-sizing: border-box;
+	background-clip: content-box;
+}
+.vipeventmarker.proportional {
+	padding-left: 0;
+	position: absolute;
+}
