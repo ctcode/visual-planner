@@ -333,35 +333,6 @@ VipGrid.prototype.addEvents = function(id, evts)
 	}
 }
 
-VipGrid.prototype.addGadgetEvent = function(evt)
-{
-	evt.vdtStart = new VipDate(evt.start);
-	evt.vdtEnd = new VipDate(evt.end);
-	
-	var vdtNext = new VipDate(evt.vdtStart);
-	while (true)
-	{
-		evt.first = (vdtNext.Datestamp() == evt.vdtStart.Datestamp());
-		evt.last = evt.timed ? (vdtNext.Datestamp() == evt.vdtEnd.Datestamp()) : (vdtNext.Datestamp() == (evt.vdtEnd.Datestamp()-1));
-
-		var vipcell = this.getVipCell(vdtNext);
-
-		if (vipcell)
-		{
-			if (evt.first && evt.last)
-				vipcell.addEvent(evt);
-			else
-				vipcell.addColEvent(evt);
-		}
-
-		if (evt.last)
-			break;
-
-		vdtNext.MoveDays(1);
-		continue;
-	}
-}
-
 VipGrid.prototype.reloadEvents = function()
 {
 	var vipcol = this.First();
