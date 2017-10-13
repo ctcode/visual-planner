@@ -172,7 +172,7 @@ AuthAppData.prototype.thenReadFile = function()
 	if (this.file_id)
 	{
 		this.makeReq ({
-				path: "https://www.googleapis.com/drive/v3/files" + "/" + this.file_id,
+				path: "https://www.googleapis.com/drive/v3/files" + "/" + encodeURIComponent(this.file_id),
 				method: "GET",
 				params: {alt: 'media'}
 			},
@@ -246,7 +246,7 @@ AuthAppData.prototype.WriteFile = function()
 	console.assert(this.file_id);
 
 	this.makeReq ({
-			path: "https://www.googleapis.com/upload/drive/v3/files" + "/" + this.file_id,
+			path: "https://www.googleapis.com/upload/drive/v3/files" + "/" + encodeURIComponent(this.file_id),
 			method: "PATCH",
 			params: {uploadType: "media"},
 			body: this.appdata
@@ -347,7 +347,7 @@ AuthCal.prototype.rcvCalList = function(callsign, response)
 AuthCal.prototype.reqEvents = function(cal_id, span_id)
 {
 	this.makeReq ({
-			path: "https://www.googleapis.com/calendar/v3/calendars/" + cal_id + "/events",
+			path: "https://www.googleapis.com/calendar/v3/calendars/" + encodeURIComponent(cal_id) + "/events",
 			method: "GET",
 			params: {timeMin: this.db[span_id].dtStart.toISOString(), timeMax: this.db[span_id].dtEnd.toISOString()}
 		},
@@ -397,7 +397,7 @@ AuthCal.prototype.rcvCalEvents = function(callsign, response)
 	if (response.result.nextPageToken)
 	{
 		this.makeReq ({
-				path: "https://www.googleapis.com/calendar/v3/calendars/" + callsign.cal_id + "/events",
+				path: "https://www.googleapis.com/calendar/v3/calendars/" + encodeURIComponent(callsign.cal_id) + "/events",
 				method: "GET",
 				params: {pageToken: response.result.nextPageToken}
 			},
