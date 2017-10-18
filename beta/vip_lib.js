@@ -317,18 +317,20 @@ VipGrid.prototype.addEvent = function(vipcol, evt)
 {
 	var vdtEvtStart = new VipDate(evt.start);
 	var vdtEvtEnd = new VipDate(evt.end);
+	
 	if (evt.timed)
+	{
+		var endID = vdtEvtEnd.ID();
 		vdtEvtEnd.MoveDays(1);
+	}
 
 	var vdtSpanStart = new VipDate(vdtEvtStart.ID() < vipcol.vdtStart.ID() ? vipcol.vdtStart : vdtEvtStart);
 	var vdtSpanEnd = new VipDate(vdtEvtEnd.ID() > vipcol.vdtEnd.ID() ? vipcol.vdtEnd : vdtEvtEnd);
-
-	var evt_multiday = ((vdtEvtEnd.Datestamp() - vdtEvtStart.Datestamp()) > 1);
-	var evt_cellspan = (vdtSpanEnd.Datestamp() - vdtSpanStart.Datestamp());
 	
-	while (vdtSpanStart.ID() < vdtSpanEnd.ID())
+	var vdtNext = new VipDate(vdtSpanStart);
+	while (vdtNext.ID() < vdtSpanEnd.ID())
 	{
-		var vipcell = this.getVipCell(vdtSpanStart);
+		var vipcell = this.getVipCell(vdtNext);
 
 		var evtinfo = {
 			id: evt.id,
@@ -337,13 +339,16 @@ VipGrid.prototype.addEvent = function(vipcol, evt)
 			calendar: evt.calendar,
 			timed: evt.timed,
 			timestamp: vdtEvtStart.Timestamp(),
-			vdtEvtStart: new VipDate(vdtEvtStart),
-			vdtEvtEnd: new VipDate(vdtEvtEnd),
-			multiday: evt_multiday,
-			firstday: (vdtSpanStart.ID() == vdtEvtStart.ID()),
+			vdtEvtStart: vdtEvtStart,
+			vdtEvtEnd: vdtEvtEnd,
+			multiday: ((vdtEvtEnd.Datestamp() - vdtEvtStart.Datestamp()) > 1),
+			firstday: (vdtNext.ID() == vdtEvtStart.ID()),
 			cellindex: vipcell.vipindex,
-			cellspan: evt_cellspan
+			cellspan: (vdtSpanEnd.Datestamp() - vdtSpanStart.Datestamp())
 		};
+		
+		if (evt.timed)
+			evtinfo.lastday = (vdtNext.ID() == endID);
 		
 		var single = !evtinfo.multiday;
 		var multi = evtinfo.multiday;
@@ -377,7 +382,7 @@ VipGrid.prototype.addEvent = function(vipcol, evt)
 		}
 
 
-		vdtSpanStart.MoveDays(1);
+		vdtNext.MoveDays(1);
 	}
 }
 
@@ -727,7 +732,7 @@ VipSingleDayEvent.prototype.calcProportionalMarker = function()
 			s_evt_start = s_range_start;
 	}
 
-	if (this.lastday && this.timed)
+	if (this.info.lastday && this.info.timed)
 	{
 		s_evt_end = this.info.vdtEvtEnd.getDaySeconds();
 
