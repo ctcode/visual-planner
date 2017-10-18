@@ -874,6 +874,11 @@ VipDate.prototype.TimeTitle = function()
 	}
 }
 
+VipDate.prototype.GCalURL = function()
+{
+	return (this.dt.getFullYear() + "/" + (this.dt.getMonth()+1) + "/" + this.dt.getDate());
+}
+
 
 
 /////////////////////////////////////////////////////////////////
