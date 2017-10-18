@@ -250,7 +250,7 @@ VipGrid.prototype.scroll_col = function(offset)
 		cols.removeChild(ltor ? cols.firstChild : cols.lastChild);
 
 	var vipcol_prev = ltor ? cols.lastChild.vipobj : cols.firstChild.vipobj;
-	var vdt_start = new VipDate(vipcol_prev.vdt_month);
+	var vdt_start = new VipDate(vipcol_prev.vdtStart);
 
 	for (var c=0; c < count; c++)
 	{
@@ -292,43 +292,67 @@ VipGrid.prototype.getVipCell = function(vdt)
 	return null;
 }
 
-VipGrid.prototype.addEvents = function(id, evts)
+VipGrid.prototype.getVipCol = function(id)
 {
 	var div = document.getElementById(id);
 	
-	if (div && div.vipobj instanceof VipCol)
-		var vipcol = div.vipobj;
-	else
+	if (div)
+	if (div.vipobj instanceof VipCol)
+		return div.vipobj;
+
+	return null;
+}
+
+VipGrid.prototype.addEvents = function(id, evts)
+{
+	var vipcol = this.getVipCol(id);
+
+	if (!vipcol)
 		return;
 
 	for (i in evts)
 	{
 		var evt = evts[i];
 
-		evt.vdtStart = new VipDate(evt.start);
-		evt.vdtEnd = new VipDate(evt.end);
+		var vdtEvtStart = new VipDate(evt.start);
+		var vdtEvtEnd = new VipDate(evt.end);
+		if (evt.timed)
+			vdtEvtEnd.MoveDays(1);
+
+		var vdtSpanStart = new VipDate(vdtEvtStart.ID() < vipcol.vdtStart.ID() ? vipcol.vdtStart : vdtEvtStart);
+		var vdtSpanEnd = new VipDate(vdtEvtEnd.ID() > vipcol.vdtEnd.ID() ? vipcol.vdtEnd : vdtEvtEnd);
+
+		var evt_multiday = ((vdtEvtEnd.Datestamp() - vdtEvtStart.Datestamp()) > 1);
+		var evt_cellspan = (vdtSpanEnd.Datestamp() - vdtSpanStart.Datestamp());
 		
-		var vdtNext = new VipDate(evt.vdtStart);
-		while (true)
+		while (vdtSpanStart.ID() < vdtSpanEnd.ID())
 		{
-			evt.first = (vdtNext.Datestamp() == evt.vdtStart.Datestamp());
-			evt.last = evt.timed ? (vdtNext.Datestamp() == evt.vdtEnd.Datestamp()) : (vdtNext.Datestamp() == (evt.vdtEnd.Datestamp()-1));
+			var vipcell = this.getVipCell(vdtSpanStart);
 
-			var vipcell = this.getVipCell(vdtNext);
+			var evtinfo = {
+				id: evt.id,
+				title: evt.title,
+				colour: evt.colour,
+				calendar: evt.calendar,
+				timed: evt.timed,
+				timestamp: vdtEvtStart.Timestamp(),
+				vdtEvtStart: new VipDate(vdtEvtStart),
+				vdtEvtEnd: new VipDate(vdtEvtEnd),
+				multiday: evt_multiday,
+				firstday: (vdtSpanStart.ID() == vdtEvtStart.ID()),
+				cellindex: vipcell.vipindex,
+				cellspan: evt_cellspan
+			};
 
-			if (vipcell && (vipcell.vipcol === vipcol))
+			if (evtinfo.multiday)
 			{
-				if (evt.first && evt.last)
-					vipcell.addEvent(evt);
-				else
-					vipcell.addColEvent(evt);
+				vipcol.addEvent(evtinfo);
+				break;
 			}
 
-			if (evt.last)
-				break;
+			vipcell.addEvent(evtinfo);
 
-			vdtNext.MoveDays(1);
-			continue;
+			vdtSpanStart.MoveDays(1);
 		}
 	}
 }
@@ -349,7 +373,7 @@ VipGrid.prototype.reloadEvents = function()
 			vipcell = vipcell.Next();
 		}
 
-		this.reqCalEvents(vipcol.div.id, vipcol.datespan);
+		this.reqCalEvents(vipcol.div.id, vipcol.Datespan());
 
 		vipcol = vipcol.Next();
 	}
@@ -364,23 +388,22 @@ function VipCol(parent, vdt_start, vdt_end)
 	this.createChild(parent, "vipcol");
 	
 	this.div.id = ((vdt_start.dt.getFullYear()*100) + (vdt_start.dt.getMonth()+1));
-
-	this.vdt_month = new VipDate(vdt_start);
-	this.datespan = {start: new Date(vdt_start.dt), end: new Date(vdt_end.dt)};
+	this.vdtStart = new VipDate(vdt_start);
+	this.vdtEnd = new VipDate(vdt_end);
 
 	if (vip.grid.cfg.col_header)
 	{
 		this.viphdr = new VipDiv(this, "vipmonthhdr");
-		this.viphdr.setText(this.vdt_month.MonthTitle());
+		this.viphdr.setText(this.vdtStart.MonthTitle());
 		this.viphdr.div.onclick = onclickVipMonthHeader;
 
-		if (this.vdt_month.isPastMonth())
+		if (this.vdtStart.isPastMonth())
 			this.div.style.opacity = ((100 - vip.grid.cfg.past_transparency) / 100);
 	}
 
 	this.vipcoloffset = new VipDiv(this, "vipcoloffset");
 	if (vip.grid.cfg.align_weekends)
-		this.vipcoloffset.div.style.setProperty('--offsetday', this.vdt_month.DayOfWeek());
+		this.vipcoloffset.div.style.setProperty('--offsetday', this.vdtStart.DayOfWeek());
 
 	this.vipcells = new VipDiv(this.vipcoloffset, "vipcells");
 	
@@ -406,14 +429,16 @@ function VipCol(parent, vdt_start, vdt_end)
 	this.vipind.Show(false);
 	
 	this.vipevts = new VipDiv(this.vipcoloffset, "vipcolevts");
-
-	this.firstcell = this.vipcells.First();
-	this.lastcell = this.vipcells.Last();
 	
-	vip.grid.reqCalEvents(this.div.id, this.datespan);
+	vip.grid.reqCalEvents(this.div.id, this.Datespan());
 }
 
 VipCol.prototype = new VipObject;
+
+VipCol.prototype.Datespan = function()
+{
+	return {start: new Date(this.vdtStart.dt), end: new Date(this.vdtEnd.dt)};
+}
 
 VipCol.prototype.updateSelectionTip = function(vipcell_start, vipcell_end)
 {
@@ -434,66 +459,42 @@ VipCol.prototype.updateSelectionTip = function(vipcell_start, vipcell_end)
 	this.vipseltip.Show(true);
 }
 
-VipCol.prototype.addEvent = function(evt, vipcell)
+VipCol.prototype.addEvent = function(evtinfo)
 {
-	var vipevt = null;
-
-	var vipsib = this.vipevts.First();
-	while (vipsib)
-	{
-		if (evt.id == vipsib.id)
-		{
-			vipevt = vipsib;
-			break;
-		}
-
-		if (vipcell.vipdate.Datestamp() < vipsib.vipcell_start.vipdate.Datestamp())  // sort in date order
-			break;
-
-		vipsib = vipsib.Next();
-	}
-
-	if (!vipevt)
-	{
-		vipevt = new VipMultiDayEvent(this.vipevts, evt, vipcell);
-		this.vipevts.MoveLastBefore(vipsib);
-	}
-
-	vipevt.extend(vipcell);
+	vipevt = new VipMultiDayEvent(this.vipevts, evtinfo);
 	this.findFreeSlot(vipevt);
 }
 
-VipCol.prototype.findFreeSlot = function(evt)
+VipCol.prototype.findFreeSlot = function(vipevt)
 {
-	var sib = this.vipevts.First();
-	while (sib)
+	var vipsib = this.vipevts.First();
+	while (vipsib)
 	{
-		if (evt === sib) {}
+		if (vipevt === vipsib) {}
 		else
 		{
-			if (this.intersection(sib, evt))
+			if (vipevt.slot == vipsib.slot)
+			if (this.intersection(vipsib.info.cellindex, vipsib.info.cellspan, vipevt.info.cellindex, vipevt.info.cellspan))
 			{
-				if (evt.div.offsetLeft < 1)
-					return;
-				
-				evt.nextSlot();
-				this.findFreeSlot(evt);
+				vipevt.nextSlot();
+				this.findFreeSlot(vipevt);
 				return;
 			}
 		}
 
-		sib = sib.Next();
+		vipsib = vipsib.Next();
 	}
 }
 
-VipCol.prototype.intersection = function(evt1, evt2)
+VipCol.prototype.intersection = function(ai, ax, bi, bx)
 {
-	if (evt1.div.offsetLeft == evt2.div.offsetLeft)
-	if (evt1.div.offsetTop < (evt2.div.offsetTop + evt2.div.offsetHeight + 2))
-	if ((evt1.div.offsetTop + evt1.div.offsetHeight + 2) > evt2.div.offsetTop)
-		return true;
+	if (ai > bi)
+		return ((bi + bx) >= ai);
 
-	return false;
+	if (ai < bi)
+		return ((ai + ax) >= bi);
+
+	return true;
 }
 
 
@@ -505,6 +506,7 @@ function VipCell(parent, vipcol, vdt, id_today)
 	this.createChild(parent, "vipcell");
 	this.vipcol = vipcol;
 	this.vipdate = new VipDate(vdt);
+	this.datestamp = vdt.Datestamp();
 	this.div.id = vdt.ID();
 
 	if (vip.grid.cfg.show_weekends)
@@ -545,29 +547,14 @@ VipCell.prototype.inDateRange = function(vdt_lo, vdt_hi)
 	return false;
 }
 
-VipCell.prototype.addColEvent = function(evt)
+VipCell.prototype.addEvent = function(evtinfo)
 {
-	this.vipcol.addEvent(evt, this);
-	this.updateTooltip();
-}
-
-VipCell.prototype.addEvent = function(evt)
-{
-	var vipsib = this.vipevts.First();
-	while (vipsib)
-	{
-		if (evt.id == vipsib.id)
-			return;
-
-		vipsib = vipsib.Next();
-	}
-
-	var vipevt = new VipSingleDayEvent(this, evt);
+	var vipevt = new VipSingleDayEvent(this.vipevts, evtinfo);
 
 	var vipsib = this.vipevts.First();
 	while (vipsib)
 	{
-		if (vipevt.timestamp < vipsib.timestamp)
+		if (vipevt.info.timestamp < vipsib.info.timestamp)
 			break;
 
 		vipsib = vipsib.Next();
@@ -580,6 +567,7 @@ VipCell.prototype.addEvent = function(evt)
 
 VipCell.prototype.updateTooltip = function()
 {
+/*
 	var evtlist = [];
 
 	var vipevt = this.vipcol.vipevts.First();
@@ -618,40 +606,26 @@ VipCell.prototype.updateTooltip = function()
 	}
 
 	this.div.title = str_tooltip;
+*/
 }
 
 
 
 //////////////////////////////////////////////////////////////////////
 
-function VipMultiDayEvent(parent, evt, vipcell)
+function VipMultiDayEvent(parent, evtinfo)
 {
 	this.createChild(parent, "vipmultidayevent");
 
-	this.id = evt.id;
-	this.div.style.backgroundColor = evt.colour;
-	this.div.style.setProperty('--start', vipcell.vipindex);
-	this.vipcell_start = vipcell;
-	this.vipcell_end = vipcell;
-	this.setExtent(1);
+	this.info = evtinfo;
+	this.div.title = fmt("^ - ^", this.info.calendar, this.info.title);
+	this.div.style.backgroundColor = this.info.colour;
+	this.div.style.setProperty('--start', this.info.cellindex);
+	this.div.style.setProperty('--extent', this.info.cellspan);
 	this.setSlot(1);
-
-	this.div.title = fmt("^ - ^", evt.calendar, html2txt(evt.title));
 }
 
 VipMultiDayEvent.prototype = new VipObject;
-
-VipMultiDayEvent.prototype.setExtent = function(i)
-{
-	this.extent = i;
-	this.div.style.setProperty('--extent', this.extent);
-}
-
-VipMultiDayEvent.prototype.extend = function(vipcell)
-{
-	this.vipcell_end = vipcell;
-	this.setExtent(this.vipcell_end.vipindex - this.vipcell_start.vipindex + 1);
-}
 
 VipMultiDayEvent.prototype.setSlot = function(i)
 {
@@ -668,27 +642,20 @@ VipMultiDayEvent.prototype.nextSlot = function()
 
 //////////////////////////////////////////////////////////////////////
 
-function VipSingleDayEvent(vipcell, evt)
+function VipSingleDayEvent(parent, evtinfo)
 {
-	this.createChild(vipcell.vipevts, "vipsingledayevent");
+	this.createChild(parent, "vipsingledayevent");
 
-	this.id = evt.id;
-	this.timestamp = evt.vdtStart.Timestamp();
-	this.firstday = evt.first;
-	this.lastday = evt.last;
-	this.timed = evt.timed;
-	this.vdtStart = new VipDate(evt.vdtStart);
-	this.vdtEnd = new VipDate(evt.vdtEnd);
-	
-	var evt_title = html2txt(evt.title);
+	this.info = evtinfo;
 
 	var time_title = "";
-	if (this.timed)
-	if (this.firstday)
+	if (this.info.timed)
+	if (this.info.firstday)
 	if (vip.grid.cfg.show_event_time)
-		time_title = evt.vdtStart.TimeTitle() + " ";
+		time_title = this.info.vdtEvtStart.TimeTitle() + " ";
 
-	this.div.title = time_title + evt.calendar + " - " + evt_title;
+	var evt_title = this.info.title;
+	this.div.title = time_title + this.info.calendar + " - " + evt_title;
 
 	if (vip.grid.cfg.proportional_events)
 	{
@@ -707,12 +674,12 @@ function VipSingleDayEvent(vipcell, evt)
 			this.vipevttext.setText(time_title + evt_title);
 
 			if (vip.grid.cfg.colour_event_title)
-				this.vipevttext.div.style.color = evt.colour;
+				this.vipevttext.div.style.color = this.info.colour;
 		}
 	}
 	
 	if (this.vipmarker)
-		this.vipmarker.div.style.backgroundColor = evt.colour;
+		this.vipmarker.div.style.backgroundColor = this.info.colour;
 }
 
 VipSingleDayEvent.prototype = new VipObject;
@@ -726,9 +693,9 @@ VipSingleDayEvent.prototype.calcProportionalMarker = function()
 	var s_evt_start = s_range_start;
 	var s_evt_end = s_range_end;
 
-	if (this.firstday && this.timed)
+	if (this.info.firstday && this.info.timed)
 	{
-		s_evt_start = this.vdtStart.getDaySeconds();
+		s_evt_start = this.info.vdtEvtStart.getDaySeconds();
 
 		if (s_evt_start < s_range_start)
 			s_evt_start = s_range_start;
@@ -736,7 +703,7 @@ VipSingleDayEvent.prototype.calcProportionalMarker = function()
 
 	if (this.lastday && this.timed)
 	{
-		s_evt_end = this.vdtEnd.getDaySeconds();
+		s_evt_end = this.info.vdtEvtEnd.getDaySeconds();
 
 		if (s_evt_end > s_range_end)
 			s_evt_end = s_range_end;
@@ -910,11 +877,4 @@ function fmt(fmtspec)
 	}
 
 	return str;
-}
-
-function html2txt(html)
-{
-	var tag = document.createElement('span');
-	tag.innerHTML = html;
-	return tag.textContent;
 }
