@@ -383,6 +383,7 @@ VipGrid.prototype.addEvent = function(vipcol, evt)
 
 VipGrid.prototype.reloadEvents = function()
 {
+/*
 	var vipcol = this.First();
 	while (vipcol)
 	{
@@ -401,6 +402,7 @@ VipGrid.prototype.reloadEvents = function()
 
 		vipcol = vipcol.Next();
 	}
+*/
 }
 
 
