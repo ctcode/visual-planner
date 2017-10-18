@@ -165,7 +165,7 @@ function VipGrid(container_element)
 
 VipGrid.prototype = new VipObject;
 
-VipGrid.prototype.createMultiCol = function()
+VipGrid.prototype.create = function()
 {
 	var vdt_start = new VipDate();
 	vdt_start.MoveToStartOfMonth();

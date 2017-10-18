@@ -93,7 +93,7 @@ function mainCtrl($scope)
 		vip_init_grid(e);
 		vip.grid.cfg = gAppData.getAppData().vipconfig;
 		vip.grid.reqCalEvents = reqCalEvents;
-		vip.grid.createMultiCol();
+		vip.grid.create();
 	}
 
 	function reqCalEvents(id, datespan) {
