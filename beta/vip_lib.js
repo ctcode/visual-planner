@@ -244,12 +244,12 @@ VipGrid.prototype.scroll_col = function(offset)
 	var cols = this.div;
 	var ltor = (offset > 0);  // scroll direction
 	var count = ltor ? offset : -offset;
-	
-	for (var c=0; c < count; c++)
-		cols.removeChild(ltor ? cols.firstChild : cols.lastChild);
 
 	var vipcol_prev = ltor ? cols.lastChild.vipobj : cols.firstChild.vipobj;
 	var vdt_start = new VipDate(vipcol_prev.vdtStart);
+	
+	for (var c=0; c < count; c++)
+		cols.removeChild(ltor ? cols.firstChild : cols.lastChild);
 
 	for (var c=0; c < count; c++)
 	{
@@ -261,6 +261,7 @@ VipGrid.prototype.scroll_col = function(offset)
 		var vipcol = new VipCol(this, vdt_start, vdt_end);
 
 		if (!ltor)
+		if (cols.childElementCount > 1)
 			this.MoveLastBefore(this.First());  // move col to left
 	}
 }
