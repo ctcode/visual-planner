@@ -142,21 +142,18 @@ body {
 		</div>
 		<div class="sub"><input ng-model="settings.vipconfig.multi_day_as_single_day" type="checkbox">
 			Show multi-day events as single-day events on each day.
+			<div class="sub"><input ng-model="settings.vipconfig.first_day_only" type="checkbox">
+				First day only.
+			</div>
 		</div>
-		<div class="sub"><input ng-model="settings.vipconfig.multi_day_with_first_single_day" type="checkbox">
-			Show multi-day events with a single-day event on first day only.
-		</div>
-		<div class="sub"><input ng-model="settings.vipconfig.all_day_single_day_as_multi_day" type="checkbox">
-			Show all-day, single-day events as multi-day events (vertical bar).
+		<div class="sub"><input ng-model="settings.vipconfig.all_events_as_multi_day" type="checkbox">
+			Show all events as multi-day events (vertical bar).
 		</div>
 		<div class="sub"><input ng-model="settings.vipconfig.marker_width" type="number">
 			Width of event marker.
 		</div>
 		<div class="sub"><input ng-model="settings.vipconfig.marker_transparency" type="number" min="0" max="100">
 			%  Transparency of event marker.  (0 = no transparency)
-		</div>
-		<div class="sub"><input ng-model="settings.vipconfig.auto_refresh" type="checkbox">
-			Refresh automatically when calendar events are updated.
 		</div>
 	</div>
 	</form>
