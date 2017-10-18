@@ -146,8 +146,7 @@ function VipGridConfig()
 	this.first_day_only = false;
 	this.all_events_as_multi_day = false;
 	this.marker_width = 80;
-	// unused
-	this.marker_transparency = 20;
+	this.multi_day_transparency = 20;
 }
 
 
@@ -654,6 +653,7 @@ function VipMultiDayEvent(parent, evtinfo)
 	this.div.style.backgroundColor = this.info.colour;
 	this.div.style.setProperty('--start', this.info.cellindex);
 	this.div.style.setProperty('--extent', this.info.cellspan);
+	this.div.style.opacity = ((100 - vip.grid.cfg.multi_day_transparency) / 100);
 	this.setSlot(1);
 }
 
