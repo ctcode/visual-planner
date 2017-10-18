@@ -179,7 +179,7 @@ VipGrid.prototype.create = function()
 
 	var colcount = this.cfg.multi_col_count;
 	if (this.isPortrait())
-		colcount /= 2;
+		colcount = this.cfg.multi_col_count_portrait;
 
 	for (var c=0; c < colcount; c++)
 	{
