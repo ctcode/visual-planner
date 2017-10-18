@@ -145,8 +145,8 @@ function VipGridConfig()
 	this.multi_day_as_single_day = false;
 	this.first_day_only = false;
 	this.all_events_as_multi_day = false;
+	this.marker_width = 80;
 	// unused
-	this.marker_width = 0.58;
 	this.marker_transparency = 20;
 }
 
@@ -232,7 +232,7 @@ VipGrid.prototype.updateLayout = function()
 	
 	this.div.style.setProperty('--cellheight', cellheight + "px");
 	this.div.style.setProperty('--cellnumpadding', cellnumpadding + "px");
-	this.div.style.setProperty('--markerwidth', Math.floor(fontsize*0.8) + "px");
+	this.div.style.setProperty('--markerwidth', Math.floor(fontsize*(this.cfg.marker_width/100)) + "px");
 	this.div.style.setProperty('--markerpadding', Math.floor(cellheight*0.2) + "px");
 }
 
