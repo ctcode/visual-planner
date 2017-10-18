@@ -65,7 +65,7 @@ function onclickVipDayNumber(event)
 	if ("vipobj" in num)
 	if (num.vipobj.parent instanceof VipCell)
 	{
-		var url = fmt("https://www.google.com/calendar/render?date=^&mode=day", num.vipobj.parent.vipdate.toID());
+		var url = fmt("https://www.google.com/calendar/render?date=^&mode=day", num.vipobj.parent.vipdate.ID());
 		window.open(url);
 	}
 }
@@ -77,7 +77,7 @@ function onclickVipMonthHeader(event)
 	if ("vipobj" in cell)
 	if (cell.vipobj.parent instanceof VipCol)
 	{
-		var url = fmt("https://www.google.com/calendar/render?date=^&mode=month", cell.vipobj.parent.vdt_month.toID());
+		var url = fmt("https://www.google.com/calendar/render?date=^&mode=month", cell.vipobj.parent.vdtStart.ID());
 		window.open(url);
 	}
 }
@@ -242,7 +242,7 @@ function create_calendar_event()
 	var vdtEnd = new VipDate(vip.selection.end.vipdate);
 	vdtEnd.MoveDays(1);  // end date is exclusive
 	
-	var url = fmt("https://www.google.com/calendar/event?action=TEMPLATE&dates=^/^", vdtStart.toID(), vdtEnd.toID());
+	var url = fmt("https://www.google.com/calendar/event?action=TEMPLATE&dates=^/^", vdtStart.ID(), vdtEnd.ID());
 	window.open(url);
 }
 
