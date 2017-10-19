@@ -3,7 +3,6 @@
 	--cellnumpadding: 0;
 	--markerwidth: 0;
 	--markerpadding: 0;
-	pointer-events: all;
 	user-select: none;
 	outline: none;
 	flex-basis: 100%;
@@ -86,7 +85,7 @@
 	box-sizing: border-box;
 	background-clip: content-box;
 	background-color: #eaeaea;
-	pointer-events: all;
+	pointer-events: none;
 }
 .vipcell.weekend {
 	background-color: #d8d8d8;
@@ -121,6 +120,8 @@
 .vipsingledayevent {
 	overflow: hidden;
 	z-index: 2;
+	cursor: default;
+	pointer-events: all;
 }
 .vipeventtext {
 	padding-top: var(--cellnumpadding);
