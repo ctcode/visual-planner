@@ -460,6 +460,9 @@ function VipCol(parent, vdt_start, vdt_end)
 	this.vipind.Show(false);
 	
 	this.vipevts = new VipDiv(this.vipcoloffset, "vipcolevts");
+
+	this.firstcell = this.vipcells.First();
+	this.lastcell = this.vipcells.Last();
 	
 	vip.grid.reqCalEvents(this.div.id, this.Datespan());
 }
@@ -479,7 +482,7 @@ VipCol.prototype.updateSelectionTip = function(vipcell_start, vipcell_end)
 	if (!vipcell_end) return;
 	if (vipcell_start === vipcell_end) return;
 
-	var c = vipcell_end.vipdate.Datestamp() - vipcell_start.vipdate.Datestamp();
+	var c = Math.abs(vipcell_end.vipdate.Datestamp() - vipcell_start.vipdate.Datestamp());
 	var w = Math.floor(c/7);
 	var d = (c-(w*7));
 	var tip = (w > 0 ? fmt("^, ^-^", c, w, d) : fmt("^", c));

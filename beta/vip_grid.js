@@ -240,8 +240,8 @@ function cancel_selection()
 
 function create_calendar_event()
 {
-	var vdtStart = new VipDate(vip.selection.start.vipdate);
-	var vdtEnd = new VipDate(vip.selection.end.vipdate);
+	var vdtStart = new VipDate(vip.selection.start.vipdate.dt < vip.selection.end.vipdate.dt ? vip.selection.start.vipdate : vip.selection.end.vipdate);
+	var vdtEnd = new VipDate(vip.selection.start.vipdate.dt < vip.selection.end.vipdate.dt ? vip.selection.end.vipdate : vip.selection.start.vipdate);
 	vdtEnd.MoveDays(1);  // end date is exclusive
 	
 	//var url = fmt("https://www.google.com/calendar/event?action=TEMPLATE&dates=^/^", vdtStart.ID(), vdtEnd.ID());
