@@ -166,6 +166,9 @@ VipGrid.prototype = new VipObject;
 
 VipGrid.prototype.create = function()
 {
+	if (window.sessionStorage)
+		sessionStorage.clear();
+
 	var vdt_start = new VipDate();
 	vdt_start.MoveToStartOfMonth();
 
@@ -316,7 +319,10 @@ VipGrid.prototype.rcvEvents = function(id, evts)
 		for (i in evts)
 			this.rcvEvent(vipcol, evts[i], storage);
 
-	console.log(storage);
+	if (window.sessionStorage)
+	{
+		sessionStorage["vip-events-" + id] = JSON.stringify(storage);
+	}
 }
 
 VipGrid.prototype.rcvEvent = function(vipcol, evt, storage)
