@@ -66,7 +66,11 @@ function onclickVipDayNumber(event)
 	if (num.vipobj.parent instanceof VipCell)
 	{
 		//var url = fmt("https://www.google.com/calendar/render?date=^&mode=day", num.vipobj.parent.vipdate.ID());
-		var url = "https://www.google.com/calendar/r/day/" + num.vipobj.parent.vipdate.GCalURL();
+		if (event.ctrlKey)
+			var url = "https://www.google.com/calendar/r/day/" + num.vipobj.parent.vipdate.GCalURL();
+		else
+			var url = "https://www.google.com/calendar/r/week/" + num.vipobj.parent.vipdate.GCalURL();
+
 		window.open(url);
 	}
 }
