@@ -302,6 +302,11 @@ VipGrid.prototype.getVipCol = function(id)
 	return null;
 }
 
+VipGrid.prototype.getCalEvents = function(id, datespan)
+{
+	this.reqCalEvents(id, datespan);
+}
+
 VipGrid.prototype.rcvEvents = function(id, evts)
 {
 	var storage = [];
@@ -473,7 +478,7 @@ function VipCol(parent, vdt_start, vdt_end)
 	this.firstcell = this.vipcells.First();
 	this.lastcell = this.vipcells.Last();
 	
-	vip.grid.reqCalEvents(this.div.id, this.Datespan());
+	vip.grid.getCalEvents(this.div.id, this.Datespan());
 }
 
 VipCol.prototype = new VipObject;
