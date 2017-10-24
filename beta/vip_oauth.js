@@ -273,27 +273,21 @@ AuthAppData.prototype.Fail = function(reason)
 
 function AuthCal()
 {
-	this.db = {};
-	this.cal_list = null;
+	this.calendars = null;
 	this.queue = [];
 	this.pending = 0;
-	this.onReceiveEvents = function(id, evts){};
+	this.batch = null;
 	this.onError = function(){};
 }
 
-AuthCal.prototype.getEvents = function(id, datespan)
+AuthCal.prototype.getEvents = function(reqobj, datespan)
 {
-	if (id in this.db)
-	{
-		this.onReceiveEvents(id, this.db[id].events);
-	}
-	else
-	{
-		this.db[id] = {dtStart: new Date(datespan.start), dtEnd: new Date(datespan.end), events: []};
-		this.queue.push(id);
-
-		this.run();
-	}
+	console.assert('rcvEvents' in reqobj);
+	console.assert('dtStart' in datespan);
+	console.assert('dtEnd' in datespan);
+	
+	this.queue.push({reqobj:reqobj, datespan:datespan, evts:[]});
+	this.run();
 }
 
 AuthCal.prototype.run = function()
@@ -304,13 +298,23 @@ AuthCal.prototype.run = function()
 	if (this.pending > 0)
 		return;
 
-	if (this.cal_list)
+	if (this.calendars)
 	{
-		var span_id = this.queue.shift();
+		this.batch = this.queue.shift();
+		var min = this.batch.datespan.dtStart.toISOString();
+		var max = this.batch.datespan.dtEnd.toISOString();
 
-		for (cal_id in this.cal_list)
+		for (cal_id in this.calendars)
 		{
-			this.reqEvents(cal_id, span_id);
+			this.makeReq ({
+					path: "https://www.googleapis.com/calendar/v3/calendars/" + encodeURIComponent(cal_id) + "/events",
+					method: "GET",
+					params: {timeMin: min, timeMax: max}
+				},
+				this.rcvCalEvents,
+				cal_id
+			);
+
 			this.pending++;
 		}
 	}
@@ -330,36 +334,23 @@ AuthCal.prototype.run = function()
 
 AuthCal.prototype.rcvCalList = function(callsign, response)
 {
-	this.cal_list = {};
+	this.calendars = {};
 
 	for (i in response.result.items)
 	{
 		var cal = response.result.items[i];
 		
 		if (cal.selected)
-			this.cal_list[cal.id] = {name: cal.summary, colour: cal.backgroundColor};
+			this.calendars[cal.id] = {name: cal.summary, colour: cal.backgroundColor};
 	}
 	
 	this.pending--;
 	this.run();
 }
 
-AuthCal.prototype.reqEvents = function(cal_id, span_id)
-{
-	this.makeReq ({
-			path: "https://www.googleapis.com/calendar/v3/calendars/" + encodeURIComponent(cal_id) + "/events",
-			method: "GET",
-			params: {timeMin: this.db[span_id].dtStart.toISOString(), timeMax: this.db[span_id].dtEnd.toISOString()}
-		},
-		this.rcvCalEvents,
-		{cal_id: cal_id, span_id: span_id}
-	);
-}
-
 AuthCal.prototype.rcvCalEvents = function(callsign, response)
 {
-	var cal = this.cal_list[callsign.cal_id];
-	var span = this.db[callsign.span_id];
+	var cal = this.calendars[callsign];
 	
 	for (i in response.result.items)
 	{
@@ -390,7 +381,7 @@ AuthCal.prototype.rcvCalEvents = function(callsign, response)
 				evt.end.setHours(0,0,0,0);
 			}
 
-			span.events.push(evt);
+			this.batch.evts.push(evt);
 		}
 	}
 
@@ -411,7 +402,7 @@ AuthCal.prototype.rcvCalEvents = function(callsign, response)
 		
 		if (this.pending == 0)
 		{
-			this.onReceiveEvents(callsign.span_id, span.events);
+			this.batch.reqobj.rcvEvents(this.batch.evts);
 			this.run();
 		}
 	}

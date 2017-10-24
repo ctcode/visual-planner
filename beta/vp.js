@@ -22,7 +22,6 @@ function mainCtrl($scope)
 		$scope.sign_msg = gAccount.getEmail();
 		$scope.$apply();
 		gCal = new AuthCal();
-		gCal.onReceiveEvents = rcvCalEvents;
 		gCal.onError = function() {alert("Error loading calendar events.")};
 		ReadAppdata();
 	}
@@ -96,12 +95,8 @@ function mainCtrl($scope)
 		vip.grid.create();
 	}
 
-	function reqCalEvents(id, datespan) {
+	function reqCalEvents(reqobj, datespan) {
 		if (gCal)
-			gCal.getEvents(id, datespan);
-	}
-
-	function rcvCalEvents(id, evts) {
-		vip.grid.addEvents(id, evts);
+			gCal.getEvents(reqobj, datespan);
 	}
 }
