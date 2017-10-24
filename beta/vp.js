@@ -8,7 +8,8 @@ function mainCtrl($scope)
 	gAppData.file_name = "settings.json";
 	gAppData.setDefault({banner_text: "visual-planner", vipconfig: new VipGridConfig()});
 	
-	var gCal=null;
+	var gCal = new AuthCal();
+	gCal.onError = function() {alert("Error loading calendar events.")};
 
 	$scope.multi_col_count_options = {1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 8: 8, 10: 10, 12: 12};
 	$scope.settings = gAppData.getAppData();
@@ -21,14 +22,11 @@ function mainCtrl($scope)
 	gAccount.onSignIn = function() {
 		$scope.sign_msg = gAccount.getEmail();
 		$scope.$apply();
-		gCal = new AuthCal();
-		gCal.onError = function() {alert("Error loading calendar events.")};
 		ReadAppdata();
 	}
 
 	gAccount.onSignOut = function() {
 		gAppData.setAppData(null);
-		gCal=null;
 		$scope.settings = gAppData.getAppData();
 		$scope.form.$setPristine(true);
 		$scope.sign_msg = "Signed Out";
@@ -90,13 +88,14 @@ function mainCtrl($scope)
 		e.innerHTML = "";
 		
 		vip_init_grid(e);
-		vip.grid.cfg = gAppData.getAppData().vipconfig;
-		vip.grid.reqCalEvents = reqCalEvents;
-		vip.grid.create();
-	}
 
-	function reqCalEvents(reqobj, datespan) {
-		if (gCal)
-			gCal.getEvents(reqobj, datespan);
+		if ($scope.signed_in)
+		{
+			vip.grid.reqCalEvents = gCal.getEvents.bind(gCal);
+			gCal.onReceiveEvents = vip.grid.rcvEvents.bind(vip.grid);
+		}
+
+		vip.grid.cfg = gAppData.getAppData().vipconfig;
+		vip.grid.create();
 	}
 }

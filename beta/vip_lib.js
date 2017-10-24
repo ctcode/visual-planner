@@ -302,6 +302,14 @@ VipGrid.prototype.getVipCol = function(id)
 	return null;
 }
 
+VipGrid.prototype.rcvEvents = function(id, evts)
+{
+	var vipcol = this.getVipCol(id);
+	
+	if (vipcol)
+		vipcol.rcvEvents(evts);
+}
+
 VipGrid.prototype.reloadEvents = function()
 {
 /*
@@ -380,7 +388,7 @@ function VipCol(parent, vdt_start, vdt_end)
 	this.firstcell = this.vipcells.First();
 	this.lastcell = this.vipcells.Last();
 	
-	vip.grid.reqCalEvents(this, this.Datespan());
+	vip.grid.reqCalEvents(this.div.id, this.Datespan());
 }
 
 VipCol.prototype = new VipObject;
@@ -390,27 +398,10 @@ VipCol.prototype.Datespan = function()
 	return {dtStart: new Date(this.vdtStart.dt), dtEnd: new Date(this.vdtEnd.dt)};
 }
 
-VipCol.prototype.updateSelectionTip = function(vipcell_start, vipcell_end)
-{
-	this.vipseltip.Show(false);
-
-	if (!vipcell_start) return;
-	if (!vipcell_end) return;
-	if (vipcell_start === vipcell_end) return;
-
-	var c = Math.abs(vipcell_end.vipdate.Datestamp() - vipcell_start.vipdate.Datestamp());
-	var w = Math.floor(c/7);
-	var d = (c-(w*7));
-	var tip = (w > 0 ? fmt("^, ^-^", c, w, d) : fmt("^", c));
-
-	this.vipseltip.div.style.lineHeight = vipcell_end.div.offsetHeight + "px";
-	this.vipseltip.setText(tip);
-	this.vipseltip.Align(vipcell_end, vipcell_end);
-	this.vipseltip.Show(true);
-}
-
 VipCol.prototype.rcvEvents = function(evts)
 {
+	var storage = [];
+	
 	for (i in evts)
 	{
 		var evt = evts[i];
@@ -473,10 +464,19 @@ VipCol.prototype.rcvEvents = function(evts)
 			}
 
 			if (single)
+			{
+				evtinfo.singlecell = true;
+				evtinfo.cell_id = vipcell.div.id;
+				storage.push(evtinfo);
+
 				vipcell.addEvent(evtinfo);
+			}
 
 			if (multi)
 			{
+				evtinfo.multicell = true;
+				storage.push(evtinfo);
+
 				var vipevt = new VipMultiDayEvent(this.vipevts, evtinfo);
 				this.findFreeSlot(vipevt);
 
@@ -487,6 +487,8 @@ VipCol.prototype.rcvEvents = function(evts)
 			vdtNext.MoveDays(1);
 		}
 	}
+
+	console.log(storage);
 }
 
 VipCol.prototype.findFreeSlot = function(vipevt)
@@ -519,6 +521,25 @@ VipCol.prototype.intersection = function(ai, ax, bi, bx)
 		return ((ai + ax) >= bi);
 
 	return true;
+}
+
+VipCol.prototype.updateSelectionTip = function(vipcell_start, vipcell_end)
+{
+	this.vipseltip.Show(false);
+
+	if (!vipcell_start) return;
+	if (!vipcell_end) return;
+	if (vipcell_start === vipcell_end) return;
+
+	var c = Math.abs(vipcell_end.vipdate.Datestamp() - vipcell_start.vipdate.Datestamp());
+	var w = Math.floor(c/7);
+	var d = (c-(w*7));
+	var tip = (w > 0 ? fmt("^, ^-^", c, w, d) : fmt("^", c));
+
+	this.vipseltip.div.style.lineHeight = vipcell_end.div.offsetHeight + "px";
+	this.vipseltip.setText(tip);
+	this.vipseltip.Align(vipcell_end, vipcell_end);
+	this.vipseltip.Show(true);
 }
 
 

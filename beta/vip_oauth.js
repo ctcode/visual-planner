@@ -277,16 +277,16 @@ function AuthCal()
 	this.queue = [];
 	this.pending = 0;
 	this.batch = null;
+	this.onReceiveEvents = function(){};
 	this.onError = function(){};
 }
 
-AuthCal.prototype.getEvents = function(reqobj, datespan)
+AuthCal.prototype.getEvents = function(span_id, datespan)
 {
-	console.assert('rcvEvents' in reqobj);
 	console.assert('dtStart' in datespan);
 	console.assert('dtEnd' in datespan);
 	
-	this.queue.push({reqobj:reqobj, datespan:datespan, evts:[]});
+	this.queue.push({span_id: span_id, datespan: datespan, evts: []});
 	this.run();
 }
 
@@ -402,7 +402,7 @@ AuthCal.prototype.rcvCalEvents = function(callsign, response)
 		
 		if (this.pending == 0)
 		{
-			this.batch.reqobj.rcvEvents(this.batch.evts);
+			this.onReceiveEvents(this.batch.span_id, this.batch.evts);
 			this.run();
 		}
 	}
