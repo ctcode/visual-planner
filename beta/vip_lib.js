@@ -133,7 +133,7 @@ function VipGridConfig()
 	this.auto_scroll_offset = -1;
 	this.show_weekends = true;
 	this.align_weekends = true;
-	this.font_scale = 64;
+	this.font_scale = 0.64;
 	this.past_opacity = 0.7;
 	this.show_event_time = true;
 	this.show_event_title = true;
@@ -145,7 +145,7 @@ function VipGridConfig()
 	this.multi_day_as_single_day = false;
 	this.first_day_only = false;
 	this.all_events_as_multi_day = false;
-	this.marker_width = 80;
+	this.marker_width = 0.8;
 	this.multi_day_opacity = 0.8;
 }
 
@@ -227,14 +227,14 @@ VipGrid.prototype.updateLayout = function()
 	var cellheight = Math.floor(colheight/c);
 	var cellnumpadding = Math.floor(cellheight/10);
 
-	this.div.style.fontSize = (cellheight/16) * (this.cfg.font_scale/100) + "em";
+	this.div.style.fontSize = ((cellheight/16) * this.cfg.font_scale) + "em";
 	this.div.style.lineHeight = (cellheight - (cellnumpadding*2)) + "px";
 
 	var fontsize = parseFloat(window.getComputedStyle(this.div).fontSize);
 	
 	this.div.style.setProperty('--cellheight', cellheight + "px");
 	this.div.style.setProperty('--cellnumpadding', cellnumpadding + "px");
-	this.div.style.setProperty('--markerwidth', Math.floor(fontsize*(this.cfg.marker_width/100)) + "px");
+	this.div.style.setProperty('--markerwidth', Math.floor(fontsize*this.cfg.marker_width) + "px");
 	this.div.style.setProperty('--markerpadding', Math.floor(cellheight*0.2) + "px");
 }
 
