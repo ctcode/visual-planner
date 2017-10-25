@@ -385,42 +385,38 @@ VipGrid.prototype.rcvEvent = function(vipcol, evt, storage)
 		if (evt.timed)
 			evtinfo.lastday = (vdtNext.ID() == endID);
 		
-		var single = !evtinfo.multiday;
 		var multi = evtinfo.multiday;
+		var single = !evtinfo.multiday;
 		
 		if (this.cfg.multi_day_as_single_day)
 		if (multi)
 		{
-			single = true;
 			multi = false;
+			single = true;
 
 			if (this.cfg.first_day_only)
 			{
-				single = evtinfo.firstday;
 				multi = true;
+				single = evtinfo.firstday;
 			}
 		}
 		
 		if (this.cfg.all_events_as_multi_day)
 		{
-			single = false;
 			multi = true;
+			single = false;
 		}
+
+		evtinfo.multicell = multi;
+		evtinfo.singlecell = single;
+		evtinfo.cell_id = vipcell.div.id;
+		storage.push(evtinfo);
 
 		if (single)
-		{
-			evtinfo.singlecell = true;
-			evtinfo.cell_id = vipcell.div.id;
-			storage.push(evtinfo);
-
 			vipcell.addEvent(evtinfo);
-		}
 
 		if (multi)
 		{
-			evtinfo.multicell = true;
-			storage.push(evtinfo);
-
 			vipcol.addEvent(evtinfo);
 			return;
 		}
