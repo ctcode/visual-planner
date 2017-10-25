@@ -111,8 +111,8 @@ body {
 		<div class="sub"><input ng-model="settings.vipconfig.font_scale" type="number" min="20">
 			%  Font scale.
 		</div>
-		<div class="sub"><input ng-model="settings.vipconfig.past_transparency" type="number" min="0" max="100">
-			%  Transparency of past months.  (0 = no transparency)
+		<div class="sub"><input ng-model="settings.vipconfig.past_opacity" type="number" min="0" max="1">
+			Opacity of past months.  (1 = opaque)
 		</div>
 		<div class="sub"><input ng-model="settings.banner_text">
 			Banner text.
@@ -152,8 +152,8 @@ body {
 		<div class="sub"><input ng-model="settings.vipconfig.marker_width" type="number" min="20">
 			%  Width of event marker.
 		</div>
-		<div class="sub"><input ng-model="settings.vipconfig.multi_day_transparency" type="number" min="0" max="100">
-			%  Transparency of multi-day event.  (0 = no transparency)
+		<div class="sub"><input ng-model="settings.vipconfig.multi_day_opacity" type="number" min="0" max="1">
+			Opacity of multi-day event.  (1 = opaque)
 		</div>
 	</div>
 	</form>
