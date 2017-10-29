@@ -324,7 +324,7 @@ VipGrid.prototype.getCalEvents = function(vipcol, id, datespan)
 			var evtinfo = stg[i];
 			
 			if (evtinfo.singlecell)
-				this.getVipCell(evtinfo.cell_id).addEvent(evtinfo);
+				this.getVipCell(evtinfo.cellID).addEvent(evtinfo);
 
 			if (evtinfo.multicell)
 				vipcol.addEvent(evtinfo);
@@ -374,12 +374,13 @@ VipGrid.prototype.rcvEvent = function(vipcol, evt, storage)
 			timed: evt.timed,
 			timestamp: vdtEvtStart.Timestamp(),
 			timetitle: vdtEvtStart.TimeTitle(),
+			dayspan: (vdtSpanEnd.Datestamp() - vdtSpanStart.Datestamp()),
 			startDaySeconds: vdtEvtStart.getDaySeconds(),
 			endDaySeconds: vdtEvtEnd.getDaySeconds(),
 			multiday: ((vdtEvtEnd.Datestamp() - vdtEvtStart.Datestamp()) > 1),
 			firstday: (vdtNext.ID() == vdtEvtStart.ID()),
-			cellindex: vipcell.vipindex,
-			cellspan: (vdtSpanEnd.Datestamp() - vdtSpanStart.Datestamp())
+			cellID: vipcell.div.id,
+			cellindex: vipcell.vipindex
 		};
 		
 		if (evt.timed)
@@ -409,7 +410,6 @@ VipGrid.prototype.rcvEvent = function(vipcol, evt, storage)
 
 		evtinfo.multicell = multi;
 		evtinfo.singlecell = single;
-		evtinfo.cell_id = vipcell.div.id;
 		storage.push(evtinfo);
 
 		if (single)
@@ -528,7 +528,7 @@ VipCol.prototype.findFreeSlot = function(vipevt)
 		else
 		{
 			if (vipevt.slot == vipsib.slot)
-			if (this.intersection(vipsib.info.cellindex, vipsib.info.cellspan, vipevt.info.cellindex, vipevt.info.cellspan))
+			if (this.intersection(vipsib.info.cellindex, vipsib.info.dayspan, vipevt.info.cellindex, vipevt.info.dayspan))
 			{
 				vipevt.nextSlot();
 				this.findFreeSlot(vipevt);
@@ -694,7 +694,7 @@ function VipMultiDayEvent(parent, evtinfo)
 	this.div.title = fmt("^ - ^", this.info.calendar, this.info.title);
 	this.div.style.backgroundColor = this.info.colour;
 	this.div.style.setProperty('--start', this.info.cellindex);
-	this.div.style.setProperty('--extent', this.info.cellspan);
+	this.div.style.setProperty('--extent', this.info.dayspan);
 	this.div.style.opacity = vip.grid.cfg.multi_day_opacity;
 	this.setSlot(1);
 }
