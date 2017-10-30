@@ -336,15 +336,17 @@ VipGrid.prototype.getCalEvents = function(vipcol, id, datespan)
 
 VipGrid.prototype.rcvEvents = function(id, evts)
 {
-	var storage = [];
-
 	var vipcol = this.getVipCol(id);
 	if (vipcol)
+	{
+		var storage = [];
+
 		for (i in evts)
 			this.rcvEvent(vipcol, evts[i], storage);
 
-	if (window.sessionStorage)
-		sessionStorage[id] = JSON.stringify(storage);
+		if (window.sessionStorage)
+			sessionStorage[id] = JSON.stringify(storage);
+	}
 }
 
 VipGrid.prototype.rcvEvent = function(vipcol, evt, storage)
