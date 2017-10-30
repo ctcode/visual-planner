@@ -167,7 +167,11 @@ VipGrid.prototype = new VipObject;
 VipGrid.prototype.create = function()
 {
 	if (window.sessionStorage)
-		sessionStorage.clear();
+	{
+		for (i in sessionStorage)
+			if (i.startsWith("vipevts"))
+				sessionStorage.removeItem(i);
+	}
 
 	var vdt_start = new VipDate();
 	vdt_start.MoveToStartOfMonth();
@@ -311,7 +315,7 @@ VipGrid.prototype.getCalEvents = function(vipcol, id, datespan)
 	
 	if (window.sessionStorage)
 	{
-		var stgitem = sessionStorage[id];
+		var stgitem = sessionStorage["vipevts" + id];
 		
 		if (stgitem)
 			stg = JSON.parse(stgitem);
@@ -345,7 +349,7 @@ VipGrid.prototype.rcvEvents = function(id, evts)
 			this.rcvEvent(vipcol, evts[i], storage);
 
 		if (window.sessionStorage)
-			sessionStorage[id] = JSON.stringify(storage);
+			sessionStorage["vipevts" + id] = JSON.stringify(storage);
 	}
 }
 
