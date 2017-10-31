@@ -336,6 +336,27 @@ AuthCal.prototype.rcvCalList = function(callsign, response)
 {
 	this.calendars = {};
 
+	var clist = "";
+	var count=0;
+	var sel=0;
+	for (i in response.result.items)
+	{
+		var cal = response.result.items[i];
+
+		count++;
+		if (cal.selected) sel++;
+		clist += (cal.summary + "\n");
+		
+		if (cal.selected)
+			this.calendars[cal.id] = {name: cal.summary, colour: cal.backgroundColor};
+	}
+	alert("calendars: " + count + ", selected: " + sel + "\n\n" + clist);
+	
+	this.pending--;
+	this.run();
+/*
+	this.calendars = {};
+
 	for (i in response.result.items)
 	{
 		var cal = response.result.items[i];
@@ -346,6 +367,7 @@ AuthCal.prototype.rcvCalList = function(callsign, response)
 	
 	this.pending--;
 	this.run();
+*/
 }
 
 AuthCal.prototype.rcvCalEvents = function(callsign, response)
