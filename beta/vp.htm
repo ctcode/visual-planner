@@ -76,7 +76,7 @@ body {
 	<div id="buttons">
 		<button ng-hide="form.$pristine || busy" ng-click="onclickSave()">Save</button>
 		<button ng-show="(view=='settings') && !busy" ng-click="onclickCancel()">Cancel</button>
-		<button ng-show="(view=='grid') && !busy" ng-click="view='settings'" title="Settings"><b>*</b></button>
+		<button ng-show="(view=='grid') && !busy" ng-click="onclickSettings()" title="Settings"><b>*</b></button>
 		<span ng-show="busy"><i>Wait...</i></span>
 	</div>
 </div>

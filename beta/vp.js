@@ -40,6 +40,11 @@ function mainCtrl($scope)
 		alert("Account Error: " + msg);
 	}
 
+	$scope.onclickSettings = function() {
+		$scope.view = 'settings';
+		ga_hit("view", "settings/" + $scope.signed_in);
+	}
+
 	$scope.onclickSignOut = function() {
 		gAccount.SignOut();
 	}
@@ -97,5 +102,7 @@ function mainCtrl($scope)
 
 		vip.grid.cfg = gAppData.getAppData().vipconfig;
 		vip.grid.create();
+		
+		ga_hit("view", "grid/" + $scope.signed_in);
 	}
 }
