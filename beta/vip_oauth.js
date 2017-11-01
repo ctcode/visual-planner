@@ -388,7 +388,7 @@ AuthCal.prototype.rcvCalEvents = function(callsign, response)
 	if (response.result.nextPageToken)
 	{
 		this.makeReq ({
-				path: "https://www.googleapis.com/calendar/v3/calendars/" + encodeURIComponent(callsign.cal_id) + "/events",
+				path: "https://www.googleapis.com/calendar/v3/calendars/" + encodeURIComponent(callsign) + "/events",
 				method: "GET",
 				params: {pageToken: response.result.nextPageToken}
 			},
@@ -402,7 +402,6 @@ AuthCal.prototype.rcvCalEvents = function(callsign, response)
 		
 		if (this.pending == 0)
 		{
-			alert("Events received: " + this.batch.evts.length);
 			this.onReceiveEvents(this.batch.span_id, this.batch.evts);
 			this.run();
 		}
