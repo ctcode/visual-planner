@@ -298,7 +298,7 @@ AuthCal.prototype.run = function()
 {
 	if (this.queue.length == 0)
 	{
-		alert("requests: " + this.reqCount + ", responses: " + this.rspCount + ", events: " + this.evtCount + ", batches: " + this.batCount);
+		document.write("DEBUG: requests: " + this.reqCount + ", responses: " + this.rspCount + ", events: " + this.evtCount + ", batches: " + this.batCount);
 		return;
 	}
 
@@ -428,6 +428,7 @@ AuthCal.prototype.makeReq = function(req, callback, callsign)
 
 AuthCal.prototype.Fail = function(reason)
 {
-	console.error(reason);
-	this.onError(reason);
+	//console.error(reason);
+	//this.onError(reason);
+	document.write("DEBUG: result: " + reason.result + ", status: " + reason.status + ", body: " + reason.body + ", statusText: " + reason.statusText);
 }
