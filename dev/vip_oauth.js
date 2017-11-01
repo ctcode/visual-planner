@@ -387,6 +387,7 @@ AuthCal.prototype.rcvCalEvents = function(callsign, response)
 
 	if (response.result.nextPageToken)
 	{
+		alert("request next page");
 		this.makeReq ({
 				path: "https://www.googleapis.com/calendar/v3/calendars/" + encodeURIComponent(callsign) + "/events",
 				method: "GET",
