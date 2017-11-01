@@ -279,6 +279,10 @@ function AuthCal()
 	this.batch = null;
 	this.onReceiveEvents = function(){};
 	this.onError = function(){};
+	this.reqCount = 0;
+	this.rspCount = 0;
+	this.evtCount = 0;
+	this.batCount = 0;
 }
 
 AuthCal.prototype.getEvents = function(span_id, datespan)
@@ -293,7 +297,10 @@ AuthCal.prototype.getEvents = function(span_id, datespan)
 AuthCal.prototype.run = function()
 {
 	if (this.queue.length == 0)
+	{
+		alert("requests: " + this.reqCount + ", responses: " + this.rspCount + ", events: " + this.evtCount + ", batches: " + this.batCount);
 		return;
+	}
 
 	if (this.pending > 0)
 		return;
@@ -316,6 +323,7 @@ AuthCal.prototype.run = function()
 			);
 
 			this.pending++;
+			this.reqCount++;
 		}
 	}
 	else
@@ -350,6 +358,8 @@ AuthCal.prototype.rcvCalList = function(callsign, response)
 
 AuthCal.prototype.rcvCalEvents = function(callsign, response)
 {
+	this.rspCount++;
+	
 	var cal = this.calendars[callsign];
 	
 	for (i in response.result.items)
@@ -358,6 +368,8 @@ AuthCal.prototype.rcvCalEvents = function(callsign, response)
 
 		if (item.kind == "calendar#event")
 		{
+			this.evtCount++;
+
 			var evt = {
 				id: item.id,
 				title: item.summary,
@@ -402,6 +414,7 @@ AuthCal.prototype.rcvCalEvents = function(callsign, response)
 		
 		if (this.pending == 0)
 		{
+			this.batCount++;
 			this.onReceiveEvents(this.batch.span_id, this.batch.evts);
 			this.run();
 		}
