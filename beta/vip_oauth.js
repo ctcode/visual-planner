@@ -279,10 +279,6 @@ function AuthCal()
 	this.batch = null;
 	this.onReceiveEvents = function(){};
 	this.onError = function(){};
-	this.reqCount = 0;
-	this.rspCount = 0;
-	this.evtCount = 0;
-	this.batCount = 0;
 }
 
 AuthCal.prototype.getEvents = function(span_id, datespan)
@@ -297,10 +293,7 @@ AuthCal.prototype.getEvents = function(span_id, datespan)
 AuthCal.prototype.run = function()
 {
 	if (this.queue.length == 0)
-	{
-		document.write("DEBUG: requests: " + this.reqCount + ", responses: " + this.rspCount + ", events: " + this.evtCount + ", batches: " + this.batCount);
 		return;
-	}
 
 	if (this.pending > 0)
 		return;
@@ -313,7 +306,6 @@ AuthCal.prototype.run = function()
 
 		for (cal_id in this.calendars)
 		{
-			alert("Requesting: " + this.calendars[cal_id].name);
 			this.makeReq ({
 					path: "https://www.googleapis.com/calendar/v3/calendars/" + encodeURIComponent(cal_id) + "/events",
 					method: "GET",
@@ -324,7 +316,6 @@ AuthCal.prototype.run = function()
 			);
 
 			this.pending++;
-			this.reqCount++;
 		}
 	}
 	else
@@ -353,24 +344,13 @@ AuthCal.prototype.rcvCalList = function(callsign, response)
 			this.calendars[cal.id] = {name: cal.summary, colour: cal.backgroundColor};
 	}
 
-	var cal_list = "Selected calendars:\n\n";
-	for (cal_id in this.calendars)
-	{
-		var cal = this.calendars[cal_id];
-		cal_list += (cal.name + "\n");
-	}
-	alert(cal_list);
-
 	this.pending--;
 	this.run();
 }
 
 AuthCal.prototype.rcvCalEvents = function(callsign, response)
 {
-	this.rspCount++;
-	
 	var cal = this.calendars[callsign];
-	alert("Receiving: " + cal.name);
 	
 	for (i in response.result.items)
 	{
@@ -378,8 +358,6 @@ AuthCal.prototype.rcvCalEvents = function(callsign, response)
 
 		if (item.kind == "calendar#event")
 		{
-			this.evtCount++;
-
 			var evt = {
 				id: item.id,
 				title: item.summary,
@@ -424,7 +402,6 @@ AuthCal.prototype.rcvCalEvents = function(callsign, response)
 		
 		if (this.pending == 0)
 		{
-			this.batCount++;
 			this.onReceiveEvents(this.batch.span_id, this.batch.evts);
 			this.run();
 		}
@@ -438,7 +415,6 @@ AuthCal.prototype.makeReq = function(req, callback, callsign)
 
 AuthCal.prototype.Fail = function(reason)
 {
-	//console.error(reason);
-	//this.onError(reason);
-	document.write("DEBUG: result: " + reason.result + ", status: " + reason.status + ", body: " + reason.body + ", statusText: " + reason.statusText);
+	console.error(reason);
+	this.onError(reason);
 }
