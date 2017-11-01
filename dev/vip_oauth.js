@@ -402,6 +402,7 @@ AuthCal.prototype.rcvCalEvents = function(callsign, response)
 		
 		if (this.pending == 0)
 		{
+			alert("Events received: " + this.batch.evts.length);
 			this.onReceiveEvents(this.batch.span_id, this.batch.evts);
 			this.run();
 		}
