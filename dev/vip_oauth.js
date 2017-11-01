@@ -313,6 +313,7 @@ AuthCal.prototype.run = function()
 
 		for (cal_id in this.calendars)
 		{
+			alert("Requesting: " + this.calendars[cal_id].name);
 			this.makeReq ({
 					path: "https://www.googleapis.com/calendar/v3/calendars/" + encodeURIComponent(cal_id) + "/events",
 					method: "GET",
@@ -351,7 +352,15 @@ AuthCal.prototype.rcvCalList = function(callsign, response)
 		if (cal.selected)
 			this.calendars[cal.id] = {name: cal.summary, colour: cal.backgroundColor};
 	}
-	
+
+	var cal_list = "Selected calendars:\n\n";
+	for (cal_id in this.calendars)
+	{
+		var cal = this.calendars[cal_id];
+		cal_list += (cal.name + "\n");
+	}
+	alert(cal_list);
+
 	this.pending--;
 	this.run();
 }
@@ -361,6 +370,7 @@ AuthCal.prototype.rcvCalEvents = function(callsign, response)
 	this.rspCount++;
 	
 	var cal = this.calendars[callsign];
+	alert("Receiving: " + cal.name);
 	
 	for (i in response.result.items)
 	{
