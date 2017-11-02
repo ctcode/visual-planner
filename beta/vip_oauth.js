@@ -348,63 +348,89 @@ AuthCal.prototype.rcvCalList = function(callsign, response)
 	this.run();
 }
 
+var msgcal = true;
+var msgevt = true;
+var msgpending = true;
 AuthCal.prototype.rcvCalEvents = function(callsign, response)
 {
-	var cal = this.calendars[callsign];
-	
-	for (i in response.result.items)
+	try
 	{
-		var item = response.result.items[i];
-
-		if (item.kind == "calendar#event")
+		var cal = this.calendars[callsign];
+		if (msgcal)
 		{
-			var evt = {
-				id: item.id,
-				title: item.summary,
-				colour: cal.colour,
-				calendar: cal.name
-			};
-			
-			if ("dateTime" in item.start)
-			{
-				evt.timed = true;
-				evt.start = new Date(item.start.dateTime);
-				evt.end = new Date(item.end.dateTime);
-			}
-			else
-			{
-				evt.timed = false;
-				evt.start = new Date(item.start.date);
-				evt.end = new Date(item.end.date);
-				
-				evt.start.setHours(0,0,0,0);
-				evt.end.setHours(0,0,0,0);
-			}
-
-			this.batch.evts.push(evt);
+			alert("received calendar: name=" + cal.name);
+			msgcal = false;
 		}
-	}
-
-	if (response.result.nextPageToken)
-	{
-		this.makeReq ({
-				path: "https://www.googleapis.com/calendar/v3/calendars/" + encodeURIComponent(callsign) + "/events",
-				method: "GET",
-				params: {pageToken: response.result.nextPageToken}
-			},
-			this.rcvCalEvents,
-			callsign
-		);
-	}
-	else
-	{
-		this.pending--;
 		
-		if (this.pending == 0)
+		for (i in response.result.items)
 		{
-			this.onReceiveEvents(this.batch.span_id, this.batch.evts);
-			this.run();
+			var item = response.result.items[i];
+			if (msgevt)
+			{
+				alert("received event: kind=" + item.kind + " title=" + item.summary);
+				msgevt = false;
+			}
+
+			if (item.kind == "calendar#event")
+			{
+				var evt = {
+					id: item.id,
+					title: item.summary,
+					colour: cal.colour,
+					calendar: cal.name
+				};
+				
+				if ("dateTime" in item.start)
+				{
+					evt.timed = true;
+					evt.start = new Date(item.start.dateTime);
+					evt.end = new Date(item.end.dateTime);
+				}
+				else
+				{
+					evt.timed = false;
+					evt.start = new Date(item.start.date);
+					evt.end = new Date(item.end.date);
+					
+					evt.start.setHours(0,0,0,0);
+					evt.end.setHours(0,0,0,0);
+				}
+
+				this.batch.evts.push(evt);
+			}
 		}
+
+		if (response.result.nextPageToken)
+		{
+			this.makeReq ({
+					path: "https://www.googleapis.com/calendar/v3/calendars/" + encodeURIComponent(callsign) + "/events",
+					method: "GET",
+					params: {pageToken: response.result.nextPageToken}
+				},
+				this.rcvCalEvents,
+				callsign
+			);
+		}
+		else
+		{
+			this.pending--;
+			if (this.pending < 1)
+			if (msgpending)
+			{
+				alert("requests pending: " + this.pending);
+				msgpending = false;
+			}
+			
+			if (this.pending == 0)
+			{
+				this.onReceiveEvents(this.batch.span_id, this.batch.evts);
+				this.run();
+			}
+		}
+	}
+	catch(e)
+	{
+		alert("ERROR: " + e);
 	}
 }
 
