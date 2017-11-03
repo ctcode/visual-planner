@@ -348,28 +348,15 @@ AuthCal.prototype.rcvCalList = function(callsign, response)
 	this.run();
 }
 
-var msgcal = true;
-var msgevt = true;
-var msgpending = true;
 AuthCal.prototype.rcvCalEvents = function(callsign, response)
 {
 	try
 	{
 		var cal = this.calendars[callsign];
-		if (msgcal)
-		{
-			alert("received calendar: name=" + cal.name);
-			msgcal = false;
-		}
 		
 		for (i in response.result.items)
 		{
 			var item = response.result.items[i];
-			if (msgevt)
-			{
-				alert("received event: kind=" + item.kind + " title=" + item.summary);
-				msgevt = false;
-			}
 
 			if (item.kind == "calendar#event")
 			{
@@ -414,12 +401,6 @@ AuthCal.prototype.rcvCalEvents = function(callsign, response)
 		else
 		{
 			this.pending--;
-			if (this.pending < 1)
-			if (msgpending)
-			{
-				alert("requests pending: " + this.pending);
-				msgpending = false;
-			}
 			
 			if (this.pending == 0)
 			{
@@ -430,7 +411,7 @@ AuthCal.prototype.rcvCalEvents = function(callsign, response)
 	}
 	catch(e)
 	{
-		alert("ERROR: " + e);
+		alert(e);
 	}
 }
 
