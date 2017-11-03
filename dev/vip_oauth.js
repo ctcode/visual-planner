@@ -348,6 +348,7 @@ AuthCal.prototype.rcvCalList = function(callsign, response)
 	this.run();
 }
 
+var msg=true;
 AuthCal.prototype.rcvCalEvents = function(callsign, response)
 {
 	try
@@ -389,7 +390,11 @@ AuthCal.prototype.rcvCalEvents = function(callsign, response)
 				}
 				else
 				{
-					alert(cal.name + " - " + item.summary + ": start=" + item.start);
+					if (msg)
+					{
+						alert(JSON.stringify(item));
+						msg = false;
+					}
 				}
 			}
 		}
