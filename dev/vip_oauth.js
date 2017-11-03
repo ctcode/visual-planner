@@ -367,23 +367,30 @@ AuthCal.prototype.rcvCalEvents = function(callsign, response)
 					calendar: cal.name
 				};
 				
-				if ("dateTime" in item.start)
+				if ("start" in item)
 				{
-					evt.timed = true;
-					evt.start = new Date(item.start.dateTime);
-					evt.end = new Date(item.end.dateTime);
+					if ("dateTime" in item.start)
+					{
+						evt.timed = true;
+						evt.start = new Date(item.start.dateTime);
+						evt.end = new Date(item.end.dateTime);
+					}
+					else
+					{
+						evt.timed = false;
+						evt.start = new Date(item.start.date);
+						evt.end = new Date(item.end.date);
+						
+						evt.start.setHours(0,0,0,0);
+						evt.end.setHours(0,0,0,0);
+					}
+
+					this.batch.evts.push(evt);
 				}
 				else
 				{
-					evt.timed = false;
-					evt.start = new Date(item.start.date);
-					evt.end = new Date(item.end.date);
-					
-					evt.start.setHours(0,0,0,0);
-					evt.end.setHours(0,0,0,0);
+					alert(cal.name + " - " + item.summary + ": start=" + item.start);
 				}
-
-				this.batch.evts.push(evt);
 			}
 		}
 
