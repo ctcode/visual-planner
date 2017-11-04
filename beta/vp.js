@@ -7,9 +7,6 @@ function mainCtrl($scope)
 	var gAppData = new AuthAppData();
 	gAppData.file_name = "settings.json";
 	gAppData.setDefault({banner_text: "visual-planner", vipconfig: new VipGridConfig()});
-	
-	var gCal = new AuthCal();
-	gCal.onError = function() {alert("Error loading calendar events.")};
 
 	$scope.multi_col_count_options = {1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 8: 8, 10: 10, 12: 12};
 	$scope.settings = gAppData.getAppData();
@@ -96,8 +93,10 @@ function mainCtrl($scope)
 
 		if ($scope.signed_in)
 		{
-			vip.grid.reqCalEvents = gCal.getEvents.bind(gCal);
+			var gCal = new AuthCal();
+			gCal.onError = function() {alert("Error loading calendar events.")};
 			gCal.onReceiveEvents = vip.grid.rcvEvents.bind(vip.grid);
+			vip.grid.reqCalEvents = gCal.getEvents.bind(gCal);
 		}
 
 		vip.grid.cfg = gAppData.getAppData().vipconfig;
