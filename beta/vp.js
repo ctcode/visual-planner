@@ -30,7 +30,7 @@ function mainCtrl($scope)
 		$scope.signed_in = false;
 		$scope.view = 'grid';
 		$scope.$apply();
-		updateGrid();
+		initGrid();
 	}
 
 	gAccount.onError = function(msg) {
@@ -65,7 +65,7 @@ function mainCtrl($scope)
 				$scope.signed_in = true;
 				$scope.view = 'grid';
 				$scope.$apply();
-				updateGrid();
+				initGrid();
 			},
 			function() {alert("Error loading settings.");}
 		);
@@ -79,13 +79,13 @@ function mainCtrl($scope)
 				$scope.form.$setPristine(true);
 				$scope.view = 'grid';
 				$scope.$apply();
-				updateGrid();
+				initGrid();
 			},
 			function() {alert("Error saving settings.");}
 		);
 	}
 
-	function updateGrid() {
+	function initGrid() {
 		var e = document.getElementById("grid");
 		e.innerHTML = "";
 		
@@ -94,7 +94,7 @@ function mainCtrl($scope)
 		if ($scope.signed_in)
 		{
 			var gCal = new AuthCal();
-			gCal.onError = function() {alert("Error loading calendar events.")};
+			gCal.onError = onCalError;
 			gCal.onReceiveEvents = vip.grid.rcvEvents.bind(vip.grid);
 			vip.grid.reqCalEvents = gCal.getEvents.bind(gCal);
 		}
@@ -103,5 +103,14 @@ function mainCtrl($scope)
 		vip.grid.create();
 		
 		ga_hit("view", "grid/" + $scope.signed_in);
+	}
+
+	var cal_error_notified = false;
+	function onCalError() {
+		if (cal_error_notified)
+			return;
+
+		alert("Error loading calendar events.\n\nPlease reload the page.");
+		cal_error_notified = true;
 	}
 }
