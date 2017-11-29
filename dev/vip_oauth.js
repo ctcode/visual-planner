@@ -377,8 +377,6 @@ AuthCal.prototype.rcvCalEvents = function(callsign, response)
 		for (i in response.result.items)
 		{
 			var item = response.result.items[i];
-			if (cal.name == "dev" && item.summary == "recur1") console.log(item);
-			if (cal.name == "dev" && item.status == "cancelled") console.log(item);
 
 			if (item.kind != "calendar#event")
 				continue;
