@@ -309,7 +309,7 @@ AuthCal.prototype.run = function()
 			this.makeReq ({
 					path: "https://www.googleapis.com/calendar/v3/calendars/" + encodeURIComponent(cal_id) + "/events",
 					method: "GET",
-					params: {timeMin: min, timeMax: max}
+					params: {timeMin: min, timeMax: max, singleEvents: true}
 				},
 				this.rcvCalEvents,
 				cal_id
@@ -320,6 +320,8 @@ AuthCal.prototype.run = function()
 	}
 	else
 	{
+		this.calendars = {};
+
 		this.makeReq ({
 				path: "https://www.googleapis.com/calendar/v3/users/me/calendarList",
 				method: "GET",
@@ -334,18 +336,36 @@ AuthCal.prototype.run = function()
 
 AuthCal.prototype.rcvCalList = function(callsign, response)
 {
-	this.calendars = {};
-
-	for (i in response.result.items)
+	try
 	{
-		var cal = response.result.items[i];
-		
-		if (cal.selected)
-			this.calendars[cal.id] = {name: cal.summary, colour: cal.backgroundColor};
-	}
+		for (i in response.result.items)
+		{
+			var cal = response.result.items[i];
+			
+			if (cal.selected)
+				this.calendars[cal.id] = {name: cal.summary, colour: cal.backgroundColor};
+		}
 
-	this.pending--;
-	this.run();
+		if (response.result.nextPageToken)
+		{
+			this.makeReq ({
+					path: "https://www.googleapis.com/calendar/v3/users/me/calendarList",
+					method: "GET",
+					params: {pageToken: response.result.nextPageToken}
+				},
+				this.rcvCalList
+			);
+		}
+		else
+		{
+			this.pending--;
+			this.run();
+		}
+	}
+	catch(e)
+	{
+		this.Fail(e);
+	}
 }
 
 AuthCal.prototype.rcvCalEvents = function(callsign, response)
@@ -357,37 +377,45 @@ AuthCal.prototype.rcvCalEvents = function(callsign, response)
 		for (i in response.result.items)
 		{
 			var item = response.result.items[i];
+			if (cal.name == "dev" && item.summary == "recur1") console.log(item);
+			if (cal.name == "dev" && item.status == "cancelled") console.log(item);
 
-			if (item.kind == "calendar#event")
+			if (item.kind != "calendar#event")
+				continue;
+
+			if (item.status == "cancelled")
+				continue;
+
+			if (item.hasOwnProperty("recurrence"))
+				continue;
+
+			if (!item.hasOwnProperty("start"))
+				continue;
+			
+			var evt = {
+				id: item.id,
+				title: item.summary,
+				colour: cal.colour,
+				calendar: cal.name
+			};
+			
+			if ("dateTime" in item.start)
 			{
-				var evt = {
-					id: item.id,
-					title: item.summary,
-					colour: cal.colour,
-					calendar: cal.name
-				};
-				
-				if ("start" in item)
-				{
-					if ("dateTime" in item.start)
-					{
-						evt.timed = true;
-						evt.start = new Date(item.start.dateTime);
-						evt.end = new Date(item.end.dateTime);
-					}
-					else
-					{
-						evt.timed = false;
-						evt.start = new Date(item.start.date);
-						evt.end = new Date(item.end.date);
-						
-						evt.start.setHours(0,0,0,0);
-						evt.end.setHours(0,0,0,0);
-					}
-
-					this.batch.evts.push(evt);
-				}
+				evt.timed = true;
+				evt.start = new Date(item.start.dateTime);
+				evt.end = new Date(item.end.dateTime);
 			}
+			else
+			{
+				evt.timed = false;
+				evt.start = new Date(item.start.date);
+				evt.end = new Date(item.end.date);
+				
+				evt.start.setHours(0,0,0,0);
+				evt.end.setHours(0,0,0,0);
+			}
+
+			this.batch.evts.push(evt);
 		}
 
 		if (response.result.nextPageToken)
@@ -414,7 +442,7 @@ AuthCal.prototype.rcvCalEvents = function(callsign, response)
 	}
 	catch(e)
 	{
-		alert(e);
+		this.Fail(e);
 	}
 }
 
@@ -426,5 +454,5 @@ AuthCal.prototype.makeReq = function(req, callback, callsign)
 AuthCal.prototype.Fail = function(reason)
 {
 	console.error(reason);
-	this.onError(reason);
+	this.onError();
 }
