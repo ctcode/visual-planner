@@ -142,6 +142,8 @@ function VipGridConfig()
 	this.proportional_events = false;
 	this.proportional_start_hour = 8;
 	this.proportional_end_hour = 20;
+	this.show_all_day_events = true;
+	this.show_timed_events = true;
 	this.multi_day_as_single_day = false;
 	this.first_day_only = false;
 	this.all_events_as_multi_day = false;
@@ -360,8 +362,16 @@ VipGrid.prototype.rcvEvent = function(vipcol, evt, storage)
 	
 	if (evt.timed)
 	{
+		if (!this.cfg.show_timed_events)
+			return;
+		
 		var endID = vdtEvtEnd.ID();
 		vdtEvtEnd.MoveDays(1);
+	}
+	else
+	{
+		if (!this.cfg.show_all_day_events)
+			return;
 	}
 
 	var vdtSpanStart = new VipDate(vdtEvtStart.ID() < vipcol.vdtStart.ID() ? vipcol.vdtStart : vdtEvtStart);
