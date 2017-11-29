@@ -143,6 +143,9 @@ body {
 		</div>
 		<div class="sub"><input ng-model="settings.vipconfig.show_all_day_events" type="checkbox">
 			Show 'all day' events.
+			<div class="sub"><input ng-model="settings.vipconfig.single_day_as_multi_day" type="checkbox">
+				Single day as multi-day (vertical bar).
+			</div>
 		</div>
 		<div class="sub"><input ng-model="settings.vipconfig.show_timed_events" type="checkbox">
 			Show 'timed' events.
@@ -152,9 +155,6 @@ body {
 			<div class="sub"><input ng-model="settings.vipconfig.first_day_only" type="checkbox">
 				First day only.
 			</div>
-		</div>
-		<div class="sub"><input ng-model="settings.vipconfig.all_events_as_multi_day" type="checkbox">
-			Show all events as multi-day events (vertical bar).
 		</div>
 		<div class="sub"><input ng-model="settings.vipconfig.marker_width" type="number" min="0.2">
 			Width of event marker.

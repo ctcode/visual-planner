@@ -143,10 +143,10 @@ function VipGridConfig()
 	this.proportional_start_hour = 8;
 	this.proportional_end_hour = 20;
 	this.show_all_day_events = true;
+	this.single_day_as_multi_day = false;
 	this.show_timed_events = true;
 	this.multi_day_as_single_day = false;
 	this.first_day_only = false;
-	this.all_events_as_multi_day = false;
 	this.marker_width = 0.8;
 	this.multi_day_opacity = 0.8;
 }
@@ -405,6 +405,15 @@ VipGrid.prototype.rcvEvent = function(vipcol, evt, storage)
 		var multi = evtinfo.multiday;
 		var single = !evtinfo.multiday;
 		
+		if (this.cfg.show_all_day_events)
+		if (this.cfg.single_day_as_multi_day)
+		if (single)
+		if (!evt.timed)
+		{
+			multi = true;
+			single = false;
+		}
+		
 		if (this.cfg.multi_day_as_single_day)
 		if (multi)
 		{
@@ -416,12 +425,6 @@ VipGrid.prototype.rcvEvent = function(vipcol, evt, storage)
 				multi = true;
 				single = evtinfo.firstday;
 			}
-		}
-		
-		if (this.cfg.all_events_as_multi_day)
-		{
-			multi = true;
-			single = false;
 		}
 
 		evtinfo.multicell = multi;

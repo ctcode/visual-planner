@@ -5,7 +5,7 @@ function mainCtrl($scope)
 	gAccount.authScope = 'https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/drive.appdata';
 
 	var gAppData = new AuthAppData();
-	gAppData.file_name = "settings_b2.json";
+	gAppData.file_name = "settings_b3.json";
 	gAppData.setDefault({banner_text: "visual-planner", vipconfig: new VipGridConfig()});
 
 	$scope.multi_col_count_options = {1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 8: 8, 10: 10, 12: 12};
