@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>flex</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {
+	font-family: Arial;
+	height: 100vh;
+	margin: 0;
+	min-width: 600px;
+	min-height: 400px;
+	display: flex;
+	flex-direction: column;
+}
+#account {
+	font-size: 0.8em;
+	text-align: right;
+	line-height: 2em;
+	padding-right: 1em;
+}
+#banner {
+	font-size: 0.8em;
+	text-align: center;
+	line-height: 3em;
+	min-height: 3em;
+	margin-bottom: 1em;
+	background-color: #DAE4EB;
+	position: relative;
+}
+#buttons {
+	top: 0;
+	right: 1em;
+	position: absolute;
+}
+#gridbox {
+	flex-grow: 1;
+}
+#grid {
+	font-size: 0.6em;
+	display: flex;
+	flex-direction: row;
+}
+.col {
+	flex-grow: 1;
+}
+.coloffset_1 {
+	margin-top: 19px;
+}
+.coloffset_2 {
+	margin-top: 38px;
+}
+.coloffset_3 {
+	margin-top: 57px;
+}
+.cell {
+	line-height: 14px;
+	background-color: #d8d8d8;
+	padding: 2px;
+	margin-left: 1px;
+	margin-bottom: 1px;
+	display: flex;
+	flex-direction: row;
+}
+.cellnum {
+	width: 1.6em;
+	text-align: center;
+}
+.cellnum.today {
+	font-weight: bold;
+	color: white;
+	background-color: red;
+}
+#calendarbar {
+	height: 2em;
+	background-color: grey;
+}
+</style>
+<head>
+<body>
+
+<div id="account">
+	<div id="user">ct6787@gmail.com</div>
+</div>
+<div id="banner">
+	<b>visual-planner</b>
+	<div id="buttons">
+		<button>Save</button>
+		<button>*</button>
+	</div>
+</div>
+<div id="gridbox"><div id="grid">
+	<div class="col"><div class="coloffset_1">
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+	</div></div>
+	<div class="col"><div class="coloffset_2">
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell">
+			<div class="cellnum">6</div>
+		</div>
+		<div class="cell">
+			<div class="cellnum">7</div>
+		</div>
+		<div class="cell">
+			<div class="cellnum today">8</div>
+		</div>
+		<div class="cell">
+			<div class="cellnum">9</div>
+		</div>
+		<div class="cell">
+			<div class="cellnum">10</div>
+		</div>
+		<div class="cell">
+			<div class="cellnum">11</div>
+		</div>
+		<div class="cell">
+			<div class="cellnum today">12</div>
+		</div>
+		<div class="cell">
+			<div class="cellnum">13</div>
+		</div>
+		<div class="cell">
+			<div class="cellnum">14</div>
+		</div>
+		<div class="cell">
+			<div class="cellnum">15</div>
+		</div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+	</div></div>
+	<div class="col"><div class="coloffset_3">
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+	</div></div>
+	<div class="col"><div class="coloffset_2">
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+	</div></div>
+	<div class="col"><div class="coloffset_3">
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+	</div></div>
+	<div class="col"><div class="coloffset_1">
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+		<div class="cell"></div>
+	</div></div>
+</div></div>
+<div id="calendarbar"></div>
+
+</body>
+</html>
