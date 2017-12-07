@@ -27,7 +27,6 @@ body {
 }
 #account {
 	font-size: 0.8em;
-	height: 2em;
 	line-height: 2em;
 	margin-right: 1em;
 	text-align: right;
@@ -37,7 +36,7 @@ body {
 	line-height: 3em;
 	min-height: 3em;
 	text-align: center;
-	margin-bottom: 2em;
+	margin-bottom: 1em;
 	background-color: #DAE4EB;
 	position: relative;
 }
@@ -47,8 +46,12 @@ body {
 	right: 1em;
 }
 #grid {
-	flex-basis: 80%;
+	flex-grow: 1;
 	display: flex;
+}
+#calendarbar {
+	height: 2em;
+	background-color: gainsboro;
 }
 #settings {
 	padding-left: 2em;
@@ -80,7 +83,8 @@ body {
 		<span ng-show="busy"><i>Wait...</i></span>
 	</div>
 </div>
-<div id="grid" ng-show="view=='grid'">--grid--</div>
+<div id="grid" ng-show="view=='grid'"></div>
+<div id="calendarbar" ng-show="view=='grid'"></div>
 <div id="settings" ng-show="view=='settings'">
 	<div class="sub group"><b>Account</b>
 		<div class="sub">{{sign_msg}}</div>

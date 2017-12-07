@@ -133,7 +133,7 @@ function VipGridConfig()
 	this.auto_scroll_offset = -1;
 	this.show_weekends = true;
 	this.align_weekends = true;
-	this.font_scale = 0.64;
+	this.font_scale = 0.6;
 	this.past_opacity = 0.7;
 	this.show_event_time = true;
 	this.show_event_title = true;
