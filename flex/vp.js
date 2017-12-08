@@ -14,12 +14,7 @@ function mainCtrl($scope)
 	$scope.busy = false;
 
 	$scope.sign_msg = "Signing In...";
-	//gAccount.Connect();
-$scope.view = 'grid';
-setTimeout(function () {
-		initGrid();
-	}, 100
-);
+	gAccount.Connect();
 
 	gAccount.onSignIn = function() {
 		$scope.sign_msg = gAccount.getEmail();

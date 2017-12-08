@@ -44,15 +44,25 @@ body {
 }
 .col {
 	flex-grow: 1;
+	position: relative;
 }
 .coloffset_1 {
-	margin-top: 19px;
+	position: absolute;
+	left: 0;
+	top: 19px;
+	width: 100%;
 }
 .coloffset_2 {
-	margin-top: 38px;
+	position: absolute;
+	left: 0;
+	top: 38px;
+	width: 100%;
 }
 .coloffset_3 {
-	margin-top: 57px;
+	position: absolute;
+	left: 0;
+	top: 57px;
+	width: 100%;
 }
 .cell {
 	line-height: 14px;
@@ -71,6 +81,9 @@ body {
 	font-weight: bold;
 	color: white;
 	background-color: red;
+}
+.event {
+	flex-grow: 1;
 }
 #calendarbar {
 	height: 2em;
@@ -146,6 +159,7 @@ body {
 		</div>
 		<div class="cell">
 			<div class="cellnum">10</div>
+			<div class="event">very long event title even longer one two three four five six seven eight nine</div>
 		</div>
 		<div class="cell">
 			<div class="cellnum">11</div>

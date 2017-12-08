@@ -91,7 +91,7 @@ VipObject.prototype.Align = function(cell_start, cell_end)
 	if (cell_start && cell_end)
 	{
 		this.div.style.top = (cell_start.div.offsetTop) + "px";
-		this.div.style.height = ((cell_end.div.offsetTop - cell_start.div.offsetTop) + cell_end.div.offsetHeight - 1) + "px";
+		this.div.style.height = ((cell_end.div.offsetTop - cell_start.div.offsetTop) + cell_end.div.offsetHeight) + "px";
 		this.Show(true);
 	}
 	else
@@ -215,7 +215,6 @@ VipGrid.prototype.createSingleCol = function()
 	vdt_end.MoveDays(28);
 	
 	var vipcol = new VipCol(this, vdt_start, vdt_end);
-	vipcol.addClass("indicator");
 
 	this.updateLayout();
 }
@@ -226,7 +225,7 @@ VipGrid.prototype.updateLayout = function()
 	if (this.cfg.col_header) c += 2;
 	if (this.cfg.align_weekends) c += 6;
 
-	this.div.style.setProperty('--celloffset', "0");
+	this.div.style.setProperty('--celloffset', "0px");
 	var celloffset = Math.floor(this.div.parentElement.offsetHeight/c);
 
 	this.div.style.fontSize = ((celloffset/16) * this.cfg.font_scale) + "em";
@@ -501,16 +500,13 @@ function VipCol(parent, vdt_start, vdt_end)
 		cellindex++;
 	}
 
-	//this.vipsel = new VipDiv(this.vipcoloffset, "vipsel");
-	//this.vipsel.Show(false);
+	this.vipsel = new VipDiv(this.vipcoloffset, "vipsel");
+	this.vipsel.Show(false);
 
-	//this.vipseltip = new VipDiv(this.vipcoloffset, "vipseltip");
-	//this.vipseltip.Show(false);
-
-	//this.vipind = new VipDiv(this.vipcoloffset, "vipind");
-	//this.vipind.Show(false);
+	this.vipseltip = new VipDiv(this.vipcoloffset, "vipseltip");
+	this.vipseltip.Show(false);
 	
-	//this.vipevts = new VipDiv(this.vipcoloffset, "vipcolevts");
+	this.vipevts = new VipDiv(this.vipcoloffset, "vipcolevts");
 
 	this.firstcell = this.vipcells.First();
 	this.lastcell = this.vipcells.Last();
@@ -708,7 +704,7 @@ function VipMultiDayEvent(parent, evtinfo)
 	this.div.style.setProperty('--start', this.info.cellindex);
 	this.div.style.setProperty('--extent', this.info.dayspan);
 	this.div.style.opacity = vip.grid.cfg.multi_day_opacity;
-	this.setSlot(1);
+	this.setSlot(0);
 }
 
 VipMultiDayEvent.prototype = new VipObject;
