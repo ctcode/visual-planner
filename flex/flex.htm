@@ -90,6 +90,16 @@ body {
 	background-color: grey;
 }
 </style>
+
+<script>
+	var e = document.createElement('style')
+	e.id = "tempsheet";
+	//e.innerHTML = "#calendarbar {background-color: blue;}";
+	document.head.appendChild(e);
+	e.sheet.insertRule("#calendarbar {background-color: red;}", 0);
+	e.sheet.disabled = true;
+</script>
+
 <head>
 <body>
 
@@ -318,7 +328,7 @@ body {
 		<div class="cell"></div>
 	</div></div>
 </div></div>
-<div id="calendarbar"></div>
+<div id="calendarbar" class="temp"></div>
 
 </body>
 </html>

@@ -1,7 +1,7 @@
 // global object
 var vip = {
 	grid: null,
-	selection: {start: null, end: null},
+	selection: {start: null, end: null, mode: null},
 	touch: {id: null, start: {x:0, y:0}}
 };
 
@@ -54,6 +54,37 @@ function onMediaChange(mql)
 		//ga_hit('media', 'print');
 }
 
+function setCellSelectMode(mode)
+{
+	var e = document.getElementById("vipcellselect");
+	
+	if (e) {}
+	else
+	{
+		e = document.createElement('style');
+		document.head.appendChild(e);
+		e.id = "vipcellselect";
+		e.sheet.insertRule(".vipgrid * {pointer-events: none;}", 0);
+		e.sheet.insertRule(".vipgrid, .vipcell {cursor: cell; pointer-events: all;}", 1);
+		e.sheet.insertRule(".vipsel {}", 2);
+	}
+
+	if (mode == "create")
+	{
+		e.sheet.rules[2].style.backgroundColor = "rgba(255,255,127,0.6)";
+		e.sheet.disabled = false;
+	}
+	else if (mode == "measure")
+	{
+		e.sheet.rules[2].style.backgroundColor = "rgba(153,204,255,0.4)";
+		e.sheet.disabled = false;
+	}
+	else
+		e.sheet.disabled = true;
+
+	vip.selection.mode = mode;
+}
+
 
 /////////////////////////////////////////////////////////////////
 // mouse/keyboard event handlers
@@ -90,6 +121,25 @@ function onclickVipMonthHeader(event)
 
 function onkeydown(event)
 {
+	if (event.key == '+')
+	{
+		setCellSelectMode("create");
+		return;
+	}
+
+	if (event.key == '=')
+	{
+		setCellSelectMode("measure");
+		return;
+	}
+
+	if (event.key == 'Escape')
+	{
+		setCellSelectMode(null);
+		cancel_selection();
+		return;
+	}
+
 	var clicks=0;
 
 	switch (event.which)
@@ -219,6 +269,7 @@ function update_selection(cell_upd)
 
 function complete_selection(ui_event)
 {
+	if (vip.selection.mode == "create")
 	if (vip.selection.start)
 	if (! (vip.selection.start === vip.selection.end) )
 	{

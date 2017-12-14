@@ -225,8 +225,9 @@ VipGrid.prototype.updateLayout = function()
 	if (this.cfg.col_header) c += 2;
 	if (this.cfg.align_weekends) c += 6;
 
-	this.div.style.setProperty('--celloffset', "0px");
-	var celloffset = Math.floor(this.div.parentElement.offsetHeight/c);
+	this.div.style.height = "0px";
+	this.div.style.height = this.div.parentElement.offsetHeight + "px";
+	var celloffset = Math.floor(this.div.offsetHeight/c);
 
 	this.div.style.fontSize = ((celloffset/16) * this.cfg.font_scale) + "em";
 	var fontsize = parseFloat(window.getComputedStyle(this.div).fontSize);

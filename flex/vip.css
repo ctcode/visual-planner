@@ -6,6 +6,7 @@
 	outline: none;
 	display: flex;
 	flex-direction: row;
+	-ms-user-select: none;
 }
 
 .vipcol {
@@ -18,7 +19,6 @@
 	text-align: center;
 	line-height: calc(var(--celloffset) * 2);
 	cursor: pointer;
-	pointer-events: all;
 }
 .vipcoloffset {
 	--offsetday: 0;
@@ -50,7 +50,6 @@
 	position: absolute;
 	top: 0; left: 0;
 	width: 100%;
-	pointer-events: none;
 }
 .vipmultidayevent {
 	--start: 0;
@@ -62,7 +61,6 @@
 	width: calc(var(--markerwidth) - 2px);
 	height: calc((var(--celloffset) * var(--extent)) - 1px);
 	z-index: 1;
-	pointer-events: all;
 }
 
 .vipcell {
@@ -91,7 +89,6 @@
 }
 .vipcellevts {
 	flex-grow: 1;
-	pointer-events: none;
 }
 .vipsingledayevent {
 	margin-left: 2px;
