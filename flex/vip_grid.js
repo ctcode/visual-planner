@@ -71,12 +71,12 @@ function setCellSelectMode(mode)
 
 	if (mode == "create")
 	{
-		e.sheet.rules[2].style.backgroundColor = "rgba(255,255,127,0.6)";
+		e.sheet.cssRules[2].style.backgroundColor = "rgba(255,255,127,0.6)";
 		e.sheet.disabled = false;
 	}
 	else if (mode == "measure")
 	{
-		e.sheet.rules[2].style.backgroundColor = "rgba(153,204,255,0.4)";
+		e.sheet.cssRules[2].style.backgroundColor = "rgba(153,204,255,0.4)";
 		e.sheet.disabled = false;
 	}
 	else
@@ -121,23 +121,21 @@ function onclickVipMonthHeader(event)
 
 function onkeydown(event)
 {
-	if (event.key == '+')
+	switch (event.key)
 	{
-		setCellSelectMode("create");
-		return;
-	}
-
-	if (event.key == '=')
-	{
-		setCellSelectMode("measure");
-		return;
-	}
-
-	if (event.key == 'Escape')
-	{
-		setCellSelectMode(null);
-		cancel_selection();
-		return;
+		case '+':
+		case 'Add':
+			setCellSelectMode("create");
+			return;
+		case '=':
+		case 'Equal':
+			setCellSelectMode("measure");
+			return;
+		case 'Escape':
+		case 'Esc':
+			setCellSelectMode(null);
+			cancel_selection();
+			return;
 	}
 
 	var clicks=0;
