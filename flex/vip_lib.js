@@ -234,7 +234,6 @@ VipGrid.prototype.updateLayout = function()
 	
 	this.div.style.setProperty('--celloffset', celloffset + "px");
 	this.div.style.setProperty('--markerwidth', Math.floor(fontsize*this.cfg.marker_width) + "px");
-	this.div.style.setProperty('--markerpadding', Math.floor(celloffset*0.2) + "px");
 }
 
 VipGrid.prototype.scroll_col = function(offset)

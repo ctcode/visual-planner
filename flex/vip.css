@@ -1,7 +1,6 @@
 .vipgrid {
 	--celloffset: 0;
 	--markerwidth: 0;
-	--markerpadding: 0;
 	user-select: none;
 	outline: none;
 	display: flex;
@@ -64,8 +63,7 @@
 }
 
 .vipcell {
-	line-height: calc(var(--celloffset) - 3px);
-	padding: 1px;
+	height: calc(var(--celloffset) - 1px);
 	margin-left: 1px;
 	margin-bottom: 1px;
 	background-color: #eaeaea;
@@ -77,8 +75,11 @@
 	background-color: #d8d8d8;
 }
 .vipcellnum {
+	margin: 0.6%;
 	width: 1.6em;
-	text-align: center;
+	display: flex;
+	justify-content: center;
+	align-items: center;
 	cursor: pointer;
 	pointer-events: all;
 }
@@ -88,12 +89,13 @@
 	background-color: red;
 }
 .vipcellevts {
-	flex-grow: 1;
+	display: flex;
 }
 .vipsingledayevent {
 	margin-left: 2px;
+	margin-right: 1px;
 	display: flex;
-	flex-direction: row;
+	align-items: center;
 	z-index: 2;
 	cursor: default;
 	pointer-events: all;
@@ -101,9 +103,9 @@
 .vipeventmarker {
 	width: 0.6em;
 	height: 1em;
-	align-self: center;
 }
 .vipeventtext {
+	margin-left: 2px;
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
