@@ -86,10 +86,7 @@ function mainCtrl($scope)
 	}
 
 	function initGrid() {
-		var e = document.getElementById("grid");
-		e.innerHTML = "";
-		
-		vip_init_grid(e);
+		vip_init_grid("grid");
 
 		if ($scope.signed_in)
 		{

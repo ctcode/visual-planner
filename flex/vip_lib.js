@@ -2,27 +2,20 @@
 
 function VipObject()
 {
-}
-
-VipObject.prototype.createChildDiv = function(container_element, cls)
-{
-	var div = document.createElement('div');
-
-	if (cls)
-		div.className = cls;
-
-	div.vipobj = this;
-
-	this.div = div;
 	this.parent = null;
-	
-	container_element.appendChild(div);
+	this.div = null;
 }
 
 VipObject.prototype.createChild = function(parent, cls)
 {
-	this.createChildDiv(parent.div, cls);
+	this.div = document.createElement('div');
+	this.div.vipobj = this;
+
+	if (cls)
+		this.div.className = cls;
+
 	this.parent = parent;
+	this.parent.div.appendChild(this.div);
 }
 
 VipObject.prototype.addClass = function(cls)
@@ -155,26 +148,27 @@ function VipGridConfig()
 
 //////////////////////////////////////////////////////////////////////
 
-function VipGrid(container_element)
+function VipGrid(e)
 {
-	this.createChildDiv(container_element, "vipgrid");
+	this.div = e;
 	this.div.tabIndex = "1";
 
+	this.addClass("vipgrid");
 	this.cfg = new VipGridConfig();
 	this.reqCalEvents = function() {};
-}
 
-VipGrid.prototype = new VipObject;
-
-VipGrid.prototype.create = function()
-{
 	if (window.sessionStorage)
 	{
 		for (i in sessionStorage)
 			if (i.startsWith("vipevts"))
 				sessionStorage.removeItem(i);
 	}
+}
 
+VipGrid.prototype = new VipObject;
+
+VipGrid.prototype.create = function()
+{
 	var vdt_start = new VipDate();
 	vdt_start.MoveToStartOfMonth();
 
@@ -225,8 +219,6 @@ VipGrid.prototype.updateLayout = function()
 	if (this.cfg.col_header) c += 2;
 	if (this.cfg.align_weekends) c += 6;
 
-	this.div.style.height = "0px";
-	this.div.style.height = this.div.parentElement.offsetHeight + "px";
 	var celloffset = Math.floor(this.div.offsetHeight/c);
 
 	this.div.style.fontSize = ((celloffset/16) * this.cfg.font_scale) + "em";

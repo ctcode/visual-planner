@@ -5,9 +5,11 @@ var vip = {
 	touch: {id: null, start: {x:0, y:0}}
 };
 
-function vip_init_grid(container_element)
+function vip_init_grid(id)
 {
-	vip.grid = new VipGrid(container_element);
+	var e = document.getElementById(id);
+	e.innerHTML = "";
+	vip.grid = new VipGrid(e);
 
 	install_event_handling();
 }
