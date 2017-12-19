@@ -49,6 +49,7 @@
 	position: absolute;
 	top: 0; left: 0;
 	width: 100%;
+	z-index: 1;
 }
 .vipmultidayevent {
 	--start: 0;
@@ -59,7 +60,6 @@
 	top: calc(var(--celloffset) * var(--start));
 	width: calc(var(--markerwidth) - 2px);
 	height: calc((var(--celloffset) * var(--extent)) - 1px);
-	z-index: 1;
 }
 
 .vipcell {
@@ -90,8 +90,11 @@
 	background-color: red;
 }
 .vipcellevts {
-	display: flex;
+	flex-grow: 1;
 	overflow: hidden;
+	z-index: 2;
+	display: flex;
+	position: relative;
 }
 .vipsingledayevent {
 	margin-left: 2px;
@@ -99,8 +102,6 @@
 	overflow: hidden;
 	display: flex;
 	align-items: center;
-	z-index: 2;
-	cursor: default;
 	pointer-events: all;
 }
 .vipeventmarker {
@@ -108,12 +109,13 @@
 	height: 1em;
 	flex-shrink: 0;
 }
+.vipeventmarker.proportional {
+	height: 0.6em;
+	position: absolute;
+}
 .vipeventtext {
 	margin-left: 2px;
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
-}
-.vipeventmarker.proportional {
-	position: absolute;
 }
