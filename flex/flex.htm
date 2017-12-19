@@ -25,7 +25,6 @@ body {
 	text-align: center;
 	line-height: 3em;
 	min-height: 3em;
-	margin-bottom: 1em;
 	background-color: #DAE4EB;
 	position: relative;
 }
@@ -34,77 +33,140 @@ body {
 	right: 1em;
 	position: absolute;
 }
-#gridbox {
-	flex-grow: 1;
-}
 #grid {
+	flex-grow: 1;
 	font-size: 0.6em;
-	display: flex;
-	flex-direction: row;
-}
-.col {
-	flex-grow: 1;
-	position: relative;
-}
-.coloffset_1 {
-	position: absolute;
-	left: 0;
-	top: 19px;
-	width: 100%;
-}
-.coloffset_2 {
-	position: absolute;
-	left: 0;
-	top: 38px;
-	width: 100%;
-}
-.coloffset_3 {
-	position: absolute;
-	left: 0;
-	top: 57px;
-	width: 100%;
-}
-.cell {
-	line-height: 14px;
-	background-color: #d8d8d8;
-	padding: 2px;
-	margin-left: 1px;
-	margin-bottom: 1px;
-	display: flex;
-	flex-direction: row;
-}
-.cellnum {
-	width: 1.6em;
-	text-align: center;
-}
-.cellnum.today {
-	font-weight: bold;
-	color: white;
-	background-color: red;
-}
-.event {
-	flex-grow: 1;
 }
 #calendarbar {
 	height: 2em;
 	background-color: grey;
 }
-</style>
 
-<script>
-	var e = document.createElement('style')
-	e.id = "tempsheet";
-	//e.innerHTML = "#calendarbar {background-color: blue;}";
-	document.head.appendChild(e);
-	e.sheet.insertRule("#calendarbar {background-color: red;}", 0);
-	//e.sheet.disabled = true;
-</script>
+
+
+.vipgrid {
+	--celloffset: 0;
+	--markerwidth: 0;
+	user-select: none;
+	outline: none;
+	display: flex;
+	flex-direction: row;
+	-ms-user-select: none;
+}
+.vipcol {
+	flex-grow: 1;
+}
+.vipcol.indicator {
+	padding-left: 2px;
+}
+.vipmonthhdr {
+	text-align: center;
+	line-height: calc(var(--celloffset) * 2);
+	cursor: pointer;
+}
+.vipcoloffset {
+	--offsetday: 0;
+	margin-top: calc(var(--celloffset) * var(--offsetday));
+	position: relative;
+}
+.vipcells {
+	position: absolute;
+	top: 0; left: 0;
+	width: 100%;
+}
+.vipsel {
+	position: absolute;
+	top: 0; left: 0;
+	width: 100%;
+	background-color: rgba(255,255,127,0.6);
+	pointer-events: none;
+	z-index: 10;
+}
+.vipseltip {
+	width: 100%;
+	position: absolute;
+	font-size: 0.8em;
+	text-align: center;
+	pointer-events: none;
+	z-index: 10;
+}
+.vipcolevts {
+	position: absolute;
+	top: 0; left: 0;
+	width: 100%;
+}
+.vipmultidayevent {
+	--start: 0;
+	--extent: 0;
+	--slot: 0;
+	position: absolute;
+	right: calc(var(--slot) * var(--markerwidth));
+	top: calc(var(--celloffset) * var(--start));
+	width: calc(var(--markerwidth) - 2px);
+	height: calc((var(--celloffset) * var(--extent)) - 1px);
+	z-index: 1;
+}
+
+.vipcell {
+	height: calc(var(--celloffset) - 1px);
+	margin-left: 1px;
+	margin-bottom: 1px;
+	background-color: #eaeaea;
+	display: flex;
+	flex-direction: row;
+	pointer-events: none;
+}
+.vipcell.weekend {
+	background-color: #d8d8d8;
+}
+.vipcellnum {
+	margin: 0.6%;
+	width: 1.6em;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	cursor: pointer;
+	pointer-events: all;
+}
+.vipcellnum.today {
+	font-weight: bold;
+	color: white;
+	background-color: red;
+}
+.vipcellevts {
+	display: flex;
+}
+.vipsingledayevent {
+	margin-left: 2px;
+	margin-right: 1px;
+	display: flex;
+	align-items: center;
+	z-index: 2;
+	cursor: default;
+	pointer-events: all;
+}
+.vipeventmarker {
+	width: 0.6em;
+	height: 1em;
+}
+.vipeventtext {
+	margin-left: 2px;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+.vipeventmarker.proportional {
+	position: absolute;
+}
+
+
+</style>
 
 <head>
 <body>
 
 <div id="account">
-	<div id="user">ct6787@gmail.com</div>
+	<div id="user">email</div>
 </div>
 <div id="banner">
 	<b>visual-planner</b>
@@ -113,222 +175,230 @@ body {
 		<button>*</button>
 	</div>
 </div>
-<div id="gridbox"><div id="grid">
-	<div class="col"><div class="coloffset_1">
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-	</div></div>
-	<div class="col"><div class="coloffset_2">
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell">
-			<div class="cellnum">6</div>
+
+<div id="grid" class="vipgrid" style="--celloffset: 17px;">
+	<div class="vipcol">
+		<div class="vipcoloffset" style="--offsetday: 2;">
+			<div class="vipcells">
+				<div class="vipcell"><div class="vipcellnum">1</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">2</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">3</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">4</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">5</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">6</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">7</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">8</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">9</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">10</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">11</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">12</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">13</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">14</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">15</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">16</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">17</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum today">18</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">19</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">20</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">21</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">22</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">23</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">24</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">25</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">26</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">27</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">28</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">29</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">30</div><div class="vipcellevts"></div></div>
+			</div>
 		</div>
-		<div class="cell">
-			<div class="cellnum">7</div>
+	</div>
+	<div class="vipcol">
+		<div class="vipcoloffset" style="--offsetday: 1;">
+			<div class="vipcells">
+				<div class="vipcell"><div class="vipcellnum">1</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">2</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">3</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">4</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">5</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">6</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">7</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">8</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">9</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">10</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">11</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">12</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">13</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">14</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">15</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">16</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">17</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum today">18</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">19</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">20</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">21</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">22</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">23</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">24</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">25</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">26</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">27</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">28</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">29</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">30</div><div class="vipcellevts"></div></div>
+			</div>
 		</div>
-		<div class="cell">
-			<div class="cellnum today">8</div>
+	</div>
+	<div class="vipcol">
+		<div class="vipcoloffset" style="--offsetday: 6;">
+			<div class="vipcells">
+				<div class="vipcell"><div class="vipcellnum">1</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">2</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">3</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum today">4</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">5</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">6</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">7</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">8</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">9</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">10</div><div class="vipcellevts">
+					<div class="vipsingledayevent"><div class="vipeventmarker" style="background-color: orange;"></div><div class="vipeventtext">this is an event with a very long name which won't fit in the cell'</div></div>
+				</div></div>
+				<div class="vipcell"><div class="vipcellnum">11</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">12</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">13</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">14</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">15</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">16</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">17</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">18</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">19</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">20</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">21</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">22</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">23</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">24</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">25</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">26</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">27</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">28</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">29</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">30</div><div class="vipcellevts"></div></div>
+			</div>
 		</div>
-		<div class="cell">
-			<div class="cellnum">9</div>
+	</div>
+	<div class="vipcol">
+		<div class="vipcoloffset" style="--offsetday: 2;">
+			<div class="vipcells">
+				<div class="vipcell"><div class="vipcellnum">1</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">2</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">3</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">4</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">5</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">6</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">7</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">8</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">9</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">10</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">11</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">12</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">13</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">14</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">15</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">16</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">17</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum today">18</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">19</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">20</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">21</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">22</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">23</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">24</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">25</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">26</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">27</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">28</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">29</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">30</div><div class="vipcellevts"></div></div>
+			</div>
 		</div>
-		<div class="cell">
-			<div class="cellnum">10</div>
-			<div class="event">very long event title even longer one two three four five six seven eight nine</div>
+	</div>
+	<div class="vipcol">
+		<div class="vipcoloffset" style="--offsetday: 5;">
+			<div class="vipcells">
+				<div class="vipcell weekend"><div class="vipcellnum">1</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">2</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">3</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">4</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">5</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">6</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">7</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">8</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">9</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">10</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">11</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">12</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">13</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">14</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">15</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">16</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">17</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum today">18</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">19</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">20</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">21</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">22</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">23</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">24</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">25</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">26</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">27</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">28</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">29</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">30</div><div class="vipcellevts"></div></div>
+			</div>
 		</div>
-		<div class="cell">
-			<div class="cellnum">11</div>
+	</div>
+	<div class="vipcol">
+		<div class="vipcoloffset" style="--offsetday: 2;">
+			<div class="vipcells">
+				<div class="vipcell"><div class="vipcellnum">1</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">2</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">3</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">4</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">5</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">6</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">7</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">8</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">9</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">10</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">11</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">12</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">13</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">14</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">15</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">16</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">17</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum today">18</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">19</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">20</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">21</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">22</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">23</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">24</div><div class="vipcellevts"></div></div>
+				<div class="vipcell weekend"><div class="vipcellnum">25</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">26</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">27</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">28</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">29</div><div class="vipcellevts"></div></div>
+				<div class="vipcell"><div class="vipcellnum">30</div><div class="vipcellevts"></div></div>
+			</div>
 		</div>
-		<div class="cell">
-			<div class="cellnum today">12</div>
-		</div>
-		<div class="cell">
-			<div class="cellnum">13</div>
-		</div>
-		<div class="cell">
-			<div class="cellnum">14</div>
-		</div>
-		<div class="cell">
-			<div class="cellnum">15</div>
-		</div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-	</div></div>
-	<div class="col"><div class="coloffset_3">
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-	</div></div>
-	<div class="col"><div class="coloffset_2">
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-	</div></div>
-	<div class="col"><div class="coloffset_3">
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-	</div></div>
-	<div class="col"><div class="coloffset_1">
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-		<div class="cell"></div>
-	</div></div>
-</div></div>
-<div id="calendarbar" class="temp"></div>
+	</div>
+</div>
+
+<div id="calendarbar"></div>
+
 
 </body>
 </html>
