@@ -56,10 +56,10 @@
 	--extent: 0;
 	--slot: 0;
 	position: absolute;
-	right: calc(var(--slot) * var(--markerwidth));
 	top: calc(var(--celloffset) * var(--start));
-	width: calc(var(--markerwidth) - 2px);
 	height: calc((var(--celloffset) * var(--extent)) - 1px);
+	right: calc((var(--slot) * var(--markerwidth)) + 3px);
+	width: calc(var(--markerwidth) - 2px);
 }
 
 .vipcell {
