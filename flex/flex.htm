@@ -4,6 +4,7 @@
 <title>flex</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="vip.css" type="text/css"/>
 <style>
 body {
 	font-family: Arial;
@@ -41,137 +42,13 @@ body {
 	height: 2em;
 	background-color: grey;
 }
-
-
-
-.vipgrid {
-	--celloffset: 0;
-	--markerwidth: 0;
-	user-select: none;
-	outline: none;
-	display: flex;
-	flex-direction: row;
-	-ms-user-select: none;
-}
-
-.vipcol {
-	flex-grow: 1;
-}
-.vipcol.indicator {
-	padding-left: 2px;
-}
-.vipmonthhdr {
-	text-align: center;
-	line-height: calc(var(--celloffset) * 2);
-	cursor: pointer;
-}
-.vipcoloffset {
-	--offsetday: 0;
-	margin-top: calc(var(--celloffset) * var(--offsetday));
-	position: relative;
-}
-.vipcells {
-	position: absolute;
-	top: 0; left: 0;
-	width: 100%;
-}
-.vipsel {
-	position: absolute;
-	top: 0; left: 0;
-	width: 100%;
-	background-color: rgba(255,255,127,0.6);
-	pointer-events: none;
-	z-index: 10;
-}
-.vipseltip {
-	width: 100%;
-	position: absolute;
-	font-size: 0.8em;
-	text-align: center;
-	pointer-events: none;
-	z-index: 10;
-}
-.vipcolevts {
-	position: absolute;
-	top: 0; left: 0;
-	width: 100%;
-}
-.vipmultidayevent {
-	--start: 0;
-	--extent: 0;
-	--slot: 0;
-	position: absolute;
-	right: calc(var(--slot) * var(--markerwidth));
-	top: calc(var(--celloffset) * var(--start));
-	width: calc(var(--markerwidth) - 2px);
-	height: calc((var(--celloffset) * var(--extent)) - 1px);
-	z-index: 1;
-}
-
-.vipcell {
-	height: calc(var(--celloffset) - 1px);
-	margin-left: 1px;
-	margin-bottom: 1px;
-	background-color: #eaeaea;
-	display: flex;
-	overflow: hidden;
-	pointer-events: none;
-}
-.vipcell.weekend {
-	background-color: #d8d8d8;
-}
-.vipcellnum {
-	margin: 0.6%;
-	width: 1.6em;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	flex-shrink: 0;
-	cursor: pointer;
-	pointer-events: all;
-}
-.vipcellnum.today {
-	font-weight: bold;
-	color: white;
-	background-color: red;
-}
-.vipcellevts {
-	display: flex;
-	overflow: hidden;
-}
-.vipsingledayevent {
-	margin-left: 2px;
-	margin-right: 1px;
-	overflow: hidden;
-	display: flex;
-	align-items: center;
-	z-index: 2;
-	cursor: default;
-	pointer-events: all;
-}
-.vipeventmarker {
-	width: 0.6em;
-	height: 1em;
-	flex-shrink: 0;
-}
-.vipeventtext {
-	margin-left: 2px;
-	overflow: hidden;
-	white-space: nowrap;
-	text-overflow: ellipsis;
-}
-.vipeventmarker.proportional {
-	position: absolute;
-}
-
-
 </style>
 
 <head>
 <body>
 
 <div id="account">
-	<div id="user">email</div>
+	<div id="user">--email--</div>
 </div>
 <div id="banner">
 	<b>visual-planner</b>
@@ -268,6 +145,7 @@ body {
 				<div class="vipcell"><div class="vipcellnum">9</div><div class="vipcellevts"></div></div>
 				<div class="vipcell"><div class="vipcellnum">10</div><div class="vipcellevts">
 					<div class="vipsingledayevent" title="a title"><div class="vipeventmarker" style="background-color: orange;"></div><div class="vipeventtext">this is an event with a very long name which won't fit in the cell'</div></div>
+					<div class="vipsingledayevent" title="another"><div class="vipeventmarker" style="background-color: coral;"></div><div class="vipeventtext">not such a long one'</div></div>
 				</div></div>
 				<div class="vipcell"><div class="vipcellnum">11</div><div class="vipcellevts"></div></div>
 				<div class="vipcell"><div class="vipcellnum">12</div><div class="vipcellevts"></div></div>
