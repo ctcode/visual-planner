@@ -68,7 +68,7 @@
 	margin-bottom: 1px;
 	background-color: #eaeaea;
 	display: flex;
-	flex-direction: row;
+	overflow: hidden;
 	pointer-events: none;
 }
 .vipcell.weekend {
@@ -91,10 +91,12 @@
 }
 .vipcellevts {
 	display: flex;
+	overflow: hidden;
 }
 .vipsingledayevent {
 	margin-left: 2px;
 	margin-right: 1px;
+	overflow: hidden;
 	display: flex;
 	align-items: center;
 	z-index: 2;
@@ -104,6 +106,7 @@
 .vipeventmarker {
 	width: 0.6em;
 	height: 1em;
+	flex-shrink: 0;
 }
 .vipeventtext {
 	margin-left: 2px;
