@@ -27,28 +27,33 @@ body {
 }
 #account {
 	font-size: 0.8em;
-	height: 2em;
 	line-height: 2em;
 	margin-right: 1em;
 	text-align: right;
 }
 #banner {
 	font-size: 0.8em;
+	text-align: center;
 	line-height: 3em;
 	min-height: 3em;
-	text-align: center;
-	margin-bottom: 2em;
 	background-color: #DAE4EB;
 	position: relative;
 }
 #buttons {
-	position: absolute;
 	top: 0;
 	right: 1em;
+	position: absolute;
 }
 #grid {
-	flex-basis: 80%;
-	display: flex;
+	flex-grow: 1;
+}
+#calendarbar {
+	height: 2em;
+	line-height: 2em;
+	text-align: right;
+	padding-right: 1em;
+	font-family: Consolas;
+	background-color: gainsboro;
 }
 #settings {
 	padding-left: 2em;
@@ -67,7 +72,7 @@ body {
 	width: 4em;
 }
 </style>
-<head>
+</head>
 <body ng-app="vp" ng-controller="main" ng-cloak>
 
 <div id="account">{{sign_msg}}</div>
@@ -80,7 +85,8 @@ body {
 		<span ng-show="busy"><i>Wait...</i></span>
 	</div>
 </div>
-<div id="grid" ng-show="view=='grid'">--grid--</div>
+<div id="grid" ng-show="view=='grid'"></div>
+<div id="calendarbar" ng-show="view=='grid'"></div>
 <div id="settings" ng-show="view=='settings'">
 	<div class="sub group"><b>Account</b>
 		<div class="sub">{{sign_msg}}</div>

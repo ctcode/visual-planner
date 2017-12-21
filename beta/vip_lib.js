@@ -2,27 +2,20 @@
 
 function VipObject()
 {
-}
-
-VipObject.prototype.createChildDiv = function(container_element, cls)
-{
-	var div = document.createElement('div');
-
-	if (cls)
-		div.className = cls;
-
-	div.vipobj = this;
-
-	this.div = div;
 	this.parent = null;
-	
-	container_element.appendChild(div);
+	this.div = null;
 }
 
 VipObject.prototype.createChild = function(parent, cls)
 {
-	this.createChildDiv(parent.div, cls);
+	this.div = document.createElement('div');
+	this.div.vipobj = this;
+
+	if (cls)
+		this.div.className = cls;
+
 	this.parent = parent;
+	this.parent.div.appendChild(this.div);
 }
 
 VipObject.prototype.addClass = function(cls)
@@ -91,7 +84,7 @@ VipObject.prototype.Align = function(cell_start, cell_end)
 	if (cell_start && cell_end)
 	{
 		this.div.style.top = (cell_start.div.offsetTop) + "px";
-		this.div.style.height = ((cell_end.div.offsetTop - cell_start.div.offsetTop) + cell_end.div.offsetHeight - 1) + "px";
+		this.div.style.height = ((cell_end.div.offsetTop - cell_start.div.offsetTop) + cell_end.div.offsetHeight) + "px";
 		this.Show(true);
 	}
 	else
@@ -133,7 +126,7 @@ function VipGridConfig()
 	this.auto_scroll_offset = -1;
 	this.show_weekends = true;
 	this.align_weekends = true;
-	this.font_scale = 0.64;
+	this.font_scale = 0.6;
 	this.past_opacity = 0.7;
 	this.show_event_time = true;
 	this.show_event_title = true;
@@ -155,26 +148,29 @@ function VipGridConfig()
 
 //////////////////////////////////////////////////////////////////////
 
-function VipGrid(container_element)
+function VipGrid(e, calbar)
 {
-	this.createChildDiv(container_element, "vipgrid");
+	this.div = e;
+	this.div.innerHTML = "";
 	this.div.tabIndex = "1";
+	this.calbar = calbar;
 
+	this.addClass("vipgrid");
 	this.cfg = new VipGridConfig();
 	this.reqCalEvents = function() {};
-}
 
-VipGrid.prototype = new VipObject;
-
-VipGrid.prototype.create = function()
-{
 	if (window.sessionStorage)
 	{
 		for (i in sessionStorage)
 			if (i.startsWith("vipevts"))
 				sessionStorage.removeItem(i);
 	}
+}
 
+VipGrid.prototype = new VipObject;
+
+VipGrid.prototype.create = function()
+{
 	var vdt_start = new VipDate();
 	vdt_start.MoveToStartOfMonth();
 
@@ -199,6 +195,7 @@ VipGrid.prototype.create = function()
 	}
 
 	this.updateLayout();
+	this.div.focus();
 }
 
 VipGrid.prototype.createSingleCol = function()
@@ -215,33 +212,38 @@ VipGrid.prototype.createSingleCol = function()
 	vdt_end.MoveDays(28);
 	
 	var vipcol = new VipCol(this, vdt_start, vdt_end);
-	vipcol.addClass("indicator");
 
 	this.updateLayout();
 }
 
 VipGrid.prototype.updateLayout = function()
 {
-	if (this.div.childElementCount == 0)
-		return;
-
 	var c = this.cfg.cellmax;
-	if (this.cfg.col_header) c++;
+	if (this.cfg.col_header) c += 2;
 	if (this.cfg.align_weekends) c += 6;
 
-	var colheight = this.First().div.offsetHeight;
-	var cellheight = Math.floor(colheight/c);
-	var cellnumpadding = Math.floor(cellheight/10);
+	var celloffset = Math.floor(this.div.offsetHeight/c);
+	var markerwidth = Math.floor(((this.div.offsetWidth/this.div.childNodes.length) / 20) * this.cfg.marker_width);
 
-	this.div.style.fontSize = ((cellheight/16) * this.cfg.font_scale) + "em";
-	this.div.style.lineHeight = (cellheight - (cellnumpadding*2)) + "px";
+	this.div.style.fontSize = ((celloffset/16) * this.cfg.font_scale) + "em";
+	this.div.style.setProperty('--celloffset', celloffset + "px");
+	this.div.style.setProperty('--markerwidth', markerwidth + "px");
+}
 
-	var fontsize = parseFloat(window.getComputedStyle(this.div).fontSize);
-	
-	this.div.style.setProperty('--cellheight', cellheight + "px");
-	this.div.style.setProperty('--cellnumpadding', cellnumpadding + "px");
-	this.div.style.setProperty('--markerwidth', Math.floor(fontsize*this.cfg.marker_width) + "px");
-	this.div.style.setProperty('--markerpadding', Math.floor(cellheight*0.2) + "px");
+VipGrid.prototype.updateSelectionTip = function(vipcell_start, vipcell_end)
+{
+	this.calbar.innerHTML = "";
+
+	if (!vipcell_start) return;
+	if (!vipcell_end) return;
+	if (vipcell_start === vipcell_end) return;
+
+	var c = Math.abs(vipcell_end.vipdate.Datestamp() - vipcell_start.vipdate.Datestamp());
+	var w = Math.floor(c/7);
+	var d = (c-(w*7));
+	var tip = (w > 0 ? fmt("^, ^-^", c, w, d) : fmt("^", c));
+
+	this.calbar.innerHTML = tip;
 }
 
 VipGrid.prototype.scroll_col = function(offset)
@@ -510,12 +512,6 @@ function VipCol(parent, vdt_start, vdt_end)
 
 	this.vipsel = new VipDiv(this.vipcoloffset, "vipsel");
 	this.vipsel.Show(false);
-
-	this.vipseltip = new VipDiv(this.vipcoloffset, "vipseltip");
-	this.vipseltip.Show(false);
-
-	this.vipind = new VipDiv(this.vipcoloffset, "vipind");
-	this.vipind.Show(false);
 	
 	this.vipevts = new VipDiv(this.vipcoloffset, "vipcolevts");
 
@@ -568,25 +564,6 @@ VipCol.prototype.intersection = function(ai, ax, bi, bx)
 		return ((ai + ax) >= bi);
 
 	return true;
-}
-
-VipCol.prototype.updateSelectionTip = function(vipcell_start, vipcell_end)
-{
-	this.vipseltip.Show(false);
-
-	if (!vipcell_start) return;
-	if (!vipcell_end) return;
-	if (vipcell_start === vipcell_end) return;
-
-	var c = Math.abs(vipcell_end.vipdate.Datestamp() - vipcell_start.vipdate.Datestamp());
-	var w = Math.floor(c/7);
-	var d = (c-(w*7));
-	var tip = (w > 0 ? fmt("^, ^-^", c, w, d) : fmt("^", c));
-
-	this.vipseltip.div.style.lineHeight = vipcell_end.div.offsetHeight + "px";
-	this.vipseltip.setText(tip);
-	this.vipseltip.Align(vipcell_end, vipcell_end);
-	this.vipseltip.Show(true);
 }
 
 
@@ -715,7 +692,7 @@ function VipMultiDayEvent(parent, evtinfo)
 	this.div.style.setProperty('--start', this.info.cellindex);
 	this.div.style.setProperty('--extent', this.info.dayspan);
 	this.div.style.opacity = vip.grid.cfg.multi_day_opacity;
-	this.setSlot(1);
+	this.setSlot(0);
 }
 
 VipMultiDayEvent.prototype = new VipObject;

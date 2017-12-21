@@ -1,104 +1,75 @@
 .vipgrid {
-	--cellheight: 0;
-	--cellnumpadding: 0;
+	--celloffset: 0;
 	--markerwidth: 0;
-	--markerpadding: 0;
 	user-select: none;
 	outline: none;
-	flex-basis: 100%;
 	display: flex;
-	flex-direction: row;
+	-ms-user-select: none;
+	-webkit-user-select: none;
 }
+
 .vipcol {
-	width: 100%;
-	display: flex;
-	flex-direction: column;
-}
-.vipcol.indicator {
-	padding-left: 2px;
+	flex-grow: 1;
 }
 .vipmonthhdr {
 	text-align: center;
-	height: var(--cellheight);
-	line-height: var(--cellheight);
+	line-height: calc(var(--celloffset) * 2);
 	cursor: pointer;
-	pointer-events: all;
 }
 .vipcoloffset {
 	--offsetday: 0;
-	margin-top: calc(var(--cellheight) * var(--offsetday));
-	height: 100%;
+	margin-top: calc(var(--celloffset) * var(--offsetday));
 	position: relative;
 }
 .vipcells {
-	width: 100%;
 	position: absolute;
+	top: 0; left: 0;
+	width: 100%;
 }
 .vipsel {
-	width: 100%;
 	position: absolute;
+	top: 0; left: 0;
+	width: 100%;
 	background-color: rgba(255,255,127,0.6);
 	pointer-events: none;
 	z-index: 10;
 }
-.vipseltip {
-	width: 100%;
-	position: absolute;
-	font-size: 0.8em;
-	text-align: center;
-	pointer-events: none;
-	z-index: 10;
-}
-.vipind {
-	left: -2px;
-	width: 2px;
-	position: absolute;
-	background-color: rgba(0,0,0,0.2);
-}
 .vipcolevts {
 	position: absolute;
+	top: 0; left: 0;
 	width: 100%;
-	height: 100%;
-	padding-right: 1px;
-	pointer-events: none;
-	box-sizing: border-box;
+	z-index: 1;
 }
 .vipmultidayevent {
 	--start: 0;
 	--extent: 0;
 	--slot: 0;
-	width: var(--markerwidth);
-	height: calc((var(--cellheight) * var(--extent)) - 1px);
-	left: calc(100% - (var(--slot) * var(--markerwidth)));
-	top: calc(var(--cellheight) * var(--start));
-	padding-right: 2px;
-	box-sizing: border-box;
-	background-clip: content-box;
 	position: absolute;
-	z-index: 1;
-	pointer-events: all;
+	top: calc(var(--celloffset) * var(--start));
+	height: calc((var(--celloffset) * var(--extent)) - 1px);
+	right: calc((var(--slot) * var(--markerwidth)) + 3px);
+	width: calc(var(--markerwidth) - 2px);
 }
+
 .vipcell {
-	height: var(--cellheight);
-	padding-left: 1px;
-	padding-bottom: 1px;
-	box-sizing: border-box;
-	background-clip: content-box;
+	height: calc(var(--celloffset) - 1px);
+	margin-left: 1px;
+	margin-bottom: 1px;
 	background-color: #eaeaea;
+	display: flex;
+	overflow: hidden;
 	pointer-events: none;
 }
 .vipcell.weekend {
 	background-color: #d8d8d8;
 }
 .vipcellnum {
-	float: left;
+	margin: 0.6%;
 	width: 1.6em;
-	height: 100%;
-	padding-top: var(--cellnumpadding);
-	padding-bottom: var(--cellnumpadding);
-	text-align: center;
-	box-sizing: border-box;
-	background-clip: content-box;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-shrink: 0;
 	cursor: pointer;
 	pointer-events: all;
 }
@@ -108,41 +79,32 @@
 	background-color: red;
 }
 .vipcellevts {
-	float: left;
-	width: calc(100% - 1.6em);
-	height: 100%;
-	box-sizing: border-box;
-	pointer-events: none;
+	flex-grow: 1;
+	overflow: hidden;
+	z-index: 2;
 	display: flex;
-	flex-direction: row;
 	position: relative;
 }
 .vipsingledayevent {
+	margin-left: 2px;
+	margin-right: 1px;
 	overflow: hidden;
-	z-index: 2;
-	cursor: default;
+	display: flex;
+	align-items: center;
 	pointer-events: all;
 }
+.vipeventmarker {
+	width: 0.6em;
+	height: 1em;
+	flex-shrink: 0;
+}
+.vipeventmarker.proportional {
+	height: 0.6em;
+	position: absolute;
+}
 .vipeventtext {
-	padding-top: var(--cellnumpadding);
-	padding-bottom: var(--cellnumpadding);
-	padding-left: 2px;
+	margin-left: 2px;
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
-	position: relative;
-}
-.vipeventmarker {
-	float: left;
-	height: 100%;
-	width: var(--markerwidth);
-	padding-top: var(--markerpadding);
-	padding-bottom: var(--markerpadding);
-	padding-left: 2px;
-	box-sizing: border-box;
-	background-clip: content-box;
-}
-.vipeventmarker.proportional {
-	padding-left: 0;
-	position: absolute;
 }

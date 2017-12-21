@@ -39,7 +39,6 @@ function mainCtrl($scope)
 
 	$scope.onclickSettings = function() {
 		$scope.view = 'settings';
-		ga_hit("view", "settings/" + $scope.signed_in);
 	}
 
 	$scope.onclickSignOut = function() {
@@ -86,10 +85,7 @@ function mainCtrl($scope)
 	}
 
 	function initGrid() {
-		var e = document.getElementById("grid");
-		e.innerHTML = "";
-		
-		vip_init_grid(e);
+		vip_init_grid("grid", "calendarbar");
 
 		if ($scope.signed_in)
 		{
@@ -101,8 +97,6 @@ function mainCtrl($scope)
 
 		vip.grid.cfg = gAppData.getAppData().vipconfig;
 		vip.grid.create();
-		
-		ga_hit("view", "grid/" + $scope.signed_in);
 	}
 
 	var cal_error_notified = false;

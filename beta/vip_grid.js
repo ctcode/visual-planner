@@ -1,13 +1,15 @@
 // global object
 var vip = {
 	grid: null,
-	selection: {start: null, end: null},
+	selection: {start: null, end: null, mode: null},
 	touch: {id: null, start: {x:0, y:0}}
 };
 
-function vip_init_grid(container_element)
+function vip_init_grid(grid_id, calbar_id)
 {
-	vip.grid = new VipGrid(container_element);
+	var g = document.getElementById(grid_id);
+	var c = document.getElementById(calbar_id);
+	vip.grid = new VipGrid(g, c);
 
 	install_event_handling();
 }
@@ -54,6 +56,37 @@ function onMediaChange(mql)
 		//ga_hit('media', 'print');
 }
 
+function setCellSelectMode(mode)
+{
+	var e = document.getElementById("vipcellselect");
+	
+	if (e) {}
+	else
+	{
+		e = document.createElement('style');
+		document.head.appendChild(e);
+		e.id = "vipcellselect";
+		e.sheet.insertRule(".vipgrid * {pointer-events: none;}", 0);
+		e.sheet.insertRule(".vipgrid, .vipcell {cursor: cell; pointer-events: all;}", 1);
+		e.sheet.insertRule(".vipsel {}", 2);
+	}
+
+	if (mode == "create")
+	{
+		e.sheet.cssRules[2].style.backgroundColor = "rgba(255,255,127,0.6)";
+		e.sheet.disabled = false;
+	}
+	else if (mode == "measure")
+	{
+		e.sheet.cssRules[2].style.backgroundColor = "rgba(153,204,255,0.4)";
+		e.sheet.disabled = false;
+	}
+	else
+		e.sheet.disabled = true;
+
+	vip.selection.mode = mode;
+}
+
 
 /////////////////////////////////////////////////////////////////
 // mouse/keyboard event handlers
@@ -90,6 +123,23 @@ function onclickVipMonthHeader(event)
 
 function onkeydown(event)
 {
+	switch (event.key)
+	{
+		case '+':
+		case 'Add':
+			setCellSelectMode("create");
+			return;
+		case '=':
+		case 'Equal':
+			setCellSelectMode("measure");
+			return;
+		case 'Escape':
+		case 'Esc':
+			setCellSelectMode(null);
+			cancel_selection();
+			return;
+	}
+
 	var clicks=0;
 
 	switch (event.which)
@@ -190,8 +240,6 @@ function update_selection(cell_upd)
 	while (true)
 	{
 		col.vipsel.Align(null);
-		col.updateSelectionTip(null);
-
 		var cell_top = (col === cell_targ_left.vipcol) ? cell_targ_left : null;
 		var cell_bottom = (col === cell_targ_right.vipcol) ? cell_targ_right : null;
 		
@@ -213,12 +261,12 @@ function update_selection(cell_upd)
 	}
 
 	vip.selection.end = cell_upd;
-
-	cell_upd.vipcol.updateSelectionTip(vip.selection.start, vip.selection.end);
+	vip.grid.updateSelectionTip(vip.selection.start, vip.selection.end);
 }
 
 function complete_selection(ui_event)
 {
+	if (vip.selection.mode == "create")
 	if (vip.selection.start)
 	if (! (vip.selection.start === vip.selection.end) )
 	{
@@ -236,7 +284,7 @@ function cancel_selection()
 
 	update_selection(vip.selection.start);
 	vip.selection.start.vipcol.vipsel.Align(null);
-	vip.selection.start.vipcol.updateSelectionTip(null);
+	vip.grid.updateSelectionTip(null);
 
 	vip.selection.start = null;
 	vip.selection.end = null;
