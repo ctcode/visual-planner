@@ -223,7 +223,7 @@ VipGrid.prototype.updateLayout = function()
 	if (this.cfg.align_weekends) c += 6;
 
 	var celloffset = Math.floor(this.div.offsetHeight/c);
-	var markerwidth = Math.floor(((this.div.offsetWidth/this.div.childNodes.length) / 20) * this.cfg.marker_width);
+	var markerwidth = Math.floor(((this.div.offsetWidth/this.div.childNodes.length) / 20) * this.cfg.marker_width) - 2;
 
 	this.div.style.fontSize = ((celloffset/16) * this.cfg.font_scale) + "em";
 	this.div.style.setProperty('--celloffset', celloffset + "px");

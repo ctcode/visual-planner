@@ -1,9 +1,9 @@
 .vipgrid {
 	--celloffset: 0;
 	--markerwidth: 0;
-	user-select: none;
 	outline: none;
 	display: flex;
+	user-select: none;
 	-ms-user-select: none;
 	-webkit-user-select: none;
 }
@@ -47,8 +47,8 @@
 	position: absolute;
 	top: calc(var(--celloffset) * var(--start));
 	height: calc((var(--celloffset) * var(--extent)) - 1px);
-	right: calc((var(--slot) * var(--markerwidth)) + 3px);
-	width: calc(var(--markerwidth) - 2px);
+	right: calc((var(--slot) * (var(--markerwidth) + 2px)) + 3px);
+	width: var(--markerwidth);
 }
 
 .vipcell {
@@ -94,7 +94,7 @@
 	pointer-events: all;
 }
 .vipeventmarker {
-	width: 0.6em;
+	width: var(--markerwidth);
 	height: 1em;
 	flex-shrink: 0;
 }

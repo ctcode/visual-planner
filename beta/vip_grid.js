@@ -123,6 +123,7 @@ function onclickVipMonthHeader(event)
 
 function onkeydown(event)
 {
+/*
 	switch (event.key)
 	{
 		case '+':
@@ -139,6 +140,7 @@ function onkeydown(event)
 			cancel_selection();
 			return;
 	}
+*/
 
 	var clicks=0;
 
@@ -268,7 +270,6 @@ function complete_selection(ui_event)
 {
 	if (vip.selection.mode == "create")
 	if (vip.selection.start)
-	if (! (vip.selection.start === vip.selection.end) )
 	{
 		//ga_hit('create_calendar_event', ui_event);
 		create_calendar_event();

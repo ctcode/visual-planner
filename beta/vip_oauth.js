@@ -406,11 +406,12 @@ AuthCal.prototype.rcvCalEvents = function(callsign, response)
 			else
 			{
 				evt.timed = false;
-				evt.start = new Date(item.start.date);
-				evt.end = new Date(item.end.date);
-				
-				evt.start.setHours(0,0,0,0);
-				evt.end.setHours(0,0,0,0);
+
+				var ymd = item.start.date.split('-');
+				evt.start = new Date(parseInt(ymd[0]), parseInt(ymd[1])-1, parseInt(ymd[2]), 0, 0, 0, 0);
+
+				var ymd = item.end.date.split('-');
+				evt.end = new Date(parseInt(ymd[0]), parseInt(ymd[1])-1, parseInt(ymd[2]), 0, 0, 0, 0);
 			}
 
 			this.batch.evts.push(evt);
