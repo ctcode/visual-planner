@@ -324,24 +324,24 @@ VipGrid.prototype.getVipCol = function(id)
 
 VipGrid.prototype.onkeydown = function(event)
 {
+/*
 	switch (event.key)
 	{
 		case '+':
 		case 'Add':
 			this.setCellSelectMode(true);
 			return;
-/*
 		case '=':
 		case 'Equal':
 			this.setCellSelectMode("measure");
 			return;
-*/
 		case 'Escape':
 		case 'Esc':
 			this.setCellSelectMode(false);
 			this.cancel_selection();
 			return;
 	}
+*/
 
 	var clicks=0;
 
