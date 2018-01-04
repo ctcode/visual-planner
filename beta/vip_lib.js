@@ -197,14 +197,14 @@ VipGrid.prototype = new VipObject;
 VipGrid.prototype.createGrid = function()
 {
 	var vdt_start = new VipDate();
-	vdt_start.MoveToStartOfMonth();
+	vdt_start.toStartOfMonth();
 
 	if (this.cfg.auto_scroll)
-		vdt_start.MoveMonths(this.cfg.auto_scroll_offset);
+		vdt_start.offsetMonth(this.cfg.auto_scroll_offset);
 	else
-		vdt_start.MoveToStartOfYear();
+		vdt_start.toStartOfYear();
 
-	var vdt_end = new VipDate(vdt_start);
+	var vdt_end = new VipDate(vdt_start.dt);
 
 	var colcount = this.cfg.multi_col_count;
 	if (this.isPortrait())
@@ -212,11 +212,11 @@ VipGrid.prototype.createGrid = function()
 
 	for (var c=0; c < colcount; c++)
 	{
-		vdt_end.MoveMonths(1);
+		vdt_end.offsetMonth(1);
 
 		var vipcol = new VipCol(this, vdt_start, vdt_end);
 		
-		vdt_start.MoveMonths(1);
+		vdt_start.offsetMonth(1);
 	}
 
 	this.updateLayout();
@@ -231,10 +231,10 @@ VipGrid.prototype.createSingleCol = function()
 	this.cfg.scrolling_disabled = true;
 
 	var vdt_start = new VipDate();
-	vdt_start.MoveToStartOfWeek(1);  // monday this week
+	vdt_start.toStartOfWeek(1);  // monday this week
 
-	var vdt_end = new VipDate(vdt_start);
-	vdt_end.MoveDays(28);
+	var vdt_end = new VipDate(vdt_start.dt);
+	vdt_end.offsetDay(28);
 	
 	var vipcol = new VipCol(this, vdt_start, vdt_end);
 
@@ -265,17 +265,17 @@ VipGrid.prototype.scroll_col = function(offset)
 	var count = ltor ? offset : -offset;
 
 	var vipcol_prev = ltor ? cols.lastChild.vipobj : cols.firstChild.vipobj;
-	var vdt_start = new VipDate(vipcol_prev.vdtStart);
+	var vdt_start = new VipDate(vipcol_prev.vdtStart.dt);
 	
 	for (var c=0; c < count; c++)
 		cols.removeChild(ltor ? cols.firstChild : cols.lastChild);
 
 	for (var c=0; c < count; c++)
 	{
-		vdt_start.MoveMonths(ltor ? 1:-1);
+		vdt_start.offsetMonth(ltor ? 1:-1);
 
-		var vdt_end = new VipDate(vdt_start);
-		vdt_end.MoveMonths(1);
+		var vdt_end = new VipDate(vdt_start.dt);
+		vdt_end.offsetMonth(1);
 
 		var vipcol = new VipCol(this, vdt_start, vdt_end);
 
@@ -487,7 +487,7 @@ VipGrid.prototype.updateSelectionTip = function(vipcell_start, vipcell_end)
 	if (!vipcell_end) return;
 	if (vipcell_start === vipcell_end) return;
 
-	var c = Math.abs(vipcell_end.vipdate.Datestamp() - vipcell_start.vipdate.Datestamp());
+	var c = vipcell_start.vipdate.DateSpan(vipcell_end.vipdate);
 	var w = Math.floor(c/7);
 	var d = (c-(w*7));
 	var tip = (w > 0 ? fmt("^, ^-^", c, w, d) : fmt("^", c));
@@ -497,9 +497,11 @@ VipGrid.prototype.updateSelectionTip = function(vipcell_start, vipcell_end)
 
 VipGrid.prototype.create_calendar_event = function()
 {
-	var vdtStart = new VipDate(this.selection.start.vipdate.dt < this.selection.end.vipdate.dt ? this.selection.start.vipdate : this.selection.end.vipdate);
-	var vdtEnd = new VipDate(this.selection.start.vipdate.dt < this.selection.end.vipdate.dt ? this.selection.end.vipdate : this.selection.start.vipdate);
-	vdtEnd.MoveDays(1);  // end date is exclusive
+	var dt1 = this.selection.start.vipdate.dt;
+	var dt2 = this.selection.end.vipdate.dt;
+	var vdtStart = new VipDate(dt1 < dt2 ? dt1 : dt2);
+	var vdtEnd = new VipDate(dt1 > dt2 ? dt1 : dt2);
+	vdtEnd.offsetDay(1);  // end date is exclusive
 	
 	window.open("https://www.google.com/calendar/r/eventedit?dates=" + vdtStart.ID() + "/" + vdtEnd.ID());
 }
@@ -621,7 +623,7 @@ VipGrid.prototype.rcvEvent = function(vipcol, evt, storage)
 			return;
 		
 		var endID = vdtEvtEnd.ID();
-		vdtEvtEnd.MoveDays(1);
+		vdtEvtEnd.offsetDay(1);
 	}
 	else
 	{
@@ -629,10 +631,10 @@ VipGrid.prototype.rcvEvent = function(vipcol, evt, storage)
 			return;
 	}
 
-	var vdtSpanStart = new VipDate(vdtEvtStart.ID() < vipcol.vdtStart.ID() ? vipcol.vdtStart : vdtEvtStart);
-	var vdtSpanEnd = new VipDate(vdtEvtEnd.ID() > vipcol.vdtEnd.ID() ? vipcol.vdtEnd : vdtEvtEnd);
+	var vdtSpanStart = new VipDate(vdtEvtStart.ID() < vipcol.vdtStart.ID() ? vipcol.vdtStart.dt : vdtEvtStart.dt);
+	var vdtSpanEnd = new VipDate(vdtEvtEnd.ID() > vipcol.vdtEnd.ID() ? vipcol.vdtEnd.dt : vdtEvtEnd.dt);
 	
-	var vdtNext = new VipDate(vdtSpanStart);
+	var vdtNext = new VipDate(vdtSpanStart.dt);
 	while (vdtNext.ID() < vdtSpanEnd.ID())
 	{
 		var vipcell = this.getVipCell(vdtNext.ID());
@@ -644,12 +646,11 @@ VipGrid.prototype.rcvEvent = function(vipcol, evt, storage)
 			colour: evt.colour,
 			calendar: evt.calendar,
 			timed: evt.timed,
-			timestamp: vdtEvtStart.Timestamp(),
 			timetitle: vdtEvtStart.TimeTitle(),
-			dayspan: (vdtSpanEnd.Datestamp() - vdtSpanStart.Datestamp()),
-			startDaySeconds: vdtEvtStart.getDaySeconds(),
-			endDaySeconds: vdtEvtEnd.getDaySeconds(),
-			multiday: ((vdtEvtEnd.Datestamp() - vdtEvtStart.Datestamp()) > 1),
+			dayspan: vdtSpanStart.DateSpan(vdtSpanEnd),
+			startDayMinutes: vdtEvtStart.DayMinutes(),
+			endDayMinutes: vdtEvtEnd.DayMinutes(),
+			multiday: (vdtEvtStart.DateSpan(vdtEvtEnd) > 1),
 			firstday: (vdtNext.ID() == vdtEvtStart.ID()),
 			cellID: vipcell.div.id,
 			cellindex: vipcell.vipindex
@@ -696,7 +697,7 @@ VipGrid.prototype.rcvEvent = function(vipcol, evt, storage)
 			return;
 		}
 
-		vdtNext.MoveDays(1);
+		vdtNext.offsetDay(1);
 	}
 }
 
@@ -732,8 +733,8 @@ function VipCol(parent, vdt_start, vdt_end)
 	this.createChild(parent, "vipcol");
 	
 	this.div.id = ((vdt_start.dt.getFullYear()*100) + (vdt_start.dt.getMonth()+1));
-	this.vdtStart = new VipDate(vdt_start);
-	this.vdtEnd = new VipDate(vdt_end);
+	this.vdtStart = new VipDate(vdt_start.dt);
+	this.vdtEnd = new VipDate(vdt_end.dt);
 
 	if (vipgrid.cfg.col_header)
 	{
@@ -753,13 +754,13 @@ function VipCol(parent, vdt_start, vdt_end)
 	
 	var cellindex=0;
 	var id_today = new VipDate().ID();
-	var vdt_day = new VipDate(vdt_start);
+	var vdt_day = new VipDate(vdt_start.dt);
 	while (vdt_day.dt < vdt_end.dt)
 	{
 		var vipcell = new VipCell(this.vipcells, this, vdt_day, id_today);
 		vipcell.vipindex = cellindex;
 
-		vdt_day.MoveDays(1);
+		vdt_day.offsetDay(1);
 		cellindex++;
 	}
 
@@ -832,11 +833,10 @@ function VipCell(parent, vipcol, vdt, id_today)
 {
 	this.createChild(parent, "vipcell");
 	this.vipcol = vipcol;
-	this.vipdate = new VipDate(vdt);
-	this.datestamp = vdt.Datestamp();
+	this.vipdate = new VipDate(vdt.dt);
 	this.div.id = vdt.ID();
-	this.div.onmousedown = vipgrid.init_selection.bind(vipgrid, this);
-	this.div.onmousemove = vipgrid.update_selection.bind(vipgrid, this);
+	//this.div.onmousedown = vipgrid.init_selection.bind(vipgrid, this);
+	//this.div.onmousemove = vipgrid.update_selection.bind(vipgrid, this);
 
 	if (vipgrid.cfg.show_weekends)
 	if (this.vipdate.isWeekend())
@@ -883,7 +883,7 @@ VipCell.prototype.addEvent = function(evtinfo)
 	var vipsib = this.vipevts.First();
 	while (vipsib)
 	{
-		if (vipevt.info.timestamp < vipsib.info.timestamp)
+		if (vipevt.info.startDayMinutes < vipsib.info.startDayMinutes)
 			break;
 
 		vipsib = vipsib.Next();
@@ -985,31 +985,31 @@ VipSingleDayEvent.prototype = new VipObject;
 
 VipSingleDayEvent.prototype.calcProportionalMarker = function()
 {
-	var s_range_start = (vipgrid.cfg.proportional_start_hour * 3600);
-	var s_range_end = (vipgrid.cfg.proportional_end_hour * 3600);
-	var s_range = (s_range_end - s_range_start);
+	var m_range_start = (vipgrid.cfg.proportional_start_hour * 60);
+	var m_range_end = (vipgrid.cfg.proportional_end_hour * 60);
+	var m_range = (m_range_end - m_range_start);
 
-	var s_evt_start = s_range_start;
-	var s_evt_end = s_range_end;
+	var m_evt_start = m_range_start;
+	var m_evt_end = m_range_end;
 
 	if (this.info.firstday && this.info.timed)
 	{
-		s_evt_start = this.info.startDaySeconds;
+		m_evt_start = this.info.startDayMinutes;
 
-		if (s_evt_start < s_range_start)
-			s_evt_start = s_range_start;
+		if (m_evt_start < m_range_start)
+			m_evt_start = m_range_start;
 	}
 
 	if (this.info.lastday && this.info.timed)
 	{
-		s_evt_end = this.info.endDaySeconds;
+		m_evt_end = this.info.endDayMinutes;
 
-		if (s_evt_end > s_range_end)
-			s_evt_end = s_range_end;
+		if (m_evt_end > m_range_end)
+			m_evt_end = m_range_end;
 	}
 
-	this.vipmarker.div.style.left = (((s_evt_start - s_range_start) / s_range) * 100) + "%";
-	this.vipmarker.div.style.width = (((s_evt_end - s_evt_start) / s_range) * 100) + "%";
+	this.vipmarker.div.style.left = (((m_evt_start - m_range_start) / m_range) * 100) + "%";
+	this.vipmarker.div.style.width = (((m_evt_end - m_evt_start) / m_range) * 100) + "%";
 
 /*
 	var off_right = (this.vipmarker.div.offsetLeft + this.vipmarker.div.offsetWidth);
@@ -1032,14 +1032,11 @@ VipSingleDayEvent.prototype.edit = function()
 
 //////////////////////////////////////////////////////////////////////
 
-function VipDate(src)
+function VipDate(dt)
 {
-	if (src)
+	if (dt)
 	{
-		if (src instanceof VipDate)
-			this.dt = new Date(src.dt);
-		else
-			this.dt = new Date(src);
+		this.dt = new Date(dt);
 	}
 	else
 	{
@@ -1053,41 +1050,36 @@ VipDate.prototype.ID = function()
 	return ((this.dt.getFullYear()*10000) + ((this.dt.getMonth()+1)*100) + this.dt.getDate());
 }
 
-VipDate.prototype.Timestamp = function()
+VipDate.prototype.offsetDay = function(off)
 {
-	return (this.dt.getTime() - (this.dt.getTimezoneOffset()*60000));
+	this.dt.setDate(this.dt.getDate() + off);
 }
 
-VipDate.prototype.Datestamp = function()
+VipDate.prototype.offsetMonth = function(off)
 {
-	return Math.floor(this.Timestamp()/86400000);
+	this.dt.setMonth(this.dt.getMonth() + off);
 }
 
-VipDate.prototype.MoveDays = function(offset)
-{
-	this.dt.setDate(this.dt.getDate() + offset);
-}
-
-VipDate.prototype.MoveMonths = function(offset)
-{
-	this.dt.setMonth(this.dt.getMonth() + offset);
-}
-
-VipDate.prototype.MoveToStartOfWeek = function(startday)
+VipDate.prototype.toStartOfWeek = function(startday)
 {
 	while (this.dt.getDay() != startday)
-		this.MoveDays(-1);
+		this.dt.setDate(this.dt.getDate() - 1);
 }
 
-VipDate.prototype.MoveToStartOfMonth = function()
+VipDate.prototype.toStartOfMonth = function()
 {
 	this.dt.setDate(1);
 }
 
-VipDate.prototype.MoveToStartOfYear = function()
+VipDate.prototype.toStartOfYear = function()
 {
 	this.dt.setMonth(0);
 	this.dt.setDate(1);
+}
+
+VipDate.prototype.DateSpan = function(vdt)
+{
+	return Math.floor(Math.abs(this.dt.valueOf() - vdt.dt.valueOf()) / 86400000);
 }
 
 VipDate.prototype.DayOfMonth = function()
@@ -1116,11 +1108,6 @@ VipDate.prototype.isPastMonth = function()
 		return false;
 	
 	return (this.dt.getMonth() < today.getMonth());
-}
-
-VipDate.prototype.getDaySeconds = function()
-{
-	return ((this.dt.getHours()*3600) + (this.dt.getMinutes()*60) + this.dt.getSeconds());
 }
 
 VipDate.prototype.MonthTitle = function()
@@ -1152,6 +1139,11 @@ VipDate.prototype.TimeTitle = function()
 		var hours = (hh > 12) ? (hh-12) : hh;
 		return fmt((hh < 12) ? "^:^am" : "^:^pm", hours, minutes);
 	}
+}
+
+VipDate.prototype.DayMinutes = function()
+{
+	return (this.dt.getHours()*60) + this.dt.getMinutes();
 }
 
 VipDate.prototype.GCalURL = function()
