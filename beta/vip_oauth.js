@@ -393,6 +393,7 @@ AuthCal.prototype.rcvCalEvents = function(callsign, response)
 			var evt = {
 				id: item.id,
 				title: item.summary,
+				htmlLink: item.htmlLink,
 				colour: cal.colour,
 				calendar: cal.name
 			};

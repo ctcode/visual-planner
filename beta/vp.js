@@ -85,18 +85,18 @@ function mainCtrl($scope)
 	}
 
 	function initGrid() {
-		vip_init_grid("grid", "calendarbar");
+		var vg = new VipGrid("grid", "calendarbar");
 
 		if ($scope.signed_in)
 		{
 			var gCal = new AuthCal();
 			gCal.onError = onCalError;
-			gCal.onReceiveEvents = vip.grid.rcvEvents.bind(vip.grid);
-			vip.grid.reqCalEvents = gCal.getEvents.bind(gCal);
+			gCal.onReceiveEvents = vg.rcvEvents.bind(vg);
+			vg.reqCalEvents = gCal.getEvents.bind(gCal);
 		}
 
-		vip.grid.cfg = gAppData.getAppData().vipconfig;
-		vip.grid.create();
+		vg.cfg = gAppData.getAppData().vipconfig;
+		vg.createGrid();
 	}
 
 	var cal_error_notified = false;

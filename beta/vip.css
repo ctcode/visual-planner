@@ -49,6 +49,7 @@
 	height: calc((var(--celloffset) * var(--extent)) - 1px);
 	right: calc((var(--slot) * (var(--markerwidth) + 2px)) + 3px);
 	width: var(--markerwidth);
+	cursor: pointer;
 }
 
 .vipcell {
@@ -92,6 +93,7 @@
 	display: flex;
 	align-items: center;
 	pointer-events: all;
+	cursor: pointer;
 }
 .vipeventmarker {
 	width: var(--markerwidth);

@@ -11,9 +11,8 @@
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
 <script src="https://apis.google.com/js/api.js"></script>
 <script src="vip_analytics.js" type='text/javascript'></script>
-<script src="vip_lib.js" type='text/javascript'></script>
-<script src="vip_grid.js" type='text/javascript'></script>
 <script src="vip_oauth.js" type='text/javascript'></script>
+<script src="vip_lib.js" type='text/javascript'></script>
 <script src="vp.js" type='text/javascript'></script>
 <style>
 body {
@@ -82,7 +81,7 @@ body {
 		<button ng-hide="form.$pristine || busy" ng-click="onclickSave()">Save</button>
 		<button ng-show="(view=='settings') && !busy" ng-click="onclickCancel()">Cancel</button>
 		<button ng-show="(view=='grid') && !busy" ng-click="onclickSettings()" title="Settings"><b>*</b></button>
-		<span ng-show="busy"><i>Wait...</i></span>
+		<span ng-show="busy"><i>Saving...</i></span>
 	</div>
 </div>
 <div id="grid" ng-show="view=='grid'"></div>
