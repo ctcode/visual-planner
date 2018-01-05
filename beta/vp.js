@@ -12,9 +12,7 @@ function mainCtrl($scope)
 	$scope.settings = gAppData.getAppData();
 	$scope.signed_in = false;
 	$scope.busy = false;
-
 	$scope.sign_msg = "Signing In...";
-	gAccount.Connect();
 
 	gAccount.onSignIn = function() {
 		$scope.sign_msg = gAccount.getEmail();
@@ -36,6 +34,8 @@ function mainCtrl($scope)
 	gAccount.onError = function(msg) {
 		alert("Account Error: " + msg);
 	}
+
+	gAccount.Connect();
 
 	$scope.onclickSettings = function() {
 		$scope.view = 'settings';
