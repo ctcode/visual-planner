@@ -274,54 +274,39 @@ AuthAppData.prototype.Fail = function(reason)
 function AuthCal()
 {
 	this.calendars = null;
-	this.queue = [];
-	this.pending = 0;
-	this.batch = null;
-	this.onReceiveEvents = function(){};
+	this.run = false;
+	this.datespan = null;
+	this.timer = 0;
+	this.forwardEvent = function(){};
 	this.onError = function(){};
 }
 
-AuthCal.prototype.getEvents = function(span_id, datespan)
+AuthCal.prototype.getEvents = function(datespan)
 {
 	console.assert('dtStart' in datespan);
 	console.assert('dtEnd' in datespan);
-	
-	this.queue.push({span_id: span_id, datespan: datespan, evts: []});
-	this.run();
-}
 
-AuthCal.prototype.run = function()
-{
-	if (this.queue.length == 0)
-		return;
+	if (this.datespan)
+	{
+		if (datespan.dtStart < this.datespan.dtStart)
+			this.datespan.dtStart = datespan.dtStart;
 
-	if (this.pending > 0)
-		return;
+		if (datespan.dtEnd > this.datespan.dtEnd)
+			this.datespan.dtEnd = datespan.dtEnd;
+	}
+	else
+		this.datespan = datespan;
 
 	if (this.calendars)
 	{
-		this.batch = this.queue.shift();
-		var min = this.batch.datespan.dtStart.toISOString();
-		var max = this.batch.datespan.dtEnd.toISOString();
-
-		for (cal_id in this.calendars)
+		if (this.run)
 		{
-			this.makeReq ({
-					path: "https://www.googleapis.com/calendar/v3/calendars/" + encodeURIComponent(cal_id) + "/events",
-					method: "GET",
-					params: {timeMin: min, timeMax: max, singleEvents: true}
-				},
-				this.rcvCalEvents,
-				cal_id
-			);
-
-			this.pending++;
+			clearTimeout(this.timer);
+			this.timer = setTimeout(this.reqEvents.bind(this), 500);
 		}
 	}
 	else
 	{
-		this.calendars = {};
-
 		this.makeReq ({
 				path: "https://www.googleapis.com/calendar/v3/users/me/calendarList",
 				method: "GET",
@@ -330,7 +315,7 @@ AuthCal.prototype.run = function()
 			this.rcvCalList
 		);
 
-		this.pending++;
+		this.calendars = {};
 	}
 }
 
@@ -358,13 +343,32 @@ AuthCal.prototype.rcvCalList = function(callsign, response)
 		}
 		else
 		{
-			this.pending--;
-			this.run();
+			this.run = true;
+			this.reqEvents();
 		}
 	}
 	catch(e)
 	{
 		this.Fail(e);
+	}
+}
+
+AuthCal.prototype.reqEvents = function()
+{
+	var min = this.datespan.dtStart.toISOString();
+	var max = this.datespan.dtEnd.toISOString();
+	this.datespan = null;
+
+	for (cal_id in this.calendars)
+	{
+		this.makeReq ({
+				path: "https://www.googleapis.com/calendar/v3/calendars/" + encodeURIComponent(cal_id) + "/events",
+				method: "GET",
+				params: {timeMin: min, timeMax: max, singleEvents: true}
+			},
+			this.rcvCalEvents,
+			cal_id
+		);
 	}
 }
 
@@ -407,15 +411,15 @@ AuthCal.prototype.rcvCalEvents = function(callsign, response)
 			else
 			{
 				evt.timed = false;
+				
+				var dmy = item.start.date.split('-');
+				evt.start = new Date(parseInt(dmy[0]), parseInt(dmy[1])-1, parseInt(dmy[2]));
 
-				var ymd = item.start.date.split('-');
-				evt.start = new Date(parseInt(ymd[0]), parseInt(ymd[1])-1, parseInt(ymd[2]), 0, 0, 0, 0);
-
-				var ymd = item.end.date.split('-');
-				evt.end = new Date(parseInt(ymd[0]), parseInt(ymd[1])-1, parseInt(ymd[2]), 0, 0, 0, 0);
+				var dmy = item.end.date.split('-');
+				evt.end = new Date(parseInt(dmy[0]), parseInt(dmy[1])-1, parseInt(dmy[2]));
 			}
 
-			this.batch.evts.push(evt);
+			this.forwardEvent(evt);
 		}
 
 		if (response.result.nextPageToken)
@@ -428,16 +432,6 @@ AuthCal.prototype.rcvCalEvents = function(callsign, response)
 				this.rcvCalEvents,
 				callsign
 			);
-		}
-		else
-		{
-			this.pending--;
-			
-			if (this.pending == 0)
-			{
-				this.onReceiveEvents(this.batch.span_id, this.batch.evts);
-				this.run();
-			}
 		}
 	}
 	catch(e)

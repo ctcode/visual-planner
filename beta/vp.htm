@@ -70,6 +70,15 @@ body {
 #settings input[type=number] {
 	width: 4em;
 }
+@media only print
+{
+	#account {
+		display: none;
+	}
+	#buttons {
+		display: none;
+	}
+}
 </style>
 </head>
 <body ng-app="vp" ng-controller="main" ng-cloak>

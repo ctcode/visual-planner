@@ -91,8 +91,8 @@ function mainCtrl($scope)
 		{
 			var gCal = new AuthCal();
 			gCal.onError = onCalError;
-			gCal.onReceiveEvents = vg.rcvEvents.bind(vg);
-			vg.reqCalEvents = gCal.getEvents.bind(gCal);
+
+			vg.registerEventSource(gCal);
 		}
 
 		vg.cfg = gAppData.getAppData().vipconfig;
