@@ -104,9 +104,40 @@
 	height: 0.6em;
 	position: absolute;
 }
-.vipeventtext {
+.viptext {
 	margin-left: 2px;
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
+}
+.vipcalbar {
+	display: flex;
+	justify-content: center;
+	overflow: hidden;
+	user-select: none;
+	-ms-user-select: none;
+	-webkit-user-select: none;
+}
+.vipcalbtn {
+	margin-top: 3px;
+	margin-bottom: 3px;
+	padding-left: 1em;
+	padding-right: 1em;
+	align-items: center;
+	overflow: hidden;
+	display: flex;
+}
+.vipcalbtn:hover {
+	background-color: rgba(0,0,0,0.1);
+}
+.vipcalbtn:active {
+	background-color: rgba(0,0,0,0.3);
+}
+.vipcalbtn.checked {
+	opacity: 0.5;
+}
+.vipcalmarker {
+	width: 0.7em;
+	height: 1em;
+	flex-shrink: 0;
 }

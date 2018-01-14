@@ -85,7 +85,8 @@ function mainCtrl($scope)
 	}
 
 	function initGrid() {
-		var vg = new VipGrid("grid", "calendarbar");
+		var vg = new VipGrid("grid");
+		var cb = new VipCalendarBar("calendarbar");
 
 		if ($scope.signed_in)
 		{
@@ -93,6 +94,7 @@ function mainCtrl($scope)
 			gCal.onError = onCalError;
 
 			vg.registerEventSource(gCal);
+			cb.registerCalendarSource(gCal);
 		}
 
 		vg.cfg = gAppData.getAppData().vipconfig;

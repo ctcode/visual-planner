@@ -273,12 +273,17 @@ AuthAppData.prototype.Fail = function(reason)
 
 function AuthCal()
 {
+	// initialise
+	this.forwardCalendar = function(){};
+	this.forwardEvent = function(){};
+	this.onError = function(){};
+	this.calclass_prefix = "calclass_";
+
+	// private
 	this.calendars = null;
 	this.run = false;
 	this.datespan = null;
 	this.timer = 0;
-	this.forwardEvent = function(){};
-	this.onError = function(){};
 }
 
 AuthCal.prototype.getEvents = function(datespan)
@@ -328,7 +333,10 @@ AuthCal.prototype.rcvCalList = function(callsign, response)
 			var cal = response.result.items[i];
 			
 			if (cal.selected)
-				this.calendars[cal.id] = {name: cal.summary, colour: cal.backgroundColor};
+			{
+				this.calendars[cal.id] = {cls: this.calclass_prefix + i, name: cal.summary, colour: cal.backgroundColor};
+				this.forwardCalendar(this.calendars[cal.id]);
+			}
 		}
 
 		if (response.result.nextPageToken)
@@ -364,7 +372,7 @@ AuthCal.prototype.reqEvents = function()
 		this.makeReq ({
 				path: "https://www.googleapis.com/calendar/v3/calendars/" + encodeURIComponent(cal_id) + "/events",
 				method: "GET",
-				params: {timeMin: min, timeMax: max, singleEvents: true}
+				params: {timeMin: min, timeMax: max, orderBy: "startTime", singleEvents: true}
 			},
 			this.rcvCalEvents,
 			cal_id
@@ -398,6 +406,7 @@ AuthCal.prototype.rcvCalEvents = function(callsign, response)
 				id: item.id,
 				title: item.summary,
 				htmlLink: item.htmlLink,
+				calclass: cal.cls,
 				colour: cal.colour,
 				calendar: cal.name
 			};

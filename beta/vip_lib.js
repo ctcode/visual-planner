@@ -150,14 +150,13 @@ function VipGridConfig()
 
 var vipgrid;
 
-function VipGrid(gid, cbid)
+function VipGrid(gid)
 {
 	vipgrid = this;
 
 	this.div = document.getElementById(gid);
 	this.div.innerHTML = "";
 	this.div.tabIndex = "1";
-	this.calbar = document.getElementById(cbid);
 
 	this.addClass("vipgrid");
 	this.cfg = new VipGridConfig();
@@ -356,23 +355,22 @@ VipGrid.prototype.onkeydown = function(event)
 	}
 */
 
-	var clicks=0;
-
 	switch (event.which)
 	{
 		case 37:  // back
 		case 38:  // up
-			clicks = -1;
+			this.scroll_col(-1);
 			break;
 		case 39:  // right
 		case 40:  // down
-			clicks = 1;
+			this.scroll_col(1);
+			break;
+		case 82:  // r
+			this.ReloadEvents();
 			break;
 		default:
 			return;
 	}
-
-	this.scroll_col(clicks);
 
 	event.returnValue = false;
 	event.preventDefault();
@@ -492,7 +490,7 @@ VipGrid.prototype.setCellSelectMode = function(enable)
 
 VipGrid.prototype.updateSelectionTip = function(vipcell_start, vipcell_end)
 {
-	this.calbar.innerHTML = "";
+	//this.calbar.innerHTML = "";
 
 	if (!vipcell_start) return;
 	if (!vipcell_end) return;
@@ -503,7 +501,7 @@ VipGrid.prototype.updateSelectionTip = function(vipcell_start, vipcell_end)
 	var d = (c-(w*7));
 	var tip = (w > 0 ? fmt("^, ^-^", c, w, d) : fmt("^", c));
 
-	this.calbar.innerHTML = tip;
+	//this.calbar.innerHTML = tip;
 }
 
 VipGrid.prototype.create_calendar_event = function()
@@ -593,6 +591,7 @@ VipGrid.prototype.rcvCalEvent = function(evt)
 		eid: evt.htmlLink.substr(evt.htmlLink.indexOf("eid=")+4),
 		colour: evt.colour,
 		calendar: evt.calendar,
+		calclass: evt.calclass,
 		timed: evt.timed,
 		vdtStart: new VipDate(evt.start),
 		vdtEnd: new VipDate(evt.end)
@@ -658,8 +657,7 @@ VipGrid.prototype.rcvCalEvent = function(evt)
 	}
 }
 
-/*
-VipGrid.prototype.reloadEvents = function()
+VipGrid.prototype.ReloadEvents = function()
 {
 	var vipcol = this.First();
 	while (vipcol)
@@ -674,12 +672,11 @@ VipGrid.prototype.reloadEvents = function()
 			vipcell = vipcell.Next();
 		}
 
-		this.reqCalEvents(vipcol.div.id, vipcol.Datespan());
+		this.reqCalEvents(vipcol.datespan);
 
 		vipcol = vipcol.Next();
 	}
 }
-*/
 
 
 
@@ -728,8 +725,9 @@ function VipCol(parent, vdt_start, vdt_end)
 
 	this.firstcell = this.vipcells.First();
 	this.lastcell = this.vipcells.Last();
+	this.datespan = {dtStart: new Date(this.vdtStart.dt), dtEnd: new Date(this.vdtEnd.dt)};
 	
-	vipgrid.reqCalEvents({dtStart: new Date(this.vdtStart.dt), dtEnd: new Date(this.vdtEnd.dt)});
+	vipgrid.reqCalEvents(this.datespan);
 }
 
 VipCol.prototype = new VipObject;
@@ -879,6 +877,7 @@ VipCell.prototype.onclickDayNumber = function(event)
 function VipMultiDayEvent(parent, info, vipcell)
 {
 	this.createChild(parent, "vipmultidayevent");
+	this.addClass(info.calclass);
 
 	this.info = info;
 	this.div.title = fmt("^ - ^", this.info.calendar, this.info.title);
@@ -922,6 +921,7 @@ VipMultiDayEvent.prototype.edit = function()
 function VipSingleDayEvent(parent, info, cellid)
 {
 	this.createChild(parent, "vipsingledayevent");
+	this.addClass(info.calclass);
 
 	this.div.onclick = this.edit.bind(this);
 	
@@ -950,7 +950,7 @@ function VipSingleDayEvent(parent, info, cellid)
 
 		if (vipgrid.cfg.show_event_title)
 		{
-			this.vipevttext = new VipDiv(this, "vipeventtext");
+			this.vipevttext = new VipDiv(this, "viptext");
 			this.vipevttext.setText(time_title + evt_title);
 
 			if (vipgrid.cfg.colour_event_title)
@@ -1012,6 +1012,86 @@ VipSingleDayEvent.prototype.calcProportionalMarker = function()
 VipSingleDayEvent.prototype.edit = function()
 {
 	window.open("https://calendar.google.com/calendar/r/eventedit/" + this.info.eid);
+}
+
+
+
+//////////////////////////////////////////////////////////////////////
+
+function VipCalendarBar(id)
+{
+	this.div = document.getElementById(id);
+	this.div.innerHTML = "";
+
+	this.addClass("vipcalbar");
+}
+
+VipCalendarBar.prototype = new VipObject;
+
+VipCalendarBar.prototype.registerCalendarSource = function(src)
+{
+	src.forwardCalendar = this.rcvCal.bind(this);
+	src.calclass_prefix = "vipcalclass_";
+}
+
+VipCalendarBar.prototype.rcvCal = function(cal)
+{
+	var vcb = new VipCalendarBtn(this, cal);
+
+	var e = document.getElementById("vipcalvisibility");
+	if (!e)
+	{
+		e = document.createElement('style');
+		document.head.appendChild(e);
+		e.id = "vipcalvisibility";
+	}
+	
+	vcb.cssrule = e.sheet.cssRules.length;
+	e.sheet.insertRule(fmt(".^ {}", cal.cls), e.sheet.cssRules.length);
+
+	var vipsib = this.First();
+	while (vipsib)
+	{
+		if (vcb.name < vipsib.name)
+			break;
+
+		vipsib = vipsib.Next();
+	}
+	this.MoveLastBefore(vipsib);
+}
+
+
+
+//////////////////////////////////////////////////////////////////////
+
+function VipCalendarBtn(parent, cal)
+{
+	this.createChild(parent, "vipcalbtn");
+
+	this.cssrule = null;
+	this.div.onclick = this.onclickCalBtn.bind(this);
+
+	this.vipmarker = new VipDiv(this, "vipcalmarker");
+	this.vipmarker.div.style.backgroundColor = cal.colour;
+
+	this.vipcaltext = new VipDiv(this, "viptext");
+	this.vipcaltext.setText(cal.name);
+}
+
+VipCalendarBtn.prototype = new VipObject;
+
+VipCalendarBtn.prototype.onclickCalBtn = function(event)
+{
+	var e = document.getElementById("vipcalvisibility");
+	if (e)
+	{
+		var r = e.sheet.cssRules[this.cssrule];
+
+		if (this.div.classList.toggle("checked"))
+			r.style.setProperty("display", "none");
+		else
+			r.style.removeProperty("display");
+	}
 }
 
 
