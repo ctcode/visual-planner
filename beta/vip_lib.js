@@ -1068,6 +1068,7 @@ function VipCalendarBtn(parent, cal)
 {
 	this.createChild(parent, "vipcalbtn");
 
+	this.name = cal.name;
 	this.cssrule = null;
 	this.div.onclick = this.onclickCalBtn.bind(this);
 
@@ -1075,7 +1076,7 @@ function VipCalendarBtn(parent, cal)
 	this.vipmarker.div.style.backgroundColor = cal.colour;
 
 	this.vipcaltext = new VipDiv(this, "viptext");
-	this.vipcaltext.setText(cal.name);
+	this.vipcaltext.setText(this.name);
 }
 
 VipCalendarBtn.prototype = new VipObject;
