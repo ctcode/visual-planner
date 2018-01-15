@@ -202,12 +202,14 @@ VipGrid.prototype.createGrid = function()
 		vdt_start.offsetMonth(this.cfg.auto_scroll_offset);
 	else
 		vdt_start.toStartOfYear();
+	vdt_start.offsetMonth(-1);
 
 	var vdt_end = new VipDate(vdt_start.dt);
 
 	var colcount = this.cfg.multi_col_count;
 	if (this.isPortrait())
 		colcount = this.cfg.multi_col_count_portrait;
+	colcount += 2;
 
 	for (var c=0; c < colcount; c++)
 	{
@@ -218,6 +220,7 @@ VipGrid.prototype.createGrid = function()
 		vdt_start.offsetMonth(1);
 	}
 
+	this.updateBuffer();
 	this.updateLayout();
 	this.div.focus();
 }
@@ -294,6 +297,26 @@ VipGrid.prototype.scroll_col = function(offset)
 		if (!ltor)
 		if (cols.childElementCount > 1)
 			this.MoveLastBefore(this.First());  // move col to left
+	}
+
+	this.updateBuffer();
+}
+
+VipGrid.prototype.updateBuffer = function()
+{
+	for (var i=0; i < this.div.childElementCount; i++)
+	{
+		switch(i)
+		{
+			case 0:
+			//case 1:
+			case this.div.childElementCount - 1:
+			//case this.div.childElementCount - 2:
+				this.div.children[i].classList.add("buffer");
+				break;
+			default:
+				this.div.children[i].classList.remove("buffer");
+		}
 	}
 }
 

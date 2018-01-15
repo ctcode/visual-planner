@@ -11,6 +11,9 @@
 .vipcol {
 	flex-grow: 1;
 }
+.vipcol.buffer {
+	display: none;
+}
 .vipmonthhdr {
 	text-align: center;
 	line-height: calc(var(--celloffset) * 2);
