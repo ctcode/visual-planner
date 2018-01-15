@@ -1,4 +1,4 @@
-function mainCtrl($scope)
+function vp_mainCtrl($scope)
 {
 	var gAccount = new AuthAccount();
 	gAccount.authClientID = '304094492573-vgmnc6pr5tf1va809qpoc6sri6amiptk.apps.googleusercontent.com';  // vp
@@ -85,8 +85,7 @@ function mainCtrl($scope)
 	}
 
 	function initGrid() {
-		var vg = new VipGrid("grid");
-		var cb = new VipCalendarBar("calendarbar");
+		var vg = new VipGrid("grid", "calendarbar");
 
 		if ($scope.signed_in)
 		{
@@ -94,7 +93,6 @@ function mainCtrl($scope)
 			gCal.onError = onCalError;
 
 			vg.registerEventSource(gCal);
-			cb.registerCalendarSource(gCal);
 		}
 
 		vg.cfg = gAppData.getAppData().vipconfig;

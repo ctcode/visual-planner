@@ -276,6 +276,7 @@ function AuthCal()
 	// initialise
 	this.forwardCalendar = function(){};
 	this.forwardEvent = function(){};
+	this.forwardSetting = function(){};
 	this.onError = function(){};
 	this.calclass_prefix = "calclass_";
 
@@ -313,6 +314,14 @@ AuthCal.prototype.getEvents = function(datespan)
 	else
 	{
 		this.makeReq ({
+				path: "https://www.googleapis.com/calendar/v3/users/me/settings/format24HourTime",
+				method: "GET",
+				params: {}
+			},
+			this.rcvTimeFormat
+		);
+
+		this.makeReq ({
 				path: "https://www.googleapis.com/calendar/v3/users/me/calendarList",
 				method: "GET",
 				params: {}
@@ -322,6 +331,14 @@ AuthCal.prototype.getEvents = function(datespan)
 
 		this.calendars = {};
 	}
+}
+
+AuthCal.prototype.rcvTimeFormat = function(callsign, response)
+{
+	if (response.result)
+	if (response.result.kind == "calendar#setting")
+	if (response.result.id == "format24HourTime")
+		this.forwardSetting("time24h", response.result.value == "true");
 }
 
 AuthCal.prototype.rcvCalList = function(callsign, response)

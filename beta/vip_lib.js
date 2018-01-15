@@ -114,12 +114,6 @@ VipDiv.prototype = new VipObject;
 
 function VipGridConfig()
 {
-	// grid config
-	this.cellmax = 31;
-	this.col_header = true;
-	this.scrolling_disabled = false;
-	this.time_24hr = true;
-	// user settings
 	this.multi_col_count = 6;
 	this.multi_col_count_portrait = 3;
 	this.auto_scroll = true;
@@ -150,7 +144,7 @@ function VipGridConfig()
 
 var vipgrid;
 
-function VipGrid(gid)
+function VipGrid(gid, cbid)
 {
 	vipgrid = this;
 
@@ -160,10 +154,18 @@ function VipGrid(gid)
 
 	this.addClass("vipgrid");
 	this.cfg = new VipGridConfig();
+	this.cellmax = 31;
+	this.col_header = true;
+	this.scrolling_disabled = false;
+	this.time24h = true;
+	this.buffer = 3;
 	this.reqCalEvents = function(){};
 	this.selection = {start: null, end: null};
 	this.touch = {id: null, start: {x:0, y:0}};
 	this.priority = null;
+	
+	if (cbid)
+		this.calbar = new VipCalendarBar(cbid);
 
 	this.div.onkeydown = this.onkeydown.bind(this);
 	this.div.onmouseup = this.onmouseup.bind(this);
@@ -202,14 +204,14 @@ VipGrid.prototype.createGrid = function()
 		vdt_start.offsetMonth(this.cfg.auto_scroll_offset);
 	else
 		vdt_start.toStartOfYear();
-	vdt_start.offsetMonth(-1);
+	vdt_start.offsetMonth(-this.buffer);
 
 	var vdt_end = new VipDate(vdt_start.dt);
 
 	var colcount = this.cfg.multi_col_count;
 	if (this.isPortrait())
 		colcount = this.cfg.multi_col_count_portrait;
-	colcount += 2;
+	colcount += (this.buffer*2);
 
 	for (var c=0; c < colcount; c++)
 	{
@@ -227,10 +229,10 @@ VipGrid.prototype.createGrid = function()
 
 VipGrid.prototype.createSingleCol = function()
 {
-	this.cfg.cellmax = 28;
-	this.cfg.col_header = false;
+	this.cellmax = 28;
+	this.col_header = false;
+	this.scrolling_disabled = true;
 	this.cfg.align_weekends = false;
-	this.cfg.scrolling_disabled = true;
 
 	var vdt_start = new VipDate();
 	vdt_start.toStartOfWeek(1);  // monday this week
@@ -256,8 +258,8 @@ VipGrid.prototype.onMediaPrint = function(mql)
 
 VipGrid.prototype.updateLayout = function()
 {
-	var c = this.cfg.cellmax;
-	if (this.cfg.col_header) c += 2;
+	var c = this.cellmax;
+	if (this.col_header) c += 2;
 	if (this.cfg.align_weekends) c += 6;
 
 	var celloffset = Math.floor(this.div.offsetHeight/c);
@@ -272,7 +274,7 @@ VipGrid.prototype.updateLayout = function()
 
 VipGrid.prototype.scroll_col = function(offset)
 {
-	if (this.cfg.scrolling_disabled)
+	if (this.scrolling_disabled)
 		return;
 
 	var cols = this.div;
@@ -306,17 +308,10 @@ VipGrid.prototype.updateBuffer = function()
 {
 	for (var i=0; i < this.div.childElementCount; i++)
 	{
-		switch(i)
-		{
-			case 0:
-			//case 1:
-			case this.div.childElementCount - 1:
-			//case this.div.childElementCount - 2:
-				this.div.children[i].classList.add("buffer");
-				break;
-			default:
-				this.div.children[i].classList.remove("buffer");
-		}
+		if (i > (this.buffer-1) && i < (this.div.childElementCount - this.buffer))
+			this.div.children[i].classList.remove("buffer");
+		else
+			this.div.children[i].classList.add("buffer");
 	}
 }
 
@@ -602,8 +597,18 @@ VipGrid.prototype.ontouchcancel = function(event)
 
 VipGrid.prototype.registerEventSource = function(src)
 {
+	src.forwardSetting = this.rcvSetting.bind(this);
 	src.forwardEvent = this.rcvCalEvent.bind(this);
 	this.reqCalEvents = src.getEvents.bind(src);
+	
+	if (this.calbar)
+		this.calbar.registerCalendarSource(src);
+}
+
+VipGrid.prototype.rcvSetting = function(setting, value)
+{
+	if (setting == "time24h")
+		this.time24h = value;
 }
 
 VipGrid.prototype.rcvCalEvent = function(evt)
@@ -713,7 +718,7 @@ function VipCol(parent, vdt_start, vdt_end)
 	this.vdtStart = new VipDate(vdt_start.dt);
 	this.vdtEnd = new VipDate(vdt_end.dt);
 
-	if (vipgrid.cfg.col_header)
+	if (vipgrid.col_header)
 	{
 		this.viphdr = new VipDiv(this, "vipmonthhdr");
 		this.viphdr.setText(this.vdtStart.MonthTitle());
@@ -1223,7 +1228,7 @@ VipDate.prototype.TimeTitle = function()
 	
 	var minutes = fmt((mm < 10) ? "0^" : "^", mm);
 
-	if (vipgrid.cfg.time_24hr)
+	if (vipgrid.time24h)
 	{
 		return fmt("^:^", hh, minutes);
 	}
