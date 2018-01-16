@@ -1121,6 +1121,8 @@ VipCalendarBtn.prototype.onclickCalBtn = function(event)
 		else
 			r.style.removeProperty("display");
 	}
+
+	vipgrid.div.focus();
 }
 
 
