@@ -13,6 +13,7 @@ function vp_mainCtrl($scope)
 	$scope.signed_in = false;
 	$scope.busy = false;
 	$scope.sign_msg = "Signing In...";
+	$scope.g_signbtn_ok = true;
 
 	gAccount.onSignIn = function() {
 		$scope.sign_msg = gAccount.getEmail();
@@ -39,6 +40,11 @@ function vp_mainCtrl($scope)
 
 	$scope.onclickSettings = function() {
 		$scope.view = 'settings';
+		$scope.g_signbtn_ok = (document.getElementById("g_signbtn").textContent.length > 0);
+	}
+
+	$scope.onclickSignIn = function() {
+		gAccount.SignIn();
 	}
 
 	$scope.onclickSignOut = function() {
@@ -96,7 +102,7 @@ function vp_mainCtrl($scope)
 		}
 
 		vg.cfg = gAppData.getAppData().vipconfig;
-		vg.createGrid();
+		vg.init();
 	}
 
 	var cal_error_notified = false;

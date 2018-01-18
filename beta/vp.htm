@@ -95,9 +95,10 @@ body {
 <div id="settings" ng-show="view=='settings'">
 	<div class="sub group"><b>Account</b>
 		<div class="sub">{{sign_msg}}</div>
-		<div class="sub"><div class="g-signin2" data-width="300" data-height="60" data-longtitle="true"></div></div>
+		<div class="sub" ng-show="g_signbtn_ok"><div id="g_signbtn" class="g-signin2" data-width="300" data-height="60" data-longtitle="true"></div></div>
 		<div class="sub" ng-show="signed_in"><a href="https://myaccount.google.com/permissions" target="_blank">Permissions</a></div>
 		<div class="sub" ng-show="signed_in"><a href="https://drive.google.com/drive/my-drive" target="_blank">Manage Application Data</a>  (Drive > Settings > Manage Apps)</div>
+		<div class="sub" ng-hide="signed_in || g_signbtn_ok"><button ng-click="onclickSignIn();">Sign In</button></div>
 		<div class="sub" ng-show="signed_in"><button ng-click="onclickSignOut();">Sign Out</button></div>
 	</div>
 	<form name="form" ng-show="signed_in">
