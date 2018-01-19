@@ -199,8 +199,9 @@ VipGrid.prototype.init = function()
 	var c = this.isPortrait() ? this.cfg.multi_col_count_portrait : this.cfg.multi_col_count;
 
 	this.cache = {};
-	this.cache.viewport = {start: Math.ceil(c*0.5), len: c};
-	this.cache.len = this.cache.viewport.start + (c*2);
+	this.cache.viewport = {start: c, len: c};
+	this.cache.viewport.init = this.cache.viewport.start;
+	this.cache.len = c*3;
 	this.cache.month = (this.cfg.auto_scroll ? this.cfg.auto_scroll_offset : - new Date().getMonth()) - this.cache.viewport.start;
 	
 	this.create();
@@ -225,17 +226,6 @@ VipGrid.prototype.create = function()
 	this.div.focus();
 }
 
-VipGrid.prototype.onResize = function()
-{
-	this.updateLayout();
-}
-
-VipGrid.prototype.onMediaPrint = function(mql)
-{
-	this.priority = mql.matches ? "important" : null;
-	this.updateLayout();
-}
-
 VipGrid.prototype.updateLayout = function()
 {
 	var c = this.cellmax;
@@ -252,57 +242,6 @@ VipGrid.prototype.updateLayout = function()
 	this.div.style.setProperty('--markerwidth', markerwidth + "px");
 }
 
-VipGrid.prototype.scroll_col = function(offset)
-{
-	if (this.scrolling_disabled)
-		return;
-
-/*
-	var cols = this.div;
-	var ltor = (offset > 0);  // scroll direction
-	var count = ltor ? offset : -offset;
-
-	var vipcol_prev = ltor ? cols.lastChild.vipobj : cols.firstChild.vipobj;
-	var vdt_start = new VipDate(vipcol_prev.vdtStart.dt);
-	
-	for (var c=0; c < count; c++)
-		cols.removeChild(ltor ? cols.firstChild : cols.lastChild);
-
-	for (var c=0; c < count; c++)
-	{
-		vdt_start.offsetMonth(ltor ? 1:-1);
-
-		var vdt_end = new VipDate(vdt_start.dt);
-		vdt_end.offsetMonth(1);
-
-		var vipcol = new VipCol(this, vdt_start, vdt_end);
-
-		if (!ltor)
-		if (cols.childElementCount > 1)
-			this.MoveLastBefore(this.First());  // move col to left
-	}
-*/
-
-	this.cache.viewport.start += offset;
-	
-	if (this.cache.viewport.start < 0)
-	{
-		this.cache.month += (this.cache.viewport.len - this.cache.len + offset);
-		this.cache.viewport.start += (this.cache.len - this.cache.viewport.len - offset);
-		this.create();
-	}
-	else if ((this.cache.viewport.start + this.cache.viewport.len) > this.cache.len)
-	{
-		this.cache.month += (this.cache.len - this.cache.viewport.len + offset);
-		this.cache.viewport.start = 0;
-		this.create();
-	}
-	else
-	{
-		this.updateViewport();
-	}
-}
-
 VipGrid.prototype.updateViewport = function()
 {
 	for (var i=0; i < this.div.childElementCount; i++)
@@ -314,6 +253,50 @@ VipGrid.prototype.updateViewport = function()
 		else
 			this.div.children[i].classList.remove("buffer");
 	}
+}
+
+VipGrid.prototype.scroll = function(forward)
+{
+	if (this.scrolling_disabled)
+		return;
+
+	if (forward)
+	{
+		this.cache.viewport.start += 1;
+
+		if (this.cache.viewport.start == (this.cache.len - this.cache.viewport.len))
+		{
+			while (this.cache.viewport.start != this.cache.viewport.init)
+			{
+				var vdt = new VipDate(this.Last().vdtStart.dt);
+				vdt.offsetMonth(1);
+				var vipcol = new VipCol(this, vdt);
+				this.div.removeChild(this.div.firstChild);
+
+				this.cache.viewport.start--;
+			}
+		}
+	}
+	else
+	{
+		this.cache.viewport.start += -1;
+
+		if (this.cache.viewport.start == 0)
+		{
+			while (this.cache.viewport.start != this.cache.viewport.init)
+			{
+				var vdt = new VipDate(this.First().vdtStart.dt);
+				vdt.offsetMonth(-1);
+				var vipcol = new VipCol(this, vdt);
+				this.MoveLastBefore(this.First());
+				this.div.removeChild(this.div.lastChild);
+
+				this.cache.viewport.start++;
+			}
+		}
+	}
+
+	this.updateViewport();
 }
 
 VipGrid.prototype.isPortrait = function()
@@ -353,6 +336,17 @@ VipGrid.prototype.getVipCol = function(id)
 	return null;
 }
 
+VipGrid.prototype.onResize = function()
+{
+	this.updateLayout();
+}
+
+VipGrid.prototype.onMediaPrint = function(mql)
+{
+	this.priority = mql.matches ? "important" : null;
+	this.updateLayout();
+}
+
 VipGrid.prototype.onkeydown = function(event)
 {
 /*
@@ -378,11 +372,11 @@ VipGrid.prototype.onkeydown = function(event)
 	{
 		case 37:  // back
 		case 38:  // up
-			this.scroll_col(-1);
+			this.scroll(false);
 			break;
 		case 39:  // right
 		case 40:  // down
-			this.scroll_col(1);
+			this.scroll(true);
 			break;
 		case 82:  // r
 			this.ReloadEvents();
@@ -397,12 +391,7 @@ VipGrid.prototype.onkeydown = function(event)
 
 VipGrid.prototype.onwheel = function(event)
 {
-	if (event.deltaY > 0)
-		this.scroll_col(1);
-
-	if (event.deltaY < 0)
-		this.scroll_col(-1);
-
+	this.scroll(event.deltaY > 0);
 	event.preventDefault();
 }
 
@@ -586,7 +575,7 @@ VipGrid.prototype.ontouchend = function(event)
 	
 	if (dx > dy)
 	if (dx > 30)
-		this.scroll_col((this.touch.start.x > t.pageX) ? 1 : -1);
+		this.scroll(this.touch.start.x > t.pageX);
 
 	this.ontouchcancel();
 }
