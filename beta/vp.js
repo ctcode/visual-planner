@@ -106,11 +106,13 @@ function vp_main($scope)
 	}
 
 	var cal_error_notified = false;
-	function onCalError() {
+	function onCalError(msg) {
 		if (cal_error_notified)
 			return;
 
-		alert("Error loading calendar events.\n\nPlease reload the page.");
+		alert("Error loading calendar events.\n\nPlease reload the page.\n\n" + msg);
+		ga_hit("calendar_error", msg);
+
 		cal_error_notified = true;
 	}
 }

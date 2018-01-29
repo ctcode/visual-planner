@@ -473,6 +473,5 @@ AuthCal.prototype.makeReq = function(req, callback, callsign)
 
 AuthCal.prototype.Fail = function(reason)
 {
-	console.error(reason);
-	this.onError();
+	this.onError("[" + reason.result.error.code + ": " + reason.result.error.message + "]");
 }
