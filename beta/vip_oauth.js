@@ -318,7 +318,9 @@ AuthCal.prototype.getEvents = function(datespan)
 				method: "GET",
 				params: {}
 			},
-			this.rcvTimeFormat
+			this.rcvTimeFormat,
+			null,
+			"time format"
 		);
 
 		this.makeReq ({
@@ -326,7 +328,9 @@ AuthCal.prototype.getEvents = function(datespan)
 				method: "GET",
 				params: {}
 			},
-			this.rcvCalList
+			this.rcvCalList,
+			null,
+			"calendar list"
 		);
 
 		this.calendars = {};
@@ -363,7 +367,9 @@ AuthCal.prototype.rcvCalList = function(callsign, response)
 					method: "GET",
 					params: {pageToken: response.result.nextPageToken}
 				},
-				this.rcvCalList
+				this.rcvCalList,
+				null,
+				"calendar list page"
 			);
 		}
 		else
@@ -392,7 +398,8 @@ AuthCal.prototype.reqEvents = function()
 				params: {timeMin: min, timeMax: max, orderBy: "startTime", singleEvents: true}
 			},
 			this.rcvCalEvents,
-			cal_id
+			cal_id,
+			"event list"
 		);
 	}
 }
@@ -450,14 +457,14 @@ AuthCal.prototype.rcvCalEvents = function(callsign, response)
 
 		if (response.result.nextPageToken)
 		{
-			ga_hit("page_token", response.result.nextPageToken);
 			this.makeReq ({
 					path: "https://www.googleapis.com/calendar/v3/calendars/" + encodeURIComponent(callsign) + "/events",
 					method: "GET",
 					params: {pageToken: response.result.nextPageToken}
 				},
 				this.rcvCalEvents,
-				callsign
+				callsign,
+				"event list page"
 			);
 		}
 	}
@@ -467,12 +474,13 @@ AuthCal.prototype.rcvCalEvents = function(callsign, response)
 	}
 }
 
-AuthCal.prototype.makeReq = function(req, callback, callsign)
+AuthCal.prototype.makeReq = function(req, callback, callsign, failsign)
 {
-	gapi.client.request(req).then(callback.bind(this, callsign), this.Fail.bind(this));
+	gapi.client.request(req).then(callback.bind(this, callsign), this.Fail.bind(this, failsign));
 }
 
-AuthCal.prototype.Fail = function(reason)
+AuthCal.prototype.Fail = function(failsign, reason)
 {
+	ga_hit("req_fail", failsign);
 	this.onError("[" + reason.result.error.code + ": " + reason.result.error.message + "]");
 }
