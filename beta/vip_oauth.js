@@ -399,7 +399,7 @@ AuthCal.prototype.reqEvents = function()
 			},
 			this.rcvCalEvents,
 			cal_id,
-			"event list: " + min + "-" + max
+			"event list: " + min + "/" + max
 		);
 	}
 }
