@@ -395,7 +395,7 @@ AuthCal.prototype.reqEvents = function()
 		this.makeReq ({
 				path: "https://www.googleapis.com/calendar/v3/calendars/" + encodeURIComponent(cal_id) + "/events",
 				method: "GET",
-				params: {timeMin: min, timeMax: max, orderBy: "startTime", singleEvents: true}
+				params: {timeMin: min, timeMax: max, singleEvents: true}
 			},
 			this.rcvCalEvents,
 			cal_id,
@@ -460,7 +460,7 @@ AuthCal.prototype.rcvCalEvents = function(callsign, response)
 			this.makeReq ({
 					path: "https://www.googleapis.com/calendar/v3/calendars/" + encodeURIComponent(callsign) + "/events",
 					method: "GET",
-					params: {pageToken: response.result.nextPageToken}
+					params: {pageToken: response.result.nextPageToken, singleEvents: true}
 				},
 				this.rcvCalEvents,
 				callsign,
