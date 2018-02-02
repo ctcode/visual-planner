@@ -1087,6 +1087,10 @@ function VipCalendarBar(id)
 	this.div = document.getElementById(id);
 	this.div.innerHTML = "";
 
+	var e = document.getElementById("vipcalvisibility");
+	if (e)
+		document.head.removeChild(e);
+
 	this.addClass("vipcalbar");
 }
 
