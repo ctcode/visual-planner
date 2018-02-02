@@ -68,8 +68,9 @@
 	background-color: #d8d8d8;
 }
 .vipcellnum {
-	margin: 0.6%;
+	margin: 0.2em;
 	width: 1.6em;
+	font-size: 0.8em;
 	display: flex;
 	justify-content: center;
 	align-items: center;

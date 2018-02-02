@@ -274,6 +274,7 @@ AuthAppData.prototype.Fail = function(reason)
 function AuthCal()
 {
 	// initialise
+	this.datespan = {dtStart: null, dtEnd: null};
 	this.forwardCalendar = function(){};
 	this.forwardEvent = function(){};
 	this.forwardSetting = function(){};
@@ -283,33 +284,17 @@ function AuthCal()
 	// private
 	this.calendars = null;
 	this.run = false;
-	this.datespan = null;
-	this.timer = 0;
 }
 
-AuthCal.prototype.getEvents = function(datespan)
+AuthCal.prototype.loadEvents = function()
 {
-	console.assert('dtStart' in datespan);
-	console.assert('dtEnd' in datespan);
-
-	if (this.datespan)
-	{
-		if (datespan.dtStart < this.datespan.dtStart)
-			this.datespan.dtStart = datespan.dtStart;
-
-		if (datespan.dtEnd > this.datespan.dtEnd)
-			this.datespan.dtEnd = datespan.dtEnd;
-	}
-	else
-		this.datespan = datespan;
-
+	this.isoStart = this.datespan.dtStart.toISOString();
+	this.isoEnd = this.datespan.dtEnd.toISOString();
+	
 	if (this.calendars)
 	{
 		if (this.run)
-		{
-			clearTimeout(this.timer);
-			this.timer = setTimeout(this.reqEvents.bind(this), 500);
-		}
+			this.reqLoadEvents();
 	}
 	else
 	{
@@ -318,9 +303,7 @@ AuthCal.prototype.getEvents = function(datespan)
 				method: "GET",
 				params: {}
 			},
-			this.rcvTimeFormat,
-			null,
-			"time format"
+			this.rcvTimeFormat
 		);
 
 		this.makeReq ({
@@ -328,13 +311,17 @@ AuthCal.prototype.getEvents = function(datespan)
 				method: "GET",
 				params: {}
 			},
-			this.rcvCalList,
-			null,
-			"calendar list"
+			this.rcvCalList
 		);
 
 		this.calendars = {};
 	}
+}
+
+AuthCal.prototype.syncEvents = function()
+{
+	if (this.calendars)
+		this.reqSyncEvents();
 }
 
 AuthCal.prototype.rcvTimeFormat = function(callsign, response)
@@ -355,7 +342,7 @@ AuthCal.prototype.rcvCalList = function(callsign, response)
 			
 			if (cal.selected)
 			{
-				this.calendars[cal.id] = {cls: this.calclass_prefix + i, name: cal.summary, colour: cal.backgroundColor};
+				this.calendars[cal.id] = {cls: this.calclass_prefix + i, name: cal.summary, colour: cal.backgroundColor, synctok: null};
 				this.forwardCalendar(this.calendars[cal.id]);
 			}
 		}
@@ -367,15 +354,13 @@ AuthCal.prototype.rcvCalList = function(callsign, response)
 					method: "GET",
 					params: {pageToken: response.result.nextPageToken}
 				},
-				this.rcvCalList,
-				null,
-				"calendar list page"
+				this.rcvCalList
 			);
 		}
 		else
 		{
 			this.run = true;
-			this.reqEvents();
+			this.reqLoadEvents();
 		}
 	}
 	catch(e)
@@ -384,89 +369,122 @@ AuthCal.prototype.rcvCalList = function(callsign, response)
 	}
 }
 
-AuthCal.prototype.reqEvents = function()
+AuthCal.prototype.reqLoadEvents = function()
 {
-	var min = this.datespan.dtStart.toISOString();
-	var max = this.datespan.dtEnd.toISOString();
-	this.datespan = null;
+	for (cal_id in this.calendars)
+		this.reqEvents({timeMin: this.isoStart, timeMax: this.isoEnd}, this.rcvLoadEvents, cal_id);
+}
 
+AuthCal.prototype.reqSyncEvents = function()
+{
 	for (cal_id in this.calendars)
 	{
-		this.makeReq ({
-				path: "https://www.googleapis.com/calendar/v3/calendars/" + encodeURIComponent(cal_id) + "/events",
-				method: "GET",
-				params: {timeMin: min, timeMax: max, singleEvents: true}
-			},
-			this.rcvCalEvents,
-			cal_id,
-			"event list: " + min + "/" + max
-		);
+		var tok = this.calendars[cal_id].synctok;
+		
+		if (tok)
+			this.reqEvents({syncToken: tok}, this.rcvSyncEvents, cal_id);
 	}
 }
 
-AuthCal.prototype.rcvCalEvents = function(callsign, response)
+AuthCal.prototype.rcvLoadEvents = function(callsign, response)
+{
+	var cal = this.calendars[callsign];
+	
+	for (i in response.result.items)
+	{
+		var evt = this.createEvent(cal, response.result.items[i]);
+
+		if (evt)
+		if (!evt.deleted)
+			this.forwardEvent(evt);
+	}
+
+	if (response.result.nextPageToken)
+		this.reqEvents({pageToken: response.result.nextPageToken, timeMin: this.isoStart, timeMax: this.isoEnd}, this.rcvLoadEvents, callsign);
+	else if (response.result.nextSyncToken)
+		cal.synctok = response.result.nextSyncToken;
+}
+
+AuthCal.prototype.rcvSyncEvents = function(callsign, response)
+{
+	var cal = this.calendars[callsign];
+	
+	for (i in response.result.items)
+	{
+		var evt = this.createEvent(cal, response.result.items[i]);
+
+		if (evt)
+		{
+			this.forwardEvent({id: evt.id, deleted: true});
+
+			if (!evt.deleted)
+				this.forwardEvent(evt);
+		}
+	}
+
+	if (response.result.nextPageToken)
+		this.reqEvents({pageToken: response.result.nextPageToken, syncToken: cal.synctok}, this.rcvSyncEvents, callsign);
+	else if (response.result.nextSyncToken)
+		cal.synctok = response.result.nextSyncToken;
+}
+
+AuthCal.prototype.reqEvents = function(req_params, callback, cal_id)
+{
+	req_params.singleEvents = true;
+	
+	this.makeReq ({
+			path: "https://www.googleapis.com/calendar/v3/calendars/" + encodeURIComponent(cal_id) + "/events",
+			method: "GET",
+			params: req_params
+		},
+		callback,
+		cal_id
+	);
+}
+
+AuthCal.prototype.createEvent = function(cal, item)
 {
 	try
 	{
-		var cal = this.calendars[callsign];
+		if (item.kind != "calendar#event")
+			return null;
 		
-		for (i in response.result.items)
+		if (item.status == "cancelled")
+			return {id: item.id, deleted: true};
+
+		if (item.hasOwnProperty("recurrence"))
+			return null;
+
+		if (!item.hasOwnProperty("start"))
+			return null;
+		
+		var evt = {
+			id: item.id,
+			title: item.summary,
+			htmlLink: item.htmlLink,
+			calclass: cal.cls,
+			colour: cal.colour,
+			calendar: cal.name
+		};
+		
+		if ("dateTime" in item.start)
 		{
-			var item = response.result.items[i];
-
-			if (item.kind != "calendar#event")
-				continue;
-
-			if (item.status == "cancelled")
-				continue;
-
-			if (item.hasOwnProperty("recurrence"))
-				continue;
-
-			if (!item.hasOwnProperty("start"))
-				continue;
-			
-			var evt = {
-				id: item.id,
-				title: item.summary,
-				htmlLink: item.htmlLink,
-				calclass: cal.cls,
-				colour: cal.colour,
-				calendar: cal.name
-			};
-			
-			if ("dateTime" in item.start)
-			{
-				evt.timed = true;
-				evt.start = new Date(item.start.dateTime);
-				evt.end = new Date(item.end.dateTime);
-			}
-			else
-			{
-				evt.timed = false;
-				
-				var dmy = item.start.date.split('-');
-				evt.start = new Date(parseInt(dmy[0]), parseInt(dmy[1])-1, parseInt(dmy[2]));
-
-				var dmy = item.end.date.split('-');
-				evt.end = new Date(parseInt(dmy[0]), parseInt(dmy[1])-1, parseInt(dmy[2]));
-			}
-
-			this.forwardEvent(evt);
+			evt.timed = true;
+			evt.start = new Date(item.start.dateTime);
+			evt.end = new Date(item.end.dateTime);
 		}
-
-		if (response.result.nextPageToken)
+		else
 		{
-			this.makeReq ({
-					path: "https://www.googleapis.com/calendar/v3/calendars/" + encodeURIComponent(callsign) + "/events",
-					method: "GET",
-					params: {pageToken: response.result.nextPageToken, singleEvents: true}
-				},
-				this.rcvCalEvents,
-				callsign,
-				"event list page"
-			);
+			evt.timed = false;
+			
+			var dmy = item.start.date.split('-');
+			evt.start = new Date(parseInt(dmy[0]), parseInt(dmy[1])-1, parseInt(dmy[2]));
+
+			var dmy = item.end.date.split('-');
+			evt.end = new Date(parseInt(dmy[0]), parseInt(dmy[1])-1, parseInt(dmy[2]));
 		}
+		
+		return evt;
 	}
 	catch(e)
 	{
@@ -474,13 +492,12 @@ AuthCal.prototype.rcvCalEvents = function(callsign, response)
 	}
 }
 
-AuthCal.prototype.makeReq = function(req, callback, callsign, failsign)
+AuthCal.prototype.makeReq = function(req, callback, callsign)
 {
-	gapi.client.request(req).then(callback.bind(this, callsign), this.Fail.bind(this, failsign));
+	gapi.client.request(req).then(callback.bind(this, callsign), this.Fail.bind(this));
 }
 
-AuthCal.prototype.Fail = function(failsign, reason)
+AuthCal.prototype.Fail = function(reason)
 {
-	ga_hit("req_fail", failsign);
 	this.onError("[" + reason.result.error.code + ": " + reason.result.error.message + "]");
 }
