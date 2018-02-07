@@ -470,18 +470,12 @@ AuthCal.prototype.createEvent = function(cal, item)
 		if ("dateTime" in item.start)
 		{
 			evt.timed = true;
-			evt.start = new Date(item.start.dateTime);
-			evt.end = new Date(item.end.dateTime);
+			evt.timespan = {start: item.start.dateTime, end: item.end.dateTime};
 		}
 		else
 		{
 			evt.timed = false;
-			
-			var dmy = item.start.date.split('-');
-			evt.start = new Date(parseInt(dmy[0]), parseInt(dmy[1])-1, parseInt(dmy[2]));
-
-			var dmy = item.end.date.split('-');
-			evt.end = new Date(parseInt(dmy[0]), parseInt(dmy[1])-1, parseInt(dmy[2]));
+			evt.datespan = {start: item.start.date, end: item.end.date};
 		}
 		
 		return evt;
