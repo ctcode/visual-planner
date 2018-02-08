@@ -911,9 +911,9 @@ VipCell.prototype.onclickDayNumber = function(event)
 {
 	var vdt = new VipDate(this.ymd);
 	
-	if (event.ctrlKey)
-		window.open("https://www.google.com/calendar/r/day/" + vdt.GCalURL());
-	else
+	//if (event.ctrlKey)
+		//window.open("https://www.google.com/calendar/r/day/" + vdt.GCalURL());
+	//else
 		window.open("https://www.google.com/calendar/r/week/" + vdt.GCalURL());
 }
 
