@@ -832,7 +832,9 @@ VipCol.prototype.intersection = function(ai, ax, bi, bx)
 
 VipCol.prototype.onclickMonthHeader = function()
 {
-	window.open("https://www.google.com/calendar/r/month/" + this.vdtStart.GCalURL());
+	var vdt = new VipDate(this.ymd);
+
+	window.open("https://www.google.com/calendar/r/month/" + vdt.GCalURL());
 }
 
 
