@@ -10,13 +10,20 @@
 
 .vipcol {
 	flex-grow: 1;
+	position: relative;
 }
 .vipcol.buffer {
 	display: none;
 }
+.vipcolcontent {
+	position: absolute;
+	width: 100%;
+}
 .vipmonthhdr {
 	text-align: center;
 	line-height: calc(var(--celloffset) * 2);
+	overflow: hidden;
+	white-space: nowrap;
 	cursor: pointer;
 }
 .vipcoloffset {
@@ -26,7 +33,6 @@
 }
 .vipcells {
 	position: absolute;
-	top: 0; left: 0;
 	width: 100%;
 }
 .vipsel {

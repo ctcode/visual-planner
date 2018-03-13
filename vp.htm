@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>visual-planner</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="vp.png">
@@ -67,6 +66,9 @@ body {
 #settings input[type=number] {
 	width: 4em;
 }
+#settings .monthnames {
+	width: 30em;
+}
 @media only print
 {
 	#account {
@@ -129,6 +131,9 @@ body {
 		</div>
 		<div class="sub"><input ng-model="settings.banner_text">
 			Banner text.
+		</div>
+		<div class="sub"><input class="monthnames" ng-model="settings.vipconfig.month_names">
+			Month names.
 		</div>
 	</div>
 	<div class="sub group"><b>Events</b>

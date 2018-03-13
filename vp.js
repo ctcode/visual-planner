@@ -91,6 +91,8 @@ function vp_main($scope)
 	}
 
 	function initGrid() {
+		document.title = gAppData.getAppData().banner_text;
+
 		var vg = new VipGrid("grid", "calendarbar");
 
 		if ($scope.signed_in)

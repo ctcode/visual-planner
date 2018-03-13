@@ -128,6 +128,7 @@ function VipGridConfig()
 	this.align_weekends = true;
 	this.font_scale = 0.6;
 	this.past_opacity = 0.7;
+	this.month_names = "Jan-Feb-Mar-Apr-May-Jun-Jul-Aug-Sep-Oct-Nov-Dec";
 	this.show_event_time = true;
 	this.show_event_title = true;
 	this.show_event_marker = true;
@@ -209,6 +210,8 @@ VipGrid.prototype.init = function()
 	this.cache.viewport.init = this.cache.viewport.start;
 	this.cache.len = c*3;
 	this.cache.month = (this.cfg.auto_scroll ? this.cfg.auto_scroll_offset : - new Date().getMonth()) - this.cache.viewport.start;
+
+	VipDate.localemonth = this.cfg.month_names.split('-');
 	
 	this.create();
 }
@@ -689,10 +692,15 @@ VipGrid.prototype.createGridEvent = function(evt)
 
 VipGrid.prototype.deleteGridEvent = function(id)
 {
-	var e = document.getElementById(id);
-	
-	if (e)
-		e.parentElement.removeChild(e);
+	while (true)
+	{
+		var e = document.getElementById(id);
+		
+		if (e)
+			e.parentElement.removeChild(e);
+		else
+			return;
+	}
 }
 
 VipGrid.prototype.ReloadEvents = function()
@@ -738,12 +746,13 @@ VipGrid.prototype.SyncEvents = function()
 function VipCol(parent, ymd)
 {
 	this.createChild(parent, "vipcol");
+	this.vipcolcontent = new VipDiv(this, "vipcolcontent");
 	
 	var vdt = new VipDate(ymd);
 
 	if (vipgrid.col_header)
 	{
-		this.viphdr = new VipDiv(this, "vipmonthhdr");
+		this.viphdr = new VipDiv(this.vipcolcontent, "vipmonthhdr");
 		this.viphdr.setText(vdt.MonthTitle());
 		this.viphdr.div.onclick = this.onclickMonthHeader.bind(this);
 
@@ -751,7 +760,7 @@ function VipCol(parent, ymd)
 			this.div.style.opacity = vipgrid.cfg.past_opacity;
 	}
 
-	this.vipcoloffset = new VipDiv(this, "vipcoloffset");
+	this.vipcoloffset = new VipDiv(this.vipcolcontent, "vipcoloffset");
 	if (vipgrid.cfg.align_weekends)
 		this.vipcoloffset.div.style.setProperty('--offsetday', vdt.DayOfWeek());
 
@@ -1220,8 +1229,7 @@ VipDate.prototype.isPastMonth = function()
 
 VipDate.prototype.MonthTitle = function()
 {
-	var word = this.dt.toDateString().split(' ');
-	return fmt("^ ^", word[1], word[3]);
+	return fmt("^ ^", VipDate.localemonth[this.dt.getMonth()], this.dt.getFullYear());
 }
 
 VipDate.prototype.GCalURL = function()
@@ -1232,6 +1240,8 @@ VipDate.prototype.GCalURL = function()
 VipDate.ymdstr = ["-01", "-02", "-03", "-04", "-05", "-06", "-07", "-08", "-09", "-10",
 	"-11", "-12", "-13", "-14", "-15", "-16", "-17", "-18", "-19", "-20",
 	"-21", "-22", "-23", "-24", "-25", "-26", "-27", "-28", "-29", "-30", "-31"];
+
+VipDate.localemonth = [];
 
 VipDate.ymdtoday = new VipDate().ymd();
 
