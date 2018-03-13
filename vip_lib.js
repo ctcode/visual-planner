@@ -2,39 +2,25 @@
 
 function VipObject()
 {
+	this.parent = null;
+	this.div = null;
 }
 
-VipObject.prototype.createDiv = function(parent, id)
+VipObject.prototype.createChild = function(parent, cls)
 {
-	if (this.div) console.error("vip: div element already created");
-	
-	var div = document.createElement('div');
+	this.div = document.createElement('div');
+	this.div.vipobj = this;
 
-	if (id)
-		div.id = id;
+	if (cls)
+		this.div.className = cls;
 
-	div.style.position = "absolute";
-	div.style.pointerEvents = "none";
-	div.style.MozUserSelect = "none";  // ff fix
-	div.vipobj = this;
-	
-	var parent_div = parent ? parent.div : document.body;
-	parent_div.appendChild(div);
-
-	this.div = div;
 	this.parent = parent;
+	this.parent.div.appendChild(this.div);
 }
 
-VipObject.prototype.setPos = function(left, top)
+VipObject.prototype.addClass = function(cls)
 {
-	this.div.style.left = left;
-	this.div.style.top = top;
-}
-
-VipObject.prototype.setSize = function(width, height)
-{
-	this.div.style.width = width;
-	this.div.style.height = height;
+	this.div.classList.add(cls);
 }
 
 VipObject.prototype.ClearContent = function()
@@ -43,7 +29,13 @@ VipObject.prototype.ClearContent = function()
 		this.div.innerHTML = "";
 }
 
-VipObject.prototype.getFirstChild = function()
+VipObject.prototype.Remove = function()
+{
+	if (this.div)
+		this.parent.div.removeChild(this.div);
+}
+
+VipObject.prototype.First = function()
 {
 	var element = this.div.firstChild;
 	
@@ -53,7 +45,7 @@ VipObject.prototype.getFirstChild = function()
 	return null;
 }
 
-VipObject.prototype.getLastChild = function()
+VipObject.prototype.Last = function()
 {
 	var element = this.div.lastChild;
 	
@@ -73,9 +65,19 @@ VipObject.prototype.Next = function()
 	return null;
 }
 
+VipObject.prototype.Prev = function()
+{
+	var sib = this.div.previousSibling;
+	
+	if (sib)
+		return sib.vipobj;
+	
+	return null;
+}
+
 VipObject.prototype.setText = function(txt)
 {
-	this.div.innerHTML = txt;
+	this.div.textContent = txt;
 }
 
 VipObject.prototype.Show = function(showdiv)
@@ -87,8 +89,8 @@ VipObject.prototype.Align = function(cell_start, cell_end)
 {
 	if (cell_start && cell_end)
 	{
-		this.div.style.top = cell_start.div.offsetTop;
-		this.div.style.height = (cell_end.div.offsetTop - cell_start.div.offsetTop) + cell_end.div.offsetHeight;
+		this.div.style.top = (cell_start.div.offsetTop) + "px";
+		this.div.style.height = ((cell_end.div.offsetTop - cell_start.div.offsetTop) + cell_end.div.offsetHeight) + "px";
 		this.Show(true);
 	}
 	else
@@ -107,7 +109,7 @@ VipObject.prototype.MoveLastBefore = function(vipsib)
 
 function VipDiv(parent, id)
 {
-	this.createDiv(parent, id);
+	this.createChild(parent, id);
 }
 
 VipDiv.prototype = new VipObject;
@@ -116,757 +118,1076 @@ VipDiv.prototype = new VipObject;
 
 //////////////////////////////////////////////////////////////////////
 
-function VipHost()
+function VipGridConfig()
 {
-	this.createDiv(null, "viphost");
-}
-
-VipHost.prototype = new VipObject;
-
-VipHost.prototype.createSingleCol = function()
-{
-	this.SingleCol = true;
-
-	vip.cell.width = document.body.offsetWidth;
-
-	this.scale_font();
-	
-	var vdt_start = new VipDate.Today();
-	vdt_start.MoveToStartOfWeek(1);  // monday this week
-
-	var vdt_end = new VipDate(vdt_start);
-	vdt_end.MoveDays(28);
-	
-	var vipcol = new VipCol(this, vdt_start, vdt_end);
-	vipcol.vipcelloffset.setPos(0, 5);
-}
-
-VipHost.prototype.createMultiCol = function()
-{
-	if (vip.multi_col.scale.fixed)
-	{
-		vip.cell.height = vip.multi_col.scale.height;
-		vip.cell.width = vip.multi_col.scale.width;
-	}
-	else
-	{
-		var so = "n/a";
-		if (screen.orientation)
-		if (screen.orientation.type)
-			so = screen.orientation.type;
-		if (screen.msOrientation)  // edge, ie
-			so = screen.msOrientation;
-		if (so.includes("portrait"))
-			vip.multi_col.count = (vip.multi_col.count / 2);
-
-		// reset dimensions depending on available space
-		vip.cell.height = Math.floor(document.body.clientHeight/(31+6+1));  // max days + max offset + month name
-		vip.cell.width = Math.floor(document.body.clientWidth/vip.multi_col.count);
-	}
-
-	vip.cell.margin = vip.cell.height+4;
-
-	this.scale_font();
-	
-	var vdt_start = new VipDate.Today();
-	vdt_start.MoveToStartOfMonth();
-
-	if (vip.multi_col.auto_scroll)
-		vdt_start.MoveMonths(vip.multi_col.offset);
-	else
-		vdt_start.MoveToStartOfYear();
-
-	var vdt_end = new VipDate(vdt_start);
-
-	for (var c=0; c < vip.multi_col.count; c++)
-	{
-		vdt_end.MoveMonths(1);
-
-		var vipcol = new VipCol(this, vdt_start, vdt_end);
-		vipcol.addMonthHeader(vdt_start);
-		
-		vdt_start.MoveMonths(1);
-	}
-
-	this.updateLayout();
-}
-
-VipHost.prototype.scale_font = function()
-{
-	this.div.style.fontSize = "0.7em";
-
-	var a = document.createElement('div');
-	a.innerHTML = "a";
-	this.div.appendChild(a);
-	vip.cell.font_client = {width: a.clientWidth, height: a.clientHeight};
-	this.div.removeChild(a);
-}
-
-VipHost.prototype.scroll_col = function(offset, ui_event)
-{
-	if (this.SingleCol) return;
-
-	if (ui_event == "touch")
-		ga_hit('no_category', 'touch_scroll');
-
-	var cols = this.div;
-	var ltor = (offset > 0);  // scroll direction
-	var count = ltor ? offset : -offset;
-	
-	for (var c=0; c < count; c++)
-		cols.removeChild(ltor ? cols.firstChild : cols.lastChild);
-
-	var vipcol_prev = ltor ? cols.lastChild.vipobj : cols.firstChild.vipobj;
-	var vdt_start = new VipDate(vipcol_prev.vdt_month);
-
-	for (var c=0; c < count; c++)
-	{
-		vdt_start.MoveMonths(ltor ? 1:-1);
-
-		var vdt_end = new VipDate(vdt_start);
-		vdt_end.MoveMonths(1);
-
-		var vipcol = new VipCol(this, vdt_start, vdt_end);
-		vipcol.addMonthHeader(vdt_start);
-
-		if (!ltor)
-			this.MoveLastBefore(this.getFirstChild());  // move col to left
-	}
-
-	this.updateLayout();
-}
-
-VipHost.prototype.updateLayout = function()
-{
-	var xpos=0;
-	var col = this.div.firstChild;
-	
-	while(col)
-	{
-		col.style.left = xpos;
-		
-		xpos += vip.cell.width;
-		col = col.nextSibling;
-	}
-}
-
-VipHost.prototype.updateScale = function()
-{
-	var cellwidth = Math.floor(document.body.clientWidth/vip.multi_col.count) - 1;
-	var xpos=0;
-
-	var vipcol = this.getFirstChild();
-	while(vipcol)
-	{
-		vipcol.div.style.width = cellwidth;
-		vipcol.viphdr.div.style.width = cellwidth;
-
-		var vipcell = vipcol.vipcells.getFirstChild();
-		while(vipcell)
-		{
-			vipcell.div.style.width = cellwidth;
-			vipcell.vipevts.div.style.width = (cellwidth - vip.cell.margin);
-			vipcell.updateEventLayout();
-
-			vipcell = vipcell.Next();
-		}
-		
-		vipcol.updateEventLayout();
-
-		vipcol.div.style.left = xpos;
-		xpos += (cellwidth + 1);
-
-		vipcol = vipcol.Next();
-	}
-}
-
-VipHost.prototype.getVipCell = function(vdt)
-{
-	var div = document.getElementById(vdt.Datestamp());
-	
-	if (div)
-	if (div.vipobj instanceof VipCell)
-		return div.vipobj;
-
-	return null;
+	this.multi_col_count = 6;
+	this.multi_col_count_portrait = 3;
+	this.auto_scroll = true;
+	this.auto_scroll_offset = -1;
+	this.show_weekends = true;
+	this.align_weekends = true;
+	this.font_scale = 0.6;
+	this.past_opacity = 0.7;
+	this.show_event_time = true;
+	this.show_event_title = true;
+	this.show_event_marker = true;
+	this.colour_event_title = false;
+	this.proportional_events = false;
+	this.proportional_start_hour = 8;
+	this.proportional_end_hour = 20;
+	this.show_all_day_events = true;
+	this.single_day_as_multi_day = false;
+	this.show_timed_events = true;
+	this.multi_day_as_single_day = false;
+	this.first_day_only = false;
+	this.marker_width = 0.8;
+	this.multi_day_opacity = 0.8;
 }
 
 
 
 //////////////////////////////////////////////////////////////////////
 
-function VipCol(parent, vdt_start, vdt_end)
+var vipgrid;
+
+function VipGrid(gid, cbid)
 {
-	this.createDiv(parent, "vipcol");
+	vipgrid = this;
 
-	this.div.style.width = vip.cell.width;
-	this.vipcelloffset = new VipDiv(this, "vipcelloffset");
-	this.vipcells = new VipCells(this.vipcelloffset, this, vdt_start, vdt_end);
-	this.vipevts = new VipDiv(this.vipcelloffset, "vipevts");
-	this.vipsel = new VipClrBar(this.vipcelloffset, "vipsel", "rgba(255,255,127,0.6)", 0, vip.cell.width);
-	this.vipind = new VipClrBar(this.vipcelloffset, "vipind", "rgba(0,0,0,0.3)", (vip.cell.margin-3), 1);
+	this.div = document.getElementById(gid);
+	this.div.innerHTML = "";
+	this.div.tabIndex = "1";
 
-	this.vipseltip = new VipDiv(this.vipcelloffset, "vipseltip");
-	this.vipseltip.Show(false);
-	this.vipseltip.div.style.fontSize = fmt("^px", Math.floor(0.5*vip.cell.height));
-	this.vipseltip.div.style.width = vip.cell.width;
-	this.vipseltip.div.style.textAlign = "center";
+	this.addClass("vipgrid");
+	this.cfg = new VipGridConfig();
+	this.cellmax = 31;
+	this.col_header = true;
+	this.scrolling_disabled = false;
+	this.time24h = true;
+	this.evtsrc = null;
+	this.selection = {start: null, end: null};
+	this.touch = {id: null, start: {x:0, y:0}};
+	this.priority = null;
 
-	this.vipsel.div.style.zIndex = "10";
-	this.vipseltip.div.style.zIndex = "10";
+	if (cbid)
+		this.calbar = new VipCalendarBar(cbid);
 
-	this.firstcell = this.vipcells.div.firstChild.vipobj;
-	this.lastcell = this.vipcells.div.lastChild.vipobj;
+	this.div.onkeydown = this.onkeydown.bind(this);
+	this.div.onmouseup = this.onmouseup.bind(this);
+	this.div.onwheel = this.onwheel.bind(this);
 
-	this.ReqDateStart = vdt_start.GCalDate();
-	this.ReqDateEnd = vdt_end.GCalDate();
+	this.div.addEventListener('touchstart', this.ontouchstart.bind(this), false);
+	this.div.addEventListener('touchmove', this.ontouchmove.bind(this), false);
+	this.div.addEventListener('touchend', this.ontouchend.bind(this), false);
+	this.div.addEventListener('touchcancel', this.ontouchcancel.bind(this), false);
+
+	window.onresize = this.onResize.bind(this);
+
+	if (navigator.userAgent.includes("Chrome"))
+	{
+		var e = document.getElementById("vipmediaprint");
+		if (!e)
+		{
+			e = document.createElement('style');
+			document.head.appendChild(e);
+			e.id = "vipmediaprint";
+			e.sheet.insertRule("@media only print{.vipgrid {--celloffset: 0px !important;}}", 0);
+		}
+
+		window.matchMedia("print").addListener(this.onMediaPrint.bind(this));
+	}
+}
+
+VipGrid.prototype = new VipObject;
+
+VipGrid.prototype.init = function()
+{
+	var c = this.isPortrait() ? this.cfg.multi_col_count_portrait : this.cfg.multi_col_count;
+
+	this.cache = {};
+	this.cache.viewport = {start: c, len: c};
+	this.cache.viewport.init = this.cache.viewport.start;
+	this.cache.len = c*3;
+	this.cache.month = (this.cfg.auto_scroll ? this.cfg.auto_scroll_offset : - new Date().getMonth()) - this.cache.viewport.start;
 	
-	vip.event_req.queue.push(this);
-	request_events();
+	this.create();
 }
 
-VipCol.prototype = new VipObject;
-
-VipCol.prototype.addMonthHeader = function(vdt_month)
+VipGrid.prototype.create = function()
 {
-	this.vdt_month = new VipDate(vdt_month);
-	this.vipcelloffset.setPos(0, ((vdt_month.DayOfWeek() + 1) * vip.cell.height));
+	this.ClearContent();
+	
+	var vdt = new VipDate();
+	vdt.toStartOfMonth();
+	vdt.offsetMonth(this.cache.month);
 
-	if (vdt_month.isPastMonth())
-		this.div.style.opacity = ((100 - vip.multi_col.past_transparency) / 100);
-
-	this.viphdr = new VipDiv(this, "vipmonthhdr");
-	this.viphdr.setSize(vip.cell.width, vip.cell.height);
-	this.viphdr.setText(vdt_month.MonthTitle());
-
-	var hdr = this.viphdr.div;
-	hdr.setAttribute('onclick', "onclick_month_header(event);");
-	hdr.style.textAlign = "center";
-	hdr.style.lineHeight = fmt("^px", vip.cell.height);  // vertical centre
-	hdr.style.pointerEvents = "all";
-	hdr.style.cursor = "pointer";
-}
-
-VipCol.prototype.updateSelectionTip = function(vipcell_start, vipcell_end)
-{
-	this.vipseltip.Show(false);
-
-	if (!vipcell_start) return;
-	if (!vipcell_end) return;
-	if (vipcell_start === vipcell_end) return;
-
-	this.vipseltip.div.innerHTML = vipcell_start.vipdate.TimespanTo(vipcell_end.vipdate);
-	this.vipseltip.setPos(vipcell_end.div.offsetLeft, vipcell_end.div.offsetTop + Math.floor((vipcell_end.div.clientHeight - this.vipseltip.div.clientHeight) / 2));
-	this.vipseltip.Show(true);
-}
-
-VipCol.prototype.addEvent = function(event, vipcell)
-{
-	var vipevt = null;
-
-	var vipsib = this.vipevts.getFirstChild();
-	while (vipsib)
+	for (var i=0; i < this.cache.len; i++)
 	{
-		if (event.id == vipsib.evt_id)
-		{
-			vipevt = vipsib;
-			break;
-		}
-
-		if (vipcell.vipdate.dt < vipsib.vipcell_start.vipdate.dt)
-			break;
-
-		vipsib = vipsib.Next();
+		var vipcol = new VipCol(this, vdt.ymd());
+		vdt.offsetMonth(1);
 	}
 
-	if (!vipevt)
-	{
-		vipevt = new VipMultiDayEvent(this.vipevts, event, vipcell);
-		this.vipevts.MoveLastBefore(vipsib);
-	}
-
-	vipevt.updateEvent(vipcell);
-	vipcell.updateEventInfo();
-	this.updateEventLayout();
+	this.updateViewport();
+	this.updateLayout();
+	this.ReloadEvents();
+	this.div.focus();
 }
 
-VipCol.prototype.updateEventLayout = function()
+VipGrid.prototype.updateLayout = function()
 {
-	var fixed = [];
+	var c = this.cellmax;
+	if (this.col_header) c += 2;
+	if (this.cfg.align_weekends) c += 6;
 
-	var vipsib = this.vipevts.getFirstChild();
-	while (vipsib)
+	var celloffset = Math.floor(this.div.offsetHeight/c);
+
+	this.div.style.fontSize = ((celloffset/16) * this.cfg.font_scale) + "em";
+	var fontsize = parseFloat(window.getComputedStyle(this.div).fontSize);
+	var markerwidth = Math.floor(fontsize*this.cfg.marker_width) - 2;
+
+	this.div.style.setProperty('--celloffset', celloffset + "px", this.priority);
+	this.div.style.setProperty('--markerwidth', markerwidth + "px");
+}
+
+VipGrid.prototype.updateViewport = function()
+{
+	for (var i=0; i < this.div.childElementCount; i++)
 	{
-		var x_off = (vipsib.div.clientWidth + 2);
-		vipsib.div.style.left = (this.div.offsetWidth - x_off);
-		
-		while(true)
-		{
-			var shift = false;
+		if (i < this.cache.viewport.start)
+			this.div.children[i].classList.add("buffer");
+		else if (i >= (this.cache.viewport.start + this.cache.viewport.len))
+			this.div.children[i].classList.add("buffer");
+		else
+			this.div.children[i].classList.remove("buffer");
+	}
+}
 
-			for (var i=0; i < fixed.length; i++)
+VipGrid.prototype.scroll = function(forward)
+{
+	if (this.scrolling_disabled)
+		return;
+
+	if (forward)
+	{
+		this.cache.viewport.start += 1;
+
+		if (this.cache.viewport.start == (this.cache.len - this.cache.viewport.len))
+		{
+			while (this.cache.viewport.start != this.cache.viewport.init)
 			{
-				if (this.intersection(vipsib, fixed[i]))
-				{
-					shift = true;
-					break;
-				}
-			}
-			
-			if (shift)
-				vipsib.div.style.left = (vipsib.div.offsetLeft - x_off);
-			else
-				break;
-		}
+				var vdt = new VipDate(this.Last().ymd);
+				vdt.offsetMonth(1);
+				var vipcol = new VipCol(this, vdt.ymd());
+				this.div.removeChild(this.div.firstChild);
 
-		fixed.push(vipsib);
-		vipsib = vipsib.Next();
+				this.cache.viewport.start--;
+			}
+
+			this.ReloadEvents();
+		}
 	}
+	else
+	{
+		this.cache.viewport.start += -1;
+
+		if (this.cache.viewport.start == 0)
+		{
+			while (this.cache.viewport.start != this.cache.viewport.init)
+			{
+				var vdt = new VipDate(this.First().ymd);
+				vdt.offsetMonth(-1);
+				var vipcol = new VipCol(this, vdt.ymd());
+				this.MoveLastBefore(this.First());
+				this.div.removeChild(this.div.lastChild);
+
+				this.cache.viewport.start++;
+			}
+
+			this.ReloadEvents();
+		}
+	}
+
+	this.updateViewport();
 }
 
-VipCol.prototype.intersection = function(evt1, evt2)
+VipGrid.prototype.isPortrait = function()
 {
-	if (evt1.div.offsetLeft == evt2.div.offsetLeft)
-	if (evt1.div.offsetTop < (evt2.div.offsetTop + evt2.div.offsetHeight + 2))
-	if ((evt1.div.offsetTop + evt1.div.offsetHeight + 2) > evt2.div.offsetTop)
+	var so = "n/a";
+	if (screen.orientation)
+	if (screen.orientation.type)
+		so = screen.orientation.type;
+	if (screen.msOrientation)  // edge, ie
+		so = screen.msOrientation;
+
+	if (so.includes("portrait"))
 		return true;
 
 	return false;
 }
 
-
-
-//////////////////////////////////////////////////////////////////////
-
-function VipCells(parent, col, vdt_start, vdt_end)
+VipGrid.prototype.getVipCell = function(ymd)
 {
-	this.createDiv(parent, "vipcells");
+	var e = document.getElementById(ymd);
+	
+	if (e)
+	if (e.vipobj instanceof VipCell)
+		return e.vipobj;
 
-	var y = 0;
-	var vdt_day = new VipDate(vdt_start);
-	while (vdt_day.dt < vdt_end.dt)
+	return null;
+}
+
+VipGrid.prototype.onResize = function()
+{
+	this.updateLayout();
+}
+
+VipGrid.prototype.onMediaPrint = function(mql)
+{
+	this.priority = mql.matches ? "important" : null;
+	this.updateLayout();
+}
+
+VipGrid.prototype.onkeydown = function(event)
+{
+/*
+	switch (event.key)
 	{
-		var vipcell = new VipCell(this, col, vdt_day);
-		vipcell.setPos(0, y);
-		vdt_day.MoveDays(1);
-		y += vip.cell.height;
+		case '+':
+		case 'Add':
+			this.setCellSelectMode(true);
+			return;
+		case '=':
+		case 'Equal':
+			this.setCellSelectMode("measure");
+			return;
+		case 'Escape':
+		case 'Esc':
+			this.setCellSelectMode(false);
+			this.cancel_selection();
+			return;
+	}
+*/
+
+	switch (event.which)
+	{
+		case 37:  // back
+		case 38:  // up
+			this.scroll(false);
+			break;
+		case 39:  // right
+		case 40:  // down
+			this.scroll(true);
+			break;
+		case 82:  // r
+			if (event.ctrlKey)
+				this.ReloadEvents();
+			else
+				this.SyncEvents();
+			break;
+		default:
+			return;
+	}
+
+	event.returnValue = false;
+	event.preventDefault();
+}
+
+VipGrid.prototype.onwheel = function(event)
+{
+	this.scroll(event.deltaY > 0);
+	event.preventDefault();
+}
+
+VipGrid.prototype.onmouseup = function()
+{
+	this.complete_selection();
+}
+
+VipGrid.prototype.init_selection = function(vipcell)
+{
+	this.cancel_selection();
+	
+	vipcell.vipcol.vipsel.Align(vipcell, vipcell);
+
+	this.selection.start = vipcell;
+	this.selection.end = vipcell;
+}
+
+VipGrid.prototype.update_selection = function(cell_upd)
+{
+	if (!this.selection.start)
+		return;
+
+	if (cell_upd === this.selection.end)
+		return;  // selection not changed
+
+	// set the target selection range, in left to right order
+	var ltor = cell_upd.isBefore(this.selection.start);
+	var cell_targ_left = ltor ? cell_upd : this.selection.start;
+	var cell_targ_right = ltor ? this.selection.start : cell_upd;
+
+	// set the column update range, in left to right order
+	var ltor = this.selection.end.isBefore(cell_upd);
+	var col_upd_left = ltor ? this.selection.end.vipcol : cell_upd.vipcol;
+	var col_upd_right = ltor ? cell_upd.vipcol : this.selection.end.vipcol;
+	
+	// update columns
+	var col = col_upd_left;
+	while (true)
+	{
+		col.vipsel.Align(null);
+		var cell_top = (col === cell_targ_left.vipcol) ? cell_targ_left : null;
+		var cell_bottom = (col === cell_targ_right.vipcol) ? cell_targ_right : null;
+		
+		if (!cell_top)
+		if (col.firstcell.inRange(cell_targ_left, cell_targ_right))
+			cell_top = col.firstcell;
+		
+		if (!cell_bottom)
+		if (col.lastcell.inRange(cell_targ_left, cell_targ_right))
+			cell_bottom = col.lastcell;
+		
+		if (cell_top && cell_bottom)
+			col.vipsel.Align(cell_top, cell_bottom);
+
+		if (col === col_upd_right)
+			break;
+
+		col = col.Next();
+	}
+
+	this.selection.end = cell_upd;
+	this.updateSelectionTip(this.selection.start, this.selection.end);
+}
+
+VipGrid.prototype.complete_selection = function()
+{
+	if (this.selection.start)
+		this.create_calendar_event();
+
+	this.cancel_selection();
+}
+
+VipGrid.prototype.cancel_selection = function()
+{
+	if (!this.selection.start)
+		return;
+
+	this.update_selection(this.selection.start);
+	this.selection.start.vipcol.vipsel.Align(null);
+	this.updateSelectionTip(null);
+
+	this.selection.start = null;
+	this.selection.end = null;
+}
+
+VipGrid.prototype.setCellSelectMode = function(enable)
+{
+	var e = document.getElementById("vipcellselect");
+	
+	if (e) {}
+	else
+	{
+		e = document.createElement('style');
+		document.head.appendChild(e);
+		e.id = "vipcellselect";
+		e.sheet.insertRule(".vipgrid * {pointer-events: none;}", 0);
+		e.sheet.insertRule(".vipgrid, .vipcell {cursor: cell; pointer-events: all;}", 1);
+		e.sheet.insertRule(".vipsel {background-color: rgba(255,255,127,0.6)}", 2);
+	}
+
+	e.sheet.disabled = !enable;
+}
+
+VipGrid.prototype.updateSelectionTip = function(vipcell_start, vipcell_end)
+{
+	//this.calbar.innerHTML = "";
+
+	if (!vipcell_start) return;
+	if (!vipcell_end) return;
+	if (vipcell_start === vipcell_end) return;
+
+	var c = VipDate.DaySpan(vipcell_start.ymd, vipcell_end.ymd);
+	var w = Math.floor(c/7);
+	var d = (c-(w*7));
+	var tip = (w > 0 ? fmt("^, ^-^", c, w, d) : fmt("^", c));
+
+	//this.calbar.innerHTML = tip;
+}
+
+VipGrid.prototype.create_calendar_event = function()
+{
+	var dt1 = this.selection.start.vipdate.dt;
+	var dt2 = this.selection.end.vipdate.dt;
+	var vdtStart = new VipDate(dt1 < dt2 ? dt1 : dt2);
+	var vdtEnd = new VipDate(dt1 > dt2 ? dt1 : dt2);
+	vdtEnd.offsetDay(1);  // end date is exclusive
+	
+	window.open("https://www.google.com/calendar/r/eventedit?dates=" + vdtStart.ID() + "/" + vdtEnd.ID());
+}
+
+VipGrid.prototype.ontouchstart = function(event)
+{
+	if (event.touches.length == 1)
+	{
+		var t = event.touches[0];
+
+		this.touch.id = t.identifier;
+		this.touch.start.x = t.pageX;
+		this.touch.start.y = t.pageY;
 	}
 }
 
-VipCells.prototype = new VipObject;
+VipGrid.prototype.ontouchmove = function(event)
+{
+	if (event.touches.length != 1)
+	{
+		this.ontouchcancel();
+		return;
+	}
+	
+	var t = event.touches[0];
+	
+	if (t.identifier != this.touch.id)
+	{
+		this.ontouchcancel();
+		return;
+	}
+
+	event.preventDefault();
+}
+
+VipGrid.prototype.ontouchend = function(event)
+{
+	if (event.changedTouches.length != 1)
+	{
+		this.ontouchcancel();
+		return;
+	}
+	
+	var t = event.changedTouches[0];
+	
+	if (t.identifier != this.touch.id)
+	{
+		this.ontouchcancel();
+		return;
+	}
+	
+	var dx = Math.abs(this.touch.start.x - t.pageX);
+	var dy = Math.abs(this.touch.start.y - t.pageY);
+	
+	if (dx > dy)
+	if (dx > 30)
+		this.scroll(this.touch.start.x > t.pageX);
+
+	this.ontouchcancel();
+}
+
+VipGrid.prototype.ontouchcancel = function(event)
+{
+	this.touch.id = null;
+}
+
+VipGrid.prototype.registerEventSource = function(src)
+{
+	src.forwardSetting = this.rcvCalSetting.bind(this);
+	src.forwardEvent = this.rcvCalEvent.bind(this);
+	this.evtsrc = src;
+	
+	if (this.calbar)
+		this.calbar.registerCalendarSource(src);
+}
+
+VipGrid.prototype.rcvCalSetting = function(setting, value)
+{
+	if (setting == "time24h")
+		this.time24h = value;
+}
+
+VipGrid.prototype.rcvCalEvent = function(evt)
+{
+	if (evt.deleted)
+		this.deleteGridEvent(evt.id);
+	else
+		this.createGridEvent(evt);
+}
+
+VipGrid.prototype.createGridEvent = function(evt)
+{
+	var info = {
+		id: evt.id,
+		title: evt.title,
+		eid: evt.htmlLink.substr(evt.htmlLink.indexOf("eid=")+4),
+		colour: evt.colour,
+		calendar: evt.calendar,
+		calclass: evt.calclass,
+		timed: evt.timed
+	};
+
+	if (evt.timed)
+	{
+		if (!this.cfg.show_timed_events)
+			return;
+		
+		info.vdttStart = new VipDateTime(evt.timespan.start);
+		info.vdttEnd = new VipDateTime(evt.timespan.end);
+		info.ymd = info.vdttStart.ymd();
+		info.duration = VipDate.DaySpan(info.ymd, info.vdttEnd.ymd()) + 1;
+	}
+	else
+	{
+		if (!this.cfg.show_all_day_events)
+			return;
+		
+		info.ymd = evt.datespan.start;
+		info.duration = VipDate.DaySpan(evt.datespan.start, evt.datespan.end);
+	}
+
+	var vdt = new VipDate(info.ymd);
+	var c = 0;
+	while (c < info.duration)
+	{
+		var vipcell = this.getVipCell(vdt.ymd());
+		if (vipcell)
+		{
+			var multi = (info.duration > 1);
+			var single = !multi;
+			
+			if (this.cfg.show_all_day_events)
+			if (this.cfg.single_day_as_multi_day)
+			if (single)
+			if (!evt.timed)
+			{
+				multi = true;
+				single = false;
+			}
+			
+			if (this.cfg.multi_day_as_single_day)
+			if (multi)
+			{
+				multi = false;
+				single = true;
+
+				if (this.cfg.first_day_only)
+				{
+					multi = true;
+					single = (vipcell.ymd == info.ymd);
+				}
+			}
+
+			if (multi)
+				vipcell.vipcol.addEvent(info, vipcell);
+
+			if (single)
+				vipcell.addEvent(info);
+		}
+
+		vdt.offsetDay(1);
+		c++;
+	}
+}
+
+VipGrid.prototype.deleteGridEvent = function(id)
+{
+	var e = document.getElementById(id);
+	
+	if (e)
+		e.parentElement.removeChild(e);
+}
+
+VipGrid.prototype.ReloadEvents = function()
+{
+	if (this.evtsrc)
+	{
+		var vipcol = this.First();
+
+		while (vipcol)
+		{
+			vipcol.vipevts.ClearContent();
+			
+			var vipcell = vipcol.vipcells.First();
+			while (vipcell)
+			{
+				vipcell.vipevts.ClearContent();
+
+				vipcell = vipcell.Next();
+			}
+
+			vipcol = vipcol.Next();
+		}
+
+		var vdt = new VipDate(this.Last().ymd);
+		vdt.offsetMonth(1);
+
+		this.evtsrc.datespan.dtStart = new Date(this.First().ymd);
+		this.evtsrc.datespan.dtEnd = new Date(vdt.ymd());
+		this.evtsrc.loadEvents();
+	}
+}
+
+VipGrid.prototype.SyncEvents = function()
+{
+	if (this.evtsrc)
+		this.evtsrc.syncEvents();
+}
 
 
 
 //////////////////////////////////////////////////////////////////////
 
-function VipCell(parent, col, vdt)
+function VipCol(parent, ymd)
 {
-	this.createDiv(parent, vdt.Datestamp());
-	this.vipcol = col;
-	this.vipdate = new VipDate(vdt);
-
-	this.setSize(vip.cell.width-1, vip.cell.height-1);
-	this.div.style.backgroundColor = (vdt.isWeekend() ? "#d8d8d8" : "#eaeaea");
-	this.div.style.pointerEvents = "all";
+	this.createChild(parent, "vipcol");
 	
-	var vipnum = new VipDiv(this);
-	vipnum.setText(vdt.DayOfMonth());
+	var vdt = new VipDate(ymd);
 
-	var num = vipnum.div;
-	num.style.top = Math.floor((vip.cell.height - num.clientHeight) / 2);
-	num.style.width = vip.cell.height;
-	num.style.textAlign = "center";
-	num.style.cursor = "pointer";
-	num.style.pointerEvents = "all";
-	num.setAttribute('onclick', "onclick_day_number(event);");
-
-	if (vdt.isToday())
+	if (vipgrid.col_header)
 	{
-		num.style.fontWeight = "bold";
-		num.style.color = "white";
-		num.style.backgroundColor = "red";
+		this.viphdr = new VipDiv(this, "vipmonthhdr");
+		this.viphdr.setText(vdt.MonthTitle());
+		this.viphdr.div.onclick = this.onclickMonthHeader.bind(this);
+
+		if (vdt.isPastMonth())
+			this.div.style.opacity = vipgrid.cfg.past_opacity;
+	}
+
+	this.vipcoloffset = new VipDiv(this, "vipcoloffset");
+	if (vipgrid.cfg.align_weekends)
+		this.vipcoloffset.div.style.setProperty('--offsetday', vdt.DayOfWeek());
+
+	this.vipcells = new VipDiv(this.vipcoloffset, "vipcells");
+	
+	var cellindex=0;
+	var month = vdt.getMonth();
+	while (month == vdt.getMonth())
+	{
+		var vipcell = new VipCell(this.vipcells, this, vdt.ymd());
+		vipcell.cellindex = cellindex;
+
+		vdt.offsetDay(1);
+		cellindex++;
+	}
+
+	this.vipsel = new VipDiv(this.vipcoloffset, "vipsel");
+	this.vipsel.Show(false);
+	
+	this.vipevts = new VipDiv(this.vipcoloffset, "vipcolevts");
+
+	this.ymd = ymd;
+	this.firstcell = this.vipcells.First();
+	this.lastcell = this.vipcells.Last();
+}
+
+VipCol.prototype = new VipObject;
+
+VipCol.prototype.addEvent = function(info, vipcell)
+{
+	var vipevt = this.vipevts.First();
+	while (vipevt)
+	{
+		if (vipevt.info.id == info.id)
+			break;
+
+		vipevt = vipevt.Next();
 	}
 	
-	this.vipevts = new VipDiv(this, "vipevts");
-	this.vipevts.setPos(vip.cell.margin, 0);
-	this.vipevts.setSize((this.div.offsetWidth - vip.cell.margin), this.div.offsetHeight);
-	this.vipevts.div.style.overflow = "hidden";
+	if (!vipevt)
+		vipevt = new VipMultiDayEvent(this.vipevts, info, vipcell);
+
+	vipevt.extend(vipcell);
+	this.findFreeSlot(vipevt);
+}
+
+VipCol.prototype.findFreeSlot = function(vipevt)
+{
+	var vipsib = this.vipevts.First();
+	while (vipsib)
+	{
+		if (vipevt === vipsib) {}
+		else
+		{
+			if (vipevt.slot == vipsib.slot)
+			if (this.intersection(vipsib.index, vipsib.extent, vipevt.index, vipevt.extent))
+			{
+				vipevt.nextSlot();
+				this.findFreeSlot(vipevt);
+				return;
+			}
+		}
+
+		vipsib = vipsib.Next();
+	}
+}
+
+VipCol.prototype.intersection = function(ai, ax, bi, bx)
+{
+	if (ai > bi)
+		return ((bi + bx) >= ai);
+
+	if (ai < bi)
+		return ((ai + ax) >= bi);
+
+	return true;
+}
+
+VipCol.prototype.onclickMonthHeader = function()
+{
+	var vdt = new VipDate(this.ymd);
+
+	window.open("https://www.google.com/calendar/r/month/" + vdt.GCalURL());
+}
+
+
+
+//////////////////////////////////////////////////////////////////////
+
+function VipCell(parent, vipcol, ymd)
+{
+	this.createChild(parent, "vipcell");
+	this.vipcol = vipcol;
+	this.ymd = ymd;
+	this.div.id = ymd;
+	//this.div.onmousedown = vipgrid.init_selection.bind(vipgrid, this);
+	//this.div.onmousemove = vipgrid.update_selection.bind(vipgrid, this);
+
+	var vdt = new VipDate(ymd);
+
+	if (vipgrid.cfg.show_weekends)
+	if (vdt.isWeekend())
+		this.addClass("weekend");
+
+	this.vipnum = new VipDiv(this, "vipcellnum");
+	this.vipnum.setText(vdt.DayOfMonth());
+	this.vipnum.div.onclick = this.onclickDayNumber.bind(this);
+	if (VipDate.isToday(ymd))
+		this.vipnum.addClass("today");
+	
+	this.vipevts = new VipDiv(this, "vipcellevts");
 }
 
 VipCell.prototype = new VipObject;
 
 VipCell.prototype.isBefore = function(vipcell)
 {
-	return (this.div.id < vipcell.div.id);
+	return (this.ymd < vipcell.ymd);
 }
 
 VipCell.prototype.inRange = function(locell, hicell)
 {
-	if (this.div.id >= locell.div.id)
-	if (this.div.id <= hicell.div.id)
+	if (this.ymd >= locell.ymd)
+	if (this.ymd <= hicell.ymd)
 		return true;
 
 	return false;
 }
 
-VipCell.prototype.inDateRange = function(vdt_lo, vdt_hi)
+VipCell.prototype.addEvent = function(info)
 {
-	if (this.vipdate.dt >= vdt_lo.dt)
-	if (this.vipdate.dt <= vdt_hi.dt)
-		return true;
-
-	return false;
-}
-
-VipCell.prototype.addEvent = function(event)
-{
-	var vtm_event = new VipTime.GCal(event.startTime);
-	var timestamp = vtm_event.Timestamp();
-
-	var vipsib = this.vipevts.getFirstChild();
-	while (vipsib)
+	var vipevt = this.vipevts.First();
+	while (vipevt)
 	{
-		if (event.id == vipsib.evt_id)
+		if (vipevt.info.id == info.id)
 			return;
 
-		if (timestamp < vipsib.evt_timestamp)
+		vipevt = vipevt.Next();
+	}
+	
+	if (!vipevt)
+		vipevt = new VipSingleDayEvent(this.vipevts, info, this.ymd);
+
+	var vipsib = this.vipevts.First();
+	while (vipsib)
+	{
+		if (vipevt.timestamp < vipsib.timestamp)
 			break;
 
 		vipsib = vipsib.Next();
 	}
 
-	var vipevt = new VipSingleDayEvent(this, event);
 	this.vipevts.MoveLastBefore(vipsib);  // sort in time order
-
-	this.updateEventInfo();
-	this.updateEventLayout();
 }
 
-VipCell.prototype.updateEventLayout = function()
+VipCell.prototype.onclickDayNumber = function(event)
 {
-	if (vip.events.proportional.show)
-		return;
-		
-	var sep = 2;
-
-	var tot_width = 0;
-	var vipevt = this.vipevts.getFirstChild();
-	while (vipevt)
-	{
-		if (tot_width > 0)
-			tot_width += sep;
-		
-		vipevt.initLayout();
-		tot_width += vipevt.div.offsetWidth;
-
-		vipevt = vipevt.Next();
-	}
-
-	if (vip.events.title.show)
-	{
-		while (tot_width > this.vipevts.div.offsetWidth)
-		{
-			var longest = this.vipevts.getFirstChild();
-			var vipevt = longest.Next();
-			while (vipevt)
-			{
-				if (vipevt.flex_title.length > longest.flex_title.length)
-					longest = vipevt;
-					
-				vipevt = vipevt.Next();
-			}
-			
-			if (longest.flex_title.length == 0)
-				break;
-
-			tot_width -= longest.div.offsetWidth;
-			longest.shortenTitle();
-			tot_width += longest.div.offsetWidth;
-		}
-	}
-
-	var x_off = 0;
-
-	var vipevt = this.vipevts.getFirstChild();
-	while (vipevt)
-	{
-		if (x_off > 0)
-			x_off += sep;
-		
-		vipevt.div.style.left = x_off;
-		x_off += vipevt.div.offsetWidth;
-
-		vipevt = vipevt.Next();
-	}
-}
-
-VipCell.prototype.updateEventInfo = function()
-{
-	var str_tooltip = "";
-
-	var vipevt = this.vipcol.vipevts.getFirstChild();
-	while (vipevt)
-	{
-		if (this.inRange(vipevt.vipcell_start, vipevt.vipcell_end))
-		{
-			if (str_tooltip.length > 0)
-				str_tooltip += '\n';
-			
-			str_tooltip += vipevt.tooltip;
-		}
-
-		vipevt = vipevt.Next();
-	}
-
-	vipevt = this.vipevts.getFirstChild();
-	while (vipevt)
-	{
-		if (str_tooltip.length > 0)
-			str_tooltip += '\n';
-		
-		str_tooltip += vipevt.tooltip;
-
-		vipevt = vipevt.Next();
-	}
-
-	this.div.setAttribute("title", str_tooltip);
-}
-
-
-
-//////////////////////////////////////////////////////////////////////
-
-function VipClrBar(parent, id, clr, xpos, width)
-{
-	this.createDiv(parent, id);
-	this.Show(false);
+	var vdt = new VipDate(this.ymd);
 	
-	var bar = this.div;
-	bar.style.left = xpos;
-	bar.style.width = width;
-	bar.style.backgroundColor = clr;
+	//if (event.ctrlKey)
+		//window.open("https://www.google.com/calendar/r/day/" + vdt.GCalURL());
+	//else
+		window.open("https://www.google.com/calendar/r/week/" + vdt.GCalURL());
 }
-
-VipClrBar.prototype = new VipObject;
 
 
 
 //////////////////////////////////////////////////////////////////////
 
-function VipMultiDayEvent(parent, event, vipcell)
+function VipMultiDayEvent(parent, info, vipcell)
 {
-	this.createDiv(parent, "vipmultidayevent");
-	this.evt_id = event.id;
-	this.evt_title = html2txt(event.title);
-	this.vipcell_start = vipcell;
-	this.vipcell_end = vipcell;
-	this.div.style.zIndex = "1";
+	this.createChild(parent, "vipmultidayevent");
+	this.addClass(info.calclass);
 
-	var evt = this.div;
-	evt.style.width = vip.events.allday.width_chars * vip.cell.font_client.width;
-	evt.style.backgroundColor = event.palette.medium;
-
-	if (event.calendar)
-		this.tooltip = fmt("^ - ^", event.calendar, this.evt_title);
-	else
-		this.tooltip = this.evt_title;
+	this.info = info;
+	this.div.id = info.id;
+	this.div.title = fmt("^ - ^", this.info.calendar, this.info.title);
+	this.div.onclick = this.edit.bind(this);
+	this.div.style.backgroundColor = this.info.colour;
+	this.div.style.setProperty('--start', vipcell.cellindex);
+	this.div.style.opacity = vipgrid.cfg.multi_day_opacity;
+	this.index = vipcell.cellindex;
+	this.extent = 0;
+	this.setSlot(0);
 }
 
 VipMultiDayEvent.prototype = new VipObject;
 
-VipMultiDayEvent.prototype.updateEvent = function(vipcell)
+VipMultiDayEvent.prototype.extend = function(vipcell)
 {
-	this.vipcell_end = vipcell;
-	this.Align(this.vipcell_start, this.vipcell_end);
+	this.extent = vipcell.cellindex - this.index + 1;
+	this.div.style.setProperty('--extent', this.extent);
+}
+
+VipMultiDayEvent.prototype.setSlot = function(i)
+{
+	this.slot = i;
+	this.div.style.setProperty('--slot', this.slot);
+}
+
+VipMultiDayEvent.prototype.nextSlot = function()
+{
+	this.setSlot(this.slot + 1);
+}
+
+VipMultiDayEvent.prototype.edit = function()
+{
+	window.open("https://calendar.google.com/calendar/r/eventedit/" + this.info.eid);
 }
 
 
 
 //////////////////////////////////////////////////////////////////////
 
-function VipSingleDayEvent(vipcell, event)
+function VipSingleDayEvent(parent, info, cellid)
 {
-	var vdt_start = new VipDate.GCal(event.startTime);
-	var vtm_start = new VipTime.GCal(event.startTime);
+	this.createChild(parent, "vipsingledayevent");
+	this.addClass(info.calclass);
 
-	this.createDiv(vipcell.vipevts, "vipsingledayevent");
-	this.evt_id = event.id;
-	this.evt_datestamp = vdt_start.Datestamp();
-	this.evt_timestamp = vtm_start.Timestamp();
-	this.evt_title = html2txt(event.title);
-	this.evt_timed = !event.allDay;
-	this.div.style.zIndex = "2";
+	this.div.id = info.id;
+	this.div.onclick = this.edit.bind(this);
+	
+	this.info = info;
+	this.cellid = cellid;
+	this.timestamp = info.timed ? info.vdttStart.DayMinutes() : 0;
 
-	this.evt_title_time = "";
-	if (this.evt_timed)
-	if (this.evt_datestamp == vipcell.vipdate.Datestamp())
-		this.evt_title_time = vtm_start.TimeTitle() + " ";
+	var time_title = "";
+	if (this.info.timed)
+	if (vipgrid.cfg.show_event_time)
+		time_title = info.vdttStart.TimeTitle() + " ";
 
-	this.tooltip = this.evt_title_time;
-	if (event.calendar)
-		this.tooltip += fmt("^ - ", event.calendar);
-	this.tooltip += this.evt_title;
+	var evt_title = this.info.title;
+	this.div.title = time_title + this.info.calendar + " - " + evt_title;
 
-	var x_off = 0;
-	var y_off = Math.floor((vip.cell.height - vip.cell.font_client.height) / 2);
-
-	if (!vip.events.title.show || !vip.events.title.hide_marker)
+	if (vipgrid.cfg.proportional_events)
 	{
-		this.vipmarker = new VipDiv(this, "vipevtmarker");
-		this.vipmarker.setSize(vip.cell.font_client.width, vip.cell.font_client.height);
-		this.vipmarker.setPos(0, y_off);
-		this.vipmarker.div.style.backgroundColor = event.palette.medium;
-
-		x_off = (this.vipmarker.div.offsetWidth + 2);
+		this.vipmarker = new VipDiv(this, "vipeventmarker");
+		this.vipmarker.addClass("proportional");
+		this.calcProportionalMarker();
 	}
-
-	if (vip.events.proportional.show)
+	else
 	{
-		var vdt_start = new VipDate.GCal(event.startTime);
-		var vdt_end = new VipDate.GCal(event.endTime);
-		
-		if (vdt_start.isSameDay(vdt_end))
-			var vtm_end = new VipTime.GCal(event.endTime);
-		else
-			var vtm_end = new VipTime.HourMin(24, 0);
-		
-		var m_duration = ((vtm_end.toSeconds() - vtm_start.toSeconds()) / 60);
-		var m_start = (vtm_start.toSeconds() / 60);
-		var m_range_start = (vip.events.proportional.start_hour * 60);
-		var m_range_end = (vip.events.proportional.end_hour * 60);
-		var m_per_px = ((m_range_end - m_range_start)/vipcell.vipevts.div.offsetWidth);
+		if (vipgrid.cfg.show_event_marker)
+			this.vipmarker = new VipDiv(this, "vipeventmarker");
 
-		this.vipmarker.div.style.left = Math.round((m_start - m_range_start) / m_per_px);
-		this.vipmarker.div.style.width = Math.round(m_duration / m_per_px);
-
-		var off_right = (this.vipmarker.div.offsetLeft + this.vipmarker.div.offsetWidth);
-		if ((off_right <= 0) || (this.vipmarker.div.offsetLeft >= vipcell.vipevts.div.offsetWidth))
+		if (vipgrid.cfg.show_event_title)
 		{
-			var viphidden = new VipDiv(this, "viphiddenevt");
-			viphidden.setPos(0, y_off);
-			viphidden.setText("...");
+			this.vipevttext = new VipDiv(this, "viptext");
+			this.vipevttext.setText(time_title + evt_title);
+
+			if (vipgrid.cfg.colour_event_title)
+				this.vipevttext.div.style.color = this.info.colour;
 		}
 	}
-
-	if (vip.events.title.show)
-	{
-		this.viptitle = new VipDiv(this, "viptitle");
-		this.viptitle.div.style.whiteSpace = "nowrap";
-		this.viptitle.setPos(x_off, y_off);
-
-		if (vip.events.title.colour)
-			this.viptitle.div.style.color = event.palette.medium;
-	}
+	
+	if (this.vipmarker)
+		this.vipmarker.div.style.backgroundColor = this.info.colour;
 }
 
 VipSingleDayEvent.prototype = new VipObject;
 
-VipSingleDayEvent.prototype.initLayout = function()
+VipSingleDayEvent.prototype.calcProportionalMarker = function()
 {
-	if (this.viptitle)
+	var m_range_start = (vipgrid.cfg.proportional_start_hour * 60);
+	var m_range_end = (vipgrid.cfg.proportional_end_hour * 60);
+	var m_range = (m_range_end - m_range_start);
+
+	var m_evt_start = m_range_start;
+	var m_evt_end = m_range_end;
+
+	if (this.info.timed)
 	{
-		this.flex_title = "";
+		if (this.info.ymd == this.cellid)
+		{
+			m_evt_start = this.info.vdttStart.DayMinutes();
 
-		if (vip.events.title.time)
-			this.flex_title += this.evt_title_time;
+			if (m_evt_start < m_range_start)
+				m_evt_start = m_range_start;
+		}
 
-		this.flex_title += this.evt_title;
-		
-		if (vip.events.title.hide_marker)
-		if (this.Next())
-			this.flex_title += ',';
+		if (this.info.duration == (VipDate.DaySpan(this.info.ymd, this.cellid)+1))
+		{
+			m_evt_end = this.info.vdttEnd.DayMinutes();
 
-		this.viptitle.setText(this.flex_title);
+			if (m_evt_end > m_range_end)
+				m_evt_end = m_range_end;
+		}
 	}
 
-	this.updateWidth();
+	this.vipmarker.div.style.left = (((m_evt_start - m_range_start) / m_range) * 100) + "%";
+	this.vipmarker.div.style.width = (((m_evt_end - m_evt_start) / m_range) * 100) + "%";
 }
 
-VipSingleDayEvent.prototype.updateWidth = function()
+VipSingleDayEvent.prototype.edit = function()
 {
-	if (this.viptitle)
-		this.div.style.width = (this.viptitle.div.offsetLeft + this.viptitle.div.offsetWidth);
-	else if (this.vipmarker)
-		this.div.style.width = this.vipmarker.div.offsetWidth;
-	else
-		this.div.style.width = 0;
-}
-
-VipSingleDayEvent.prototype.shortenTitle = function()
-{
-	if (this.flex_title.length > 0)
-	{
-		this.flex_title = this.flex_title.substr(0, this.flex_title.length-1);
-		this.flex_title = this.flex_title.trim();
-
-		this.viptitle.setText(this.flex_title + "...");
-		this.updateWidth();
-	}
+	window.open("https://calendar.google.com/calendar/r/eventedit/" + this.info.eid);
 }
 
 
 
 //////////////////////////////////////////////////////////////////////
 
-function VipDate(vdt)
+function VipCalendarBar(id)
 {
-	if (vdt instanceof VipDate)
-		this.dt = new Date(vdt.dt);  // make a copy
+	this.div = document.getElementById(id);
+	this.div.innerHTML = "";
+
+	var e = document.getElementById("vipcalvisibility");
+	if (e)
+		document.head.removeChild(e);
+
+	this.addClass("vipcalbar");
 }
 
-VipDate.prototype.dt_today = new Date;
-VipDate.prototype.dt_today.setHours(0,0,0,0);
+VipCalendarBar.prototype = new VipObject;
 
-VipDate.prototype.constructor.Today = function()
+VipCalendarBar.prototype.registerCalendarSource = function(src)
 {
-	var vdt = new VipDate;
-	vdt.dt = new Date(vdt.dt_today);
-	return vdt;
+	src.forwardCalendar = this.rcvCal.bind(this);
+	src.calclass_prefix = "vipcalclass_";
 }
 
-VipDate.prototype.constructor.YMD = function(yyyy, mm, dd)
+VipCalendarBar.prototype.rcvCal = function(cal)
 {
-	var vdt = new VipDate;
-	vdt.dt = new Date(yyyy, mm-1, dd);
-	return vdt;
+	var vcb = new VipCalendarBtn(this, cal);
+
+	var e = document.getElementById("vipcalvisibility");
+	if (!e)
+	{
+		e = document.createElement('style');
+		document.head.appendChild(e);
+		e.id = "vipcalvisibility";
+	}
+	
+	vcb.cssrule = e.sheet.cssRules.length;
+	e.sheet.insertRule(fmt(".^ {}", cal.cls), e.sheet.cssRules.length);
+
+	var vipsib = this.First();
+	while (vipsib)
+	{
+		if (vcb.name < vipsib.name)
+			break;
+
+		vipsib = vipsib.Next();
+	}
+	this.MoveLastBefore(vipsib);
 }
 
-VipDate.prototype.constructor.GCal = function(gdt)
+
+
+//////////////////////////////////////////////////////////////////////
+
+function VipCalendarBtn(parent, cal)
 {
-	var dt = google.calendar.utils.toDate(gdt);
-	var vdt = new VipDate.YMD(dt.getFullYear(), dt.getMonth()+1, dt.getDate());
-	return vdt;
+	this.createChild(parent, "vipcalbtn");
+
+	this.name = cal.name;
+	this.cssrule = null;
+	this.div.onclick = this.onclickCalBtn.bind(this);
+
+	this.vipmarker = new VipDiv(this, "vipcalmarker");
+	this.vipmarker.div.style.backgroundColor = cal.colour;
+
+	this.vipcaltext = new VipDiv(this, "viptext");
+	this.vipcaltext.setText(this.name);
 }
 
-VipDate.prototype.MoveDays = function(offset)
+VipCalendarBtn.prototype = new VipObject;
+
+VipCalendarBtn.prototype.onclickCalBtn = function(event)
 {
-	this.dt.setDate(this.dt.getDate() + offset);
+	var e = document.getElementById("vipcalvisibility");
+	if (e)
+	{
+		var r = e.sheet.cssRules[this.cssrule];
+
+		if (this.div.classList.toggle("checked"))
+			r.style.setProperty("display", "none");
+		else
+			r.style.removeProperty("display");
+	}
+
+	vipgrid.div.focus();
 }
 
-VipDate.prototype.MoveMonths = function(offset)
+
+
+
+//////////////////////////////////////////////////////////////////////
+
+function VipDate(ymd)
 {
-	this.dt.setMonth(this.dt.getMonth() + offset);
+	this.dt = new Date();
+
+	this.dt.setHours(0,0,0,0);
+	
+	if (ymd)
+		this.dt.setFullYear(parseInt(ymd.substr(0,4)), parseInt(ymd.substr(5,2))-1, parseInt(ymd.substr(8,2)));  // local
+		//this.dt = new Date(ymd);  // utc
 }
 
-VipDate.prototype.MoveToStartOfWeek = function(startday)
+VipDate.prototype.ymd = function()
+{
+	return this.dt.getFullYear() + VipDate.ymdstr[this.dt.getMonth()] + VipDate.ymdstr[this.dt.getDate()-1];
+}
+
+VipDate.prototype.getMonth = function()
+{
+	return this.dt.getMonth()+1;
+}
+
+VipDate.prototype.offsetDay = function(off)
+{
+	this.dt.setDate(this.dt.getDate() + off);
+}
+
+VipDate.prototype.offsetMonth = function(off)
+{
+	this.dt.setMonth(this.dt.getMonth() + off);
+}
+
+VipDate.prototype.toStartOfWeek = function(startday)
 {
 	while (this.dt.getDay() != startday)
-		this.MoveDays(-1);
+		this.dt.setDate(this.dt.getDate() - 1);
 }
 
-VipDate.prototype.MoveToStartOfMonth = function()
+VipDate.prototype.toStartOfMonth = function()
 {
 	this.dt.setDate(1);
 }
 
-VipDate.prototype.MoveToStartOfYear = function()
+VipDate.prototype.toStartOfYear = function()
 {
 	this.dt.setMonth(0);
-}
-
-VipDate.prototype.Datestamp = function()
-{
-	return ((this.dt.getFullYear()*10000) + ((this.dt.getMonth() + 1)*100) + this.dt.getDate());
+	this.dt.setDate(1);
 }
 
 VipDate.prototype.DayOfMonth = function()
@@ -879,121 +1200,84 @@ VipDate.prototype.DayOfWeek = function()
 	return this.dt.getDay();
 }
 
-VipDate.prototype.MonthTitle = function()
-{
-	var dt_array = this.dt.toDateString().split(' ');
-	return fmt("^ ^", dt_array[1], dt_array[3]);
-}
-
-VipDate.prototype.DayTitle = function()
-{
-	var dt_array = this.dt.toDateString().split(' ');
-	return fmt("^ ^ ^", dt_array[0], this.DayOfMonth(), dt_array[1]);
-}
-
-VipDate.prototype.GCalDate = function()
-{
-	return google.calendar.utils.fromDate(this.dt);
-}
-
 VipDate.prototype.isWeekend = function()
 {
 	return (this.dt.getDay()==0 || this.dt.getDay()==6);
 }
 
-VipDate.prototype.isToday = function()
-{
-	return (this.dt.valueOf() == this.dt_today.valueOf());
-}
-
-VipDate.prototype.isSameDay = function(vdt)
-{
-	return (this.dt.valueOf() == vdt.dt.valueOf());
-}
-
 VipDate.prototype.isPastMonth = function()
 {
-	var vdt_this_month = new VipDate.Today();
-	vdt_this_month.MoveToStartOfMonth();
+	var today = new Date();
 	
-	return (this.dt < vdt_this_month.dt);
-}
+	if (this.dt.getYear() < today.getYear())
+		return true;
 
-VipDate.prototype.TimespanTo = function(vdt_end)
-{
-	var s = Math.abs(Date.UTC(this.dt.getFullYear(), this.dt.getMonth(), this.dt.getDate()) - Date.UTC(vdt_end.dt.getFullYear(), vdt_end.dt.getMonth(), vdt_end.dt.getDate()));
-	var c = Math.floor(s/86400000);
-	var w = Math.floor(c/7);
-	var d = (c-(w*7));
+	if (this.dt.getYear() > today.getYear())
+		return false;
 	
-	return (w > 0 ? fmt("^, ^-^", c, w, d) : fmt("^", c));
+	return (this.dt.getMonth() < today.getMonth());
 }
 
-VipDate.prototype.ShowInCalendar = function()
+VipDate.prototype.MonthTitle = function()
 {
-	google.calendar.showDate(this.dt.getFullYear(), (this.dt.getMonth() + 1), this.dt.getDate());
+	var word = this.dt.toDateString().split(' ');
+	return fmt("^ ^", word[1], word[3]);
+}
+
+VipDate.prototype.GCalURL = function()
+{
+	return fmt("^/^/^", this.dt.getFullYear(), this.dt.getMonth()+1, this.dt.getDate());
+}
+
+VipDate.ymdstr = ["-01", "-02", "-03", "-04", "-05", "-06", "-07", "-08", "-09", "-10",
+	"-11", "-12", "-13", "-14", "-15", "-16", "-17", "-18", "-19", "-20",
+	"-21", "-22", "-23", "-24", "-25", "-26", "-27", "-28", "-29", "-30", "-31"];
+
+VipDate.ymdtoday = new VipDate().ymd();
+
+VipDate.isToday = function(ymd)
+{
+	return (ymd == VipDate.ymdtoday);
+}
+
+VipDate.DaySpan = function(ymd1, ymd2)
+{
+	return (Math.abs(Date.parse(ymd1) - Date.parse(ymd2))/86400000);
 }
 
 
 
-//////////////////////////////////////////////////////////////////////
 
-function VipTime(vtm)
+/////////////////////////////////////////////////////////////////
+
+function VipDateTime(iso)
 {
-	this.hh = 0;
-	this.mm = 0;
-	this.ss = 0;
+	this.dt = new Date(iso);
+}
 
-	if (vtm instanceof VipTime)
+VipDateTime.prototype = new VipDate;
+
+VipDateTime.prototype.DayMinutes = function()
+{
+	return ((this.dt.getHours()*60) + this.dt.getMinutes());
+}
+
+VipDateTime.prototype.TimeTitle = function()
+{
+	var hh = this.dt.getHours();
+	var mm = this.dt.getMinutes();
+	var ss = this.dt.getSeconds();
+	
+	var minutes = fmt((mm < 10) ? "0^" : "^", mm);
+
+	if (vipgrid.time24h)
 	{
-		this.hh = vtm.hh;
-		this.mm = vtm.mm;
-		this.ss = vtm.ss;
-	}
-}
-
-VipTime.prototype.constructor.HourMin = function(hh, mm)
-{
-	var vtm = new VipTime;
-	vtm.hh = hh;
-	vtm.mm = mm;
-
-	return vtm;
-}
-
-VipTime.prototype.constructor.GCal = function(gdt)
-{
-	var dt = google.calendar.utils.toDate(gdt);
-
-	var vtm = new VipTime;
-	vtm.hh = dt.getHours();
-	vtm.mm = dt.getMinutes();
-
-	return vtm;
-}
-
-VipTime.prototype.Timestamp = function()
-{
-	return ((this.hh*10000) + (this.mm*100) + this.ss);
-}
-
-VipTime.prototype.toSeconds = function()
-{
-	return ((this.hh*60*60) + (this.mm*60) + this.ss);
-}
-
-VipTime.prototype.TimeTitle = function()
-{
-	var minutes = fmt((this.mm < 10) ? "0^" : "^", this.mm);
-
-	if (vip.events.time_24hr)
-	{
-		return fmt("^:^", this.hh, minutes);
+		return fmt("^:^", hh, minutes);
 	}
 	else
 	{
-		var hours = (this.hh > 12) ? (this.hh-12) : this.hh;
-		return fmt((this.hh < 12) ? "^:^am" : "^:^pm", hours, minutes);
+		var hours = (hh > 12) ? (hh-12) : hh;
+		return fmt((hh < 12) ? "^:^am" : "^:^pm", hours, minutes);
 	}
 }
 
@@ -1024,11 +1308,4 @@ function fmt(fmtspec)
 	}
 
 	return str;
-}
-
-function html2txt(html)
-{
-	var tag = document.createElement('span');
-	tag.innerHTML = html;
-	return tag.textContent;
 }
