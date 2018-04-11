@@ -40,14 +40,22 @@ body {
 #buttons {
 	top: 0;
 	right: 1em;
+	height: 100%;
 	position: absolute;
 }
 #buttons #settings_btn {
-	vertical-align: middle;
+	height: 100%;
+	display: flex;
+	align-items: center;
+}
+#buttons #settings_btn img {
 	opacity: 0.6;
 }
-#buttons #settings_btn:hover {
+#buttons #settings_btn img:hover {
 	opacity: 1;
+}
+#buttons #settings_btn img:active {
+	opacity: 0.3;
 }
 #grid {
 	flex-grow: 1;
@@ -95,7 +103,7 @@ body {
 	<div id="buttons">
 		<button ng-hide="form.$pristine || busy" ng-click="onclickSave()">Save</button>
 		<button ng-show="(view=='settings') && !busy" ng-click="onclickCancel()">Cancel</button>
-		<input ng-show="(view=='grid') && !busy" ng-click="onclickSettings()" id="settings_btn" title="Settings" type="image" src="settings.png"></input>
+		<div id="settings_btn" ng-show="(view=='grid') && !busy"><img src="settings.png" title="Settings" ng-click="onclickSettings()"></div>
 		<span ng-show="busy"><i>Saving...</i></span>
 	</div>
 </div>
