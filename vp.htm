@@ -54,7 +54,7 @@ body {
 #buttons #settings_btn img:hover {
 	opacity: 1;
 }
-#buttons #settings_btn img:active {
+#buttons #settings_btn img:hover:active {
 	filter: brightness(0.8);
 }
 #grid {
@@ -103,7 +103,9 @@ body {
 	<div id="buttons">
 		<button ng-hide="form.$pristine || busy" ng-click="onclickSave()">Save</button>
 		<button ng-show="(view=='settings') && !busy" ng-click="onclickCancel()">Cancel</button>
-		<div id="settings_btn" ng-show="(view=='grid') && !busy"><img src="settings.png" title="Settings" ng-click="onclickSettings()"></div>
+		<div id="settings_btn" ng-show="(view=='grid') && !busy">
+			<img src="settings.png" title="Settings" draggable="false" ng-click="onclickSettings()">
+		</div>
 		<span ng-show="busy"><i>Saving...</i></span>
 	</div>
 </div>
