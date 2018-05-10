@@ -8,6 +8,11 @@ function vp_main($scope)
 	gAppData.file_name = "settings001.json";
 	gAppData.setDefault({banner_text: "visual-planner", vipconfig: new VipGridConfig()});
 
+	gAppData.Patch = function(appdata) {
+		if (!appdata.vipconfig.hasOwnProperty("first_month"))
+			appdata.vipconfig.first_month = 1;
+	}
+
 	$scope.multi_col_count_options = {1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 8: 8, 10: 10, 12: 12};
 	$scope.settings = gAppData.getAppData();
 	$scope.signed_in = false;
@@ -91,7 +96,7 @@ function vp_main($scope)
 	}
 
 	function initGrid() {
-		document.title = gAppData.getAppData().banner_text;
+		document.title = $scope.settings.banner_text;
 
 		var vg = new VipGrid("grid", "calendarbar");
 
@@ -103,7 +108,7 @@ function vp_main($scope)
 			vg.registerEventSource(gCal);
 		}
 
-		vg.cfg = gAppData.getAppData().vipconfig;
+		vg.cfg = $scope.settings.vipconfig;
 		vg.init();
 	}
 

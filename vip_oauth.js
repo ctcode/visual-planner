@@ -101,6 +101,7 @@ function AuthAppData()
 {
 	// initialise
 	this.file_name = null;
+	this.Patch = function(){};
 	
 	// private
 	this.file_id = null;
@@ -200,9 +201,17 @@ AuthAppData.prototype.setDefault = function(appdataobj)
 
 AuthAppData.prototype.getAppData = function()
 {
-	if (this.appdata) return JSON.parse(this.appdata);
-	if (this.appdata_default) return JSON.parse(this.appdata_default);
-	return null;
+	var d = null;
+	
+	if (this.appdata)
+		d = JSON.parse(this.appdata);
+	else if (this.appdata_default)
+		d = JSON.parse(this.appdata_default);
+
+	if (d)
+		this.Patch(d);
+
+	return d;
 }
 
 AuthAppData.prototype.Write = function(appdataobj, thenDoThis, thenFail)

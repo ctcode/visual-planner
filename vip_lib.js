@@ -124,6 +124,7 @@ function VipGridConfig()
 	this.multi_col_count_portrait = 3;
 	this.auto_scroll = true;
 	this.auto_scroll_offset = -1;
+	this.first_month = 1;
 	this.show_weekends = true;
 	this.align_weekends = true;
 	this.font_scale = 0.6;
@@ -206,11 +207,23 @@ VipGrid.prototype.init = function()
 	var c = this.isPortrait() ? this.cfg.multi_col_count_portrait : this.cfg.multi_col_count;
 
 	this.cache = {};
-	this.cache.viewport = {start: c, len: c};
-	this.cache.viewport.init = this.cache.viewport.start;
+	this.cache.viewport = {start: c, len: c, init: c};
 	this.cache.len = c*3;
-	this.cache.month = (this.cfg.auto_scroll ? this.cfg.auto_scroll_offset : - new Date().getMonth()) - this.cache.viewport.start;
+	
+	if (this.cfg.auto_scroll)
+	{
+		this.cache.month = this.cfg.auto_scroll_offset;
+	}
+	else
+	{
+		this.cache.month = ((this.cfg.first_month-1) - new Date().getMonth());
+		
+		if (this.cache.month > 0)
+			this.cache.month -= 12;
+	}
 
+	this.cache.month -= this.cache.viewport.start;
+	
 	VipDate.localemonth = this.cfg.month_names.split('-');
 	
 	this.create();
