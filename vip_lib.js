@@ -594,13 +594,19 @@ VipGrid.prototype.ontouchend = function(event)
 	
 	if (dy > dx)
 	{
-		if (this.touch.start.y > t.pageY)
-			this.ReloadEvents();
-		else
-			this.SyncEvents();
+		if (dy > 10)
+		{
+			if (this.touch.start.y > t.pageY)
+				this.ReloadEvents();
+			else
+				this.SyncEvents();
+		}
 	}
 	else
-		this.scroll(this.touch.start.x > t.pageX);
+	{
+		if (dx > 10)
+			this.scroll(this.touch.start.x > t.pageX);
+	}
 
 	this.ontouchcancel();
 }
