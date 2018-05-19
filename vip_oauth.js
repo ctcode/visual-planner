@@ -271,7 +271,7 @@ AuthAppData.prototype.makeReq = function(req, callback)
 
 AuthAppData.prototype.Fail = function(reason)
 {
-	ga_hit("AuthAppData_error", reason);
+	ga_hit("AuthAppData_error", JSON.stringify(reason));
 	console.error(reason);
 	this.onFail(reason);
 }
