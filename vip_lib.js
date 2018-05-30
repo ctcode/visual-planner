@@ -620,6 +620,7 @@ VipGrid.prototype.registerEventSource = function(src)
 {
 	src.forwardSetting = this.rcvCalSetting.bind(this);
 	src.forwardEvent = this.rcvCalEvent.bind(this);
+	src.forwardEventReloadReq = this.ReloadEvents.bind(this);
 	this.evtsrc = src;
 	
 	if (this.calbar)

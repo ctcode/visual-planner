@@ -77,7 +77,10 @@ function vp_main($scope)
 				$scope.$apply();
 				initGrid();
 			},
-			function() {alert("Error loading settings.");}
+			function(msg) {
+				alert("Error loading settings.\n\n" + msg);
+				ga_hit("appdata_error", msg);
+			}
 		);
 	}
 
@@ -91,7 +94,10 @@ function vp_main($scope)
 				$scope.$apply();
 				initGrid();
 			},
-			function() {alert("Error saving settings.");}
+			function(msg) {
+				alert("Error saving settings.\n\n" + msg);
+				ga_hit("appdata_error", msg);
+			}
 		);
 	}
 

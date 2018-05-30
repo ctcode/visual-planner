@@ -110,7 +110,7 @@ function AuthAppData()
 	this.onLoad = undefined;
 	this.onRead = undefined;
 	this.onWrite = undefined;
-	this.onFail = function(){};
+	this.onError = function(){};
 }
 
 AuthAppData.prototype.FileInfo = function()
@@ -163,7 +163,7 @@ AuthAppData.prototype.Read = function(thenDoThis, thenFail)
 	this.onRead = thenDoThis;
 	
 	if (thenFail)
-		this.onFail = thenFail;
+		this.onError = thenFail;
 
 	this.LoadFile(this.thenReadFile);
 }
@@ -173,7 +173,7 @@ AuthAppData.prototype.thenReadFile = function()
 	if (this.file_id)
 	{
 		this.makeReq ({
-				path: "https://www.googleapis.com/drive/v3/files" + "/" + encodeURIComponent(this.file_id),
+				path: "https://www.googleapis.com/drive/v3/files/" + encodeURIComponent(this.file_id),
 				method: "GET",
 				params: {alt: 'media'}
 			},
@@ -220,7 +220,7 @@ AuthAppData.prototype.Write = function(appdataobj, thenDoThis, thenFail)
 	this.onWrite = thenDoThis;
 	
 	if (thenFail)
-		this.onFail = thenFail;
+		this.onError = thenFail;
 
 	this.LoadFile(this.thenWriteOrCreate);
 }
@@ -255,7 +255,7 @@ AuthAppData.prototype.WriteFile = function()
 	console.assert(this.file_id);
 
 	this.makeReq ({
-			path: "https://www.googleapis.com/upload/drive/v3/files" + "/" + encodeURIComponent(this.file_id),
+			path: "https://www.googleapis.com/upload/drive/v3/files/" + encodeURIComponent(this.file_id),
 			method: "PATCH",
 			params: {uploadType: "media"},
 			body: this.appdata
@@ -271,9 +271,10 @@ AuthAppData.prototype.makeReq = function(req, callback)
 
 AuthAppData.prototype.Fail = function(reason)
 {
-	ga_hit("AuthAppData_error", JSON.stringify(reason));
 	console.error(reason);
-	this.onFail(reason);
+	
+	try {this.onError(reason.result.error.message);}
+	catch {this.onError(reason.status);}
 }
 
 
@@ -287,6 +288,7 @@ function AuthCal()
 	this.datespan = {dtStart: null, dtEnd: null};
 	this.forwardCalendar = function(){};
 	this.forwardEvent = function(){};
+	this.forwardEventReloadReq = function(){};
 	this.forwardSetting = function(){};
 	this.onError = function(){};
 	this.calclass_prefix = "calclass_";
@@ -503,5 +505,14 @@ AuthCal.prototype.makeReq = function(req, callback, callsign)
 
 AuthCal.prototype.Fail = function(reason)
 {
-	this.onError("[" + reason.result.error.code + ": " + reason.result.error.message + "]");
+	console.error(reason);
+	
+	if (reason.status == 410)
+	{
+		this.forwardEventReloadReq();
+		return;
+	}
+	
+	try {this.onError(reason.result.error.message);}
+	catch {this.onError(reason.status);}
 }
