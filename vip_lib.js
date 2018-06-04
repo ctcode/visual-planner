@@ -85,18 +85,6 @@ VipObject.prototype.Show = function(showdiv)
 	this.div.style.visibility = showdiv ? "visible" : "hidden";
 }
 
-VipObject.prototype.Align = function(cell_start, cell_end)
-{
-	if (cell_start && cell_end)
-	{
-		this.div.style.top = (cell_start.div.offsetTop) + "px";
-		this.div.style.height = ((cell_end.div.offsetTop - cell_start.div.offsetTop) + cell_end.div.offsetHeight) + "px";
-		this.Show(true);
-	}
-	else
-		this.Show(false);
-}
-
 VipObject.prototype.MoveLastBefore = function(vipsib)
 {
 	if (vipsib)
@@ -167,15 +155,17 @@ function VipGrid(gid, cbid)
 	this.scrolling_disabled = false;
 	this.time24h = true;
 	this.evtsrc = null;
-	this.selection = {start: null, end: null};
+	this.selection = {enabled: false, drag: false, span: null};
 	this.touch = {id: null, start: {x:0, y:0}};
 	this.priority = null;
 
 	if (cbid)
 		this.calbar = new VipCalendarBar(cbid);
 
-	this.div.onkeydown = this.onkeydown.bind(this);
+	this.div.onmousedown = this.onmousedown.bind(this);
+	this.div.onmousemove = this.onmousemove.bind(this);
 	this.div.onmouseup = this.onmouseup.bind(this);
+	this.div.onkeydown = this.onkeydown.bind(this);
 	this.div.onwheel = this.onwheel.bind(this);
 
 	this.div.addEventListener('touchstart', this.ontouchstart.bind(this), false);
@@ -294,7 +284,12 @@ VipGrid.prototype.scroll = function(forward)
 				var vdt = new VipDate(this.Last().ymd);
 				vdt.offsetMonth(1);
 				var vipcol = new VipCol(this, vdt.ymd());
-				this.div.removeChild(this.div.firstChild);
+
+				if (this.selection.span)
+				if (this.First() === this.selection.span.start.vipcol)
+					this.cancel_selection();
+
+				this.First().Remove();
 
 				this.cache.viewport.start--;
 			}
@@ -314,7 +309,12 @@ VipGrid.prototype.scroll = function(forward)
 				vdt.offsetMonth(-1);
 				var vipcol = new VipCol(this, vdt.ymd());
 				this.MoveLastBefore(this.First());
-				this.div.removeChild(this.div.lastChild);
+
+				if (this.selection.span)
+				if (this.Last() === this.selection.span.end.vipcol)
+					this.cancel_selection();
+
+				this.Last().Remove();
 
 				this.cache.viewport.start++;
 			}
@@ -324,6 +324,7 @@ VipGrid.prototype.scroll = function(forward)
 	}
 
 	this.updateViewport();
+	this.render_selection(true);
 }
 
 VipGrid.prototype.isPortrait = function()
@@ -365,36 +366,66 @@ VipGrid.prototype.onMediaPrint = function(mql)
 
 VipGrid.prototype.onkeydown = function(event)
 {
-/*
+	var cmd = "";
+
 	switch (event.key)
 	{
 		case '+':
 		case 'Add':
-			this.setCellSelectMode(true);
-			return;
-		case '=':
-		case 'Equal':
-			this.setCellSelectMode("measure");
-			return;
+			cmd = "+";
+			break;
+		case 'Enter':
+			cmd = "enter";
+			break;
 		case 'Escape':
 		case 'Esc':
+			cmd = "esc";
+			break;
+		default:
+			switch (event.keyCode)
+			{
+				case 37:
+				case 38:
+					cmd = "left";
+					break;
+				case 39:
+				case 40:
+					cmd = "right";
+					break;
+				case 82:
+					cmd = "r";
+					break;
+				case 107:
+					cmd = "+";
+					break;
+				case 13:
+					cmd = "enter";
+					break;
+				case 27:
+					cmd = "esc";
+					break;
+			}
+	}
+
+	switch (cmd)
+	{
+		case "+":
+			this.setCellSelectMode(true);
+			break;
+		case "esc":
 			this.setCellSelectMode(false);
 			this.cancel_selection();
-			return;
-	}
-*/
-
-	switch (event.which)
-	{
-		case 37:  // back
-		case 38:  // up
+			break;
+		case "enter":
+			this.confirm_selection();
+			break;
+		case "left":
 			this.scroll(false);
 			break;
-		case 39:  // right
-		case 40:  // down
+		case "right":
 			this.scroll(true);
 			break;
-		case 82:  // r
+		case "r":
 			if (event.ctrlKey)
 				this.ReloadEvents();
 			else
@@ -414,132 +445,141 @@ VipGrid.prototype.onwheel = function(event)
 	event.preventDefault();
 }
 
+VipGrid.prototype.onmousedown = function(event)
+{
+	if (!this.selection.enabled)
+		return;
+	
+	var targobj = event.target.vipobj;
+
+	if (targobj instanceof VipCell)
+	{
+		if (this.selection.span && event.shiftKey)
+			this.update_selection(targobj);
+		else
+			this.init_selection(targobj);
+	}
+}
+
+VipGrid.prototype.onmousemove = function(event)
+{
+	if (!this.selection.enabled)
+		return;
+	
+	var targobj = event.target.vipobj;
+
+	if (targobj instanceof VipCell)
+	{
+		if (this.selection.drag)
+			this.update_selection(targobj);
+	}
+}
+
 VipGrid.prototype.onmouseup = function()
 {
-	this.complete_selection();
+	this.selection.drag = false;
 }
 
 VipGrid.prototype.init_selection = function(vipcell)
 {
-	this.cancel_selection();
-	
-	vipcell.vipcol.vipsel.Align(vipcell, vipcell);
-
-	this.selection.start = vipcell;
-	this.selection.end = vipcell;
+	this.render_selection(false);
+	this.selection.span = {start: vipcell, end: vipcell};
+	this.selection.drag = true;
+	this.render_selection(true);
 }
 
-VipGrid.prototype.update_selection = function(cell_upd)
+VipGrid.prototype.update_selection = function(vipcell)
 {
-	if (!this.selection.start)
-		return;
-
-	if (cell_upd === this.selection.end)
-		return;  // selection not changed
-
-	// set the target selection range, in left to right order
-	var ltor = cell_upd.isBefore(this.selection.start);
-	var cell_targ_left = ltor ? cell_upd : this.selection.start;
-	var cell_targ_right = ltor ? this.selection.start : cell_upd;
-
-	// set the column update range, in left to right order
-	var ltor = this.selection.end.isBefore(cell_upd);
-	var col_upd_left = ltor ? this.selection.end.vipcol : cell_upd.vipcol;
-	var col_upd_right = ltor ? cell_upd.vipcol : this.selection.end.vipcol;
+	console.assert(this.selection.span);
 	
-	// update columns
-	var col = col_upd_left;
-	while (true)
+	if (vipcell.isBefore(this.selection.span.start))
+		var to_cell = this.selection.span.start;
+	else
+		var to_cell = vipcell;
+
+	var col = to_cell.vipcol;
+	if (col === this.selection.span.end.vipcol)
 	{
-		col.vipsel.Align(null);
-		var cell_top = (col === cell_targ_left.vipcol) ? cell_targ_left : null;
-		var cell_bottom = (col === cell_targ_right.vipcol) ? cell_targ_right : null;
-		
-		if (!cell_top)
-		if (col.firstcell.inRange(cell_targ_left, cell_targ_right))
-			cell_top = col.firstcell;
-		
-		if (!cell_bottom)
-		if (col.lastcell.inRange(cell_targ_left, cell_targ_right))
-			cell_bottom = col.lastcell;
-		
-		if (cell_top && cell_bottom)
-			col.vipsel.Align(cell_top, cell_bottom);
-
-		if (col === col_upd_right)
-			break;
-
-		col = col.Next();
+		col.setSelHeight(to_cell);
+		this.selection.span.end = to_cell;
+		col.setSelTip(this.selection.span);
 	}
-
-	this.selection.end = cell_upd;
-	this.updateSelectionTip(this.selection.start, this.selection.end);
-}
-
-VipGrid.prototype.complete_selection = function()
-{
-	if (this.selection.start)
-		this.create_calendar_event();
-
-	this.cancel_selection();
+	else
+	{
+		this.render_selection(false);
+		this.selection.span.end = to_cell;
+		this.render_selection(true);
+	}
 }
 
 VipGrid.prototype.cancel_selection = function()
 {
-	if (!this.selection.start)
-		return;
+	this.render_selection(false);
+	this.selection.span = null;
+	this.selection.drag = false;
+}
 
-	this.update_selection(this.selection.start);
-	this.selection.start.vipcol.vipsel.Align(null);
-	this.updateSelectionTip(null);
+VipGrid.prototype.render_selection = function(show)
+{
+	if (this.selection.span)
+	{
+		var col = this.selection.span.start.vipcol;
+		while (true)
+		{
+			var startcol = (col === this.selection.span.start.vipcol);
+			var endcol = (col === this.selection.span.end.vipcol);
+			
+			if (show)
+			{
+				col.setSelTop(startcol ? this.selection.span.start : col.firstcell);
+				col.setSelHeight(endcol ? this.selection.span.end : col.lastcell);
+				col.setSelTip(endcol ? this.selection.span : null);
+			}
+			else
+				col.setSelHeight(null);
 
-	this.selection.start = null;
-	this.selection.end = null;
+			if (endcol)
+				break;
+
+			col = col.Next();
+		}
+	}
+}
+
+VipGrid.prototype.confirm_selection = function()
+{
+	this.create_calendar_event();
 }
 
 VipGrid.prototype.setCellSelectMode = function(enable)
 {
 	var e = document.getElementById("vipcellselect");
 	
-	if (e) {}
-	else
+	if (!e)
 	{
 		e = document.createElement('style');
 		document.head.appendChild(e);
 		e.id = "vipcellselect";
 		e.sheet.insertRule(".vipgrid * {pointer-events: none;}", 0);
 		e.sheet.insertRule(".vipgrid, .vipcell {cursor: cell; pointer-events: all;}", 1);
-		e.sheet.insertRule(".vipsel {background-color: rgba(255,255,127,0.6)}", 2);
 	}
 
 	e.sheet.disabled = !enable;
-}
 
-VipGrid.prototype.updateSelectionTip = function(vipcell_start, vipcell_end)
-{
-	//this.calbar.innerHTML = "";
-
-	if (!vipcell_start) return;
-	if (!vipcell_end) return;
-	if (vipcell_start === vipcell_end) return;
-
-	var c = VipDate.DaySpan(vipcell_start.ymd, vipcell_end.ymd);
-	var w = Math.floor(c/7);
-	var d = (c-(w*7));
-	var tip = (w > 0 ? fmt("^, ^-^", c, w, d) : fmt("^", c));
-
-	//this.calbar.innerHTML = tip;
+	this.selection.enabled = enable;
 }
 
 VipGrid.prototype.create_calendar_event = function()
 {
-	var dt1 = this.selection.start.vipdate.dt;
-	var dt2 = this.selection.end.vipdate.dt;
-	var vdtStart = new VipDate(dt1 < dt2 ? dt1 : dt2);
-	var vdtEnd = new VipDate(dt1 > dt2 ? dt1 : dt2);
-	vdtEnd.offsetDay(1);  // end date is exclusive
-	
-	window.open("https://www.google.com/calendar/r/eventedit?dates=" + vdtStart.ID() + "/" + vdtEnd.ID());
+	if (this.selection.span)
+	{
+		var vdtStart = new VipDate(this.selection.span.start.ymd);
+		var vdtEnd = new VipDate(this.selection.span.end.ymd);
+		vdtEnd.offsetDay(1);  // end date is exclusive
+		
+		window.open("https://www.google.com/calendar/r/eventedit?dates=" + vdtStart.ymdnum() + "/" + vdtEnd.ymdnum());
+		ga_hit("feature", "create_event");
+	}
 }
 
 VipGrid.prototype.ontouchstart = function(event)
@@ -865,6 +905,41 @@ VipCol.prototype.intersection = function(ai, ax, bi, bx)
 	return true;
 }
 
+VipCol.prototype.setSelTop = function(vipcell)
+{
+	if (vipcell)
+		this.vipsel.div.style.top = vipcell.div.offsetTop + "px";
+}
+
+VipCol.prototype.setSelHeight = function(vipcell)
+{
+	if (vipcell)
+	{
+		this.vipsel.div.style.height = ((vipcell.div.offsetTop - this.vipsel.div.offsetTop) + vipcell.div.offsetHeight) + "px";
+		this.vipsel.Show(true);
+	}
+	else
+		this.vipsel.Show(false);
+}
+
+VipCol.prototype.setSelTip = function(sel)
+{
+	this.vipsel.ClearContent();
+
+	if (sel)
+	{
+		if (sel.start === sel.end)
+			return;
+
+		var c = VipDate.DaySpan(sel.start.ymd, sel.end.ymd);
+		var w = Math.floor(c/7);
+		var d = (c-(w*7));
+		var tip = (w > 0 ? fmt("^, ^-^", c, w, d) : fmt("^", c));
+
+		this.vipsel.setText(tip);
+	}
+}
+
 VipCol.prototype.onclickMonthHeader = function()
 {
 	var vdt = new VipDate(this.ymd);
@@ -882,8 +957,6 @@ function VipCell(parent, vipcol, ymd)
 	this.vipcol = vipcol;
 	this.ymd = ymd;
 	this.div.id = ymd;
-	//this.div.onmousedown = vipgrid.init_selection.bind(vipgrid, this);
-	//this.div.onmousemove = vipgrid.update_selection.bind(vipgrid, this);
 
 	var vdt = new VipDate(ymd);
 
@@ -1191,6 +1264,11 @@ function VipDate(ymd)
 VipDate.prototype.ymd = function()
 {
 	return this.dt.getFullYear() + VipDate.ymdstr[this.dt.getMonth()] + VipDate.ymdstr[this.dt.getDate()-1];
+}
+
+VipDate.prototype.ymdnum = function()
+{
+	return ((this.dt.getFullYear()*10000) + ((this.dt.getMonth()+1)*100) + this.dt.getDate());
 }
 
 VipDate.prototype.getMonth = function()
