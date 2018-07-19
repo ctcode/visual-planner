@@ -1044,6 +1044,15 @@ function VipMultiDayEvent(parent, info, vipcell)
 	this.index = vipcell.cellindex;
 	this.extent = 0;
 	this.setSlot(0);
+		if (vipgrid.cfg.show_event_title)
+		{
+			this.vipevttext = new VipDiv(this, "viptextvert");
+			this.vipevttext.setText(this.info.title);
+
+			if (vipgrid.cfg.colour_event_title)
+				this.vipevttext.div.style.color = this.info.colour;
+		}
+
 }
 
 VipMultiDayEvent.prototype = new VipObject;

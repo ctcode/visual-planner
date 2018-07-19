@@ -123,6 +123,14 @@
 	white-space: nowrap;
 	text-overflow: ellipsis;
 }
+.viptextvert {
+	margin-top: 2px;
+	white-space: nowrap;
+	writing-mode: vertical-lr;
+	overflow: hidden;
+	height: 100%;
+	text-overflow: ellipsis;
+}
 .vipcalbar {
 	display: flex;
 	justify-content: center;
