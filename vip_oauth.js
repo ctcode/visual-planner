@@ -274,7 +274,7 @@ AuthAppData.prototype.Fail = function(reason)
 	console.error(reason);
 	
 	try {this.onError(reason.result.error.message);}
-	catch {this.onError(reason.status);}
+	catch(e) {this.onError(reason.status);}
 }
 
 
@@ -514,5 +514,5 @@ AuthCal.prototype.Fail = function(reason)
 	}
 	
 	try {this.onError(reason.result.error.message);}
-	catch {this.onError(reason.status);}
+	catch(e) {this.onError(reason.status);}
 }
