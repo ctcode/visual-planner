@@ -113,7 +113,7 @@ function VipGridConfig()
 	this.auto_scroll = true;
 	this.auto_scroll_offset = -1;
 	this.first_month = 1;
-	this.show_weekends = true;
+	this.weekends = "6,0";
 	this.align_weekends = true;
 	this.font_scale = 0.6;
 	this.past_opacity = 0.7;
@@ -214,6 +214,7 @@ VipGrid.prototype.init = function()
 
 	this.cache.month -= this.cache.viewport.start;
 	
+	VipDate.weekends = this.cfg.weekends.split(',').map(s => parseInt(s));
 	VipDate.localemonth = this.cfg.month_names.split('-');
 	
 	this.create();
@@ -960,7 +961,6 @@ function VipCell(parent, vipcol, ymd)
 
 	var vdt = new VipDate(ymd);
 
-	if (vipgrid.cfg.show_weekends)
 	if (vdt.isWeekend())
 		this.addClass("weekend");
 
@@ -1315,7 +1315,7 @@ VipDate.prototype.DayOfWeek = function()
 
 VipDate.prototype.isWeekend = function()
 {
-	return (this.dt.getDay()==0 || this.dt.getDay()==6);
+	return (VipDate.weekends.includes(this.dt.getDay()));
 }
 
 VipDate.prototype.isPastMonth = function()
@@ -1345,6 +1345,7 @@ VipDate.ymdstr = ["-01", "-02", "-03", "-04", "-05", "-06", "-07", "-08", "-09",
 	"-11", "-12", "-13", "-14", "-15", "-16", "-17", "-18", "-19", "-20",
 	"-21", "-22", "-23", "-24", "-25", "-26", "-27", "-28", "-29", "-30", "-31"];
 
+VipDate.weekends = [0, 6];
 VipDate.localemonth = [];
 
 VipDate.ymdtoday = new VipDate().ymd();
