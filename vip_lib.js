@@ -806,6 +806,21 @@ VipGrid.prototype.SyncEvents = function()
 		this.evtsrc.syncEvents();
 }
 
+VipGrid.prototype.getLocalStorage = function()
+{
+	if (window.localStorage)
+	if (window.localStorage.vip)
+		return JSON.parse(window.localStorage.vip);
+
+	return {};
+}
+
+VipGrid.prototype.setLocalStorage = function(stg)
+{
+	if (window.localStorage)
+		window.localStorage.vip = JSON.stringify(stg);
+}
+
 
 
 //////////////////////////////////////////////////////////////////////
@@ -1184,8 +1199,6 @@ VipCalendarBar.prototype.registerCalendarSource = function(src)
 
 VipCalendarBar.prototype.rcvCal = function(cal)
 {
-	var vcb = new VipCalendarBtn(this, cal);
-
 	var e = document.getElementById("vipcalvisibility");
 	if (!e)
 	{
@@ -1194,8 +1207,8 @@ VipCalendarBar.prototype.rcvCal = function(cal)
 		e.id = "vipcalvisibility";
 	}
 	
-	vcb.cssrule = e.sheet.cssRules.length;
-	e.sheet.insertRule(fmt(".^ {}", cal.cls), e.sheet.cssRules.length);
+	var r = e.sheet.insertRule(fmt(".^ {}", cal.cls), e.sheet.cssRules.length);
+	var vcb = new VipCalendarBtn(this, cal, r);
 
 	var vipsib = this.First();
 	while (vipsib)
@@ -1212,37 +1225,60 @@ VipCalendarBar.prototype.rcvCal = function(cal)
 
 //////////////////////////////////////////////////////////////////////
 
-function VipCalendarBtn(parent, cal)
+function VipCalendarBtn(parent, cal, cssrule)
 {
 	this.createChild(parent, "vipcalbtn");
 
 	this.name = cal.name;
-	this.cssrule = null;
+	this.cssrule = cssrule;
 	this.div.onclick = this.onclickCalBtn.bind(this);
+	this.checked = false;
 
 	this.vipmarker = new VipDiv(this, "vipcalmarker");
 	this.vipmarker.div.style.backgroundColor = cal.colour;
 
 	this.vipcaltext = new VipDiv(this, "viptext");
 	this.vipcaltext.setText(this.name);
+
+	var stg = vipgrid.getLocalStorage();
+	if (stg.cal_btn_checked)
+	if (stg.cal_btn_checked.hasOwnProperty(this.name))
+		this.checked = stg.cal_btn_checked[this.name];
+	
+	this.updateUI();
 }
 
 VipCalendarBtn.prototype = new VipObject;
 
 VipCalendarBtn.prototype.onclickCalBtn = function(event)
 {
-	var e = document.getElementById("vipcalvisibility");
-	if (e)
-	{
-		var r = e.sheet.cssRules[this.cssrule];
+	this.checked = !this.checked;
+	this.updateUI();
 
-		if (this.div.classList.toggle("checked"))
-			r.style.setProperty("display", "none");
-		else
-			r.style.removeProperty("display");
-	}
+	var stg = vipgrid.getLocalStorage();
+	if (!stg.cal_btn_checked)
+		stg.cal_btn_checked = {};
+	stg.cal_btn_checked[this.name] = this.checked;
+	vipgrid.setLocalStorage(stg);
 
 	vipgrid.div.focus();
+}
+
+VipCalendarBtn.prototype.updateUI = function()
+{
+	var e = document.getElementById("vipcalvisibility");
+	var r = e.sheet.cssRules[this.cssrule];
+
+	if (this.checked)
+	{
+		this.div.classList.add("checked");
+		r.style.setProperty("display", "none");
+	}
+	else
+	{
+		this.div.classList.remove("checked");
+		r.style.removeProperty("display");
+	}
 }
 
 
