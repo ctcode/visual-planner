@@ -348,7 +348,7 @@ AuthCal.prototype.rcvCalList = function(callsign, response)
 {
 	try
 	{
-		for (i in response.result.items)
+		for (var i in response.result.items)
 		{
 			var cal = response.result.items[i];
 			
@@ -383,13 +383,13 @@ AuthCal.prototype.rcvCalList = function(callsign, response)
 
 AuthCal.prototype.reqLoadEvents = function()
 {
-	for (cal_id in this.calendars)
+	for (var cal_id in this.calendars)
 		this.reqEvents({timeMin: this.isoStart, timeMax: this.isoEnd}, this.rcvLoadEvents, cal_id);
 }
 
 AuthCal.prototype.reqSyncEvents = function()
 {
-	for (cal_id in this.calendars)
+	for (var cal_id in this.calendars)
 	{
 		var tok = this.calendars[cal_id].synctok;
 		
@@ -402,7 +402,7 @@ AuthCal.prototype.rcvLoadEvents = function(callsign, response)
 {
 	var cal = this.calendars[callsign];
 	
-	for (i in response.result.items)
+	for (var i in response.result.items)
 	{
 		var evt = this.createEvent(cal, response.result.items[i]);
 
@@ -421,7 +421,7 @@ AuthCal.prototype.rcvSyncEvents = function(callsign, response)
 {
 	var cal = this.calendars[callsign];
 	
-	for (i in response.result.items)
+	for (var i in response.result.items)
 	{
 		var evt = this.createEvent(cal, response.result.items[i]);
 
