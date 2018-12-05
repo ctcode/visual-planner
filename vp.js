@@ -47,6 +47,7 @@ function vp_main($scope)
 
 	$scope.onclickPrintView = function() {
 		window.open("vip_print.htm", "_blank", "toolbar=no,scrollbars=yes,resizable=yes,top=50,left=50,width=1000,height=600");
+		ga_hit("feature", "print_view");
 	}
 
 	$scope.onclickSettings = function() {
