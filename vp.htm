@@ -40,25 +40,27 @@ body {
 	background-color: #DAE4EB;
 	position: relative;
 }
+#banner #bantxt {
+	font-weight: 800;
+	opacity: 0.6;
+}
 #buttons {
 	top: 0;
 	right: 1em;
 	height: 100%;
 	position: absolute;
 }
-#buttons #settings_btn {
+#buttons .toolbtn {
 	height: 100%;
-	display: flex;
+	display: inline-flex;
 	align-items: center;
+	width: 2em;
 }
-#buttons #settings_btn img {
-	opacity: 0.6;
+#buttons .toolbtn img {
+	opacity: 0.5;
 }
-#buttons #settings_btn img:hover {
+#buttons .toolbtn img:hover {
 	opacity: 1;
-}
-#buttons #settings_btn img:hover:active {
-	filter: brightness(0.8);
 }
 #grid {
 	flex-grow: 1;
@@ -102,11 +104,14 @@ body {
 
 <div id="account">{{sign_msg}}</div>
 <div id="banner">
-	<b>{{settings.banner_text}}</b>
+	<span id="bantxt">{{settings.banner_text}}</span>
 	<div id="buttons">
 		<button ng-hide="form.$pristine || busy" ng-click="onclickSave()">Save</button>
 		<button ng-show="(view=='settings') && !busy" ng-click="onclickCancel()">Cancel</button>
-		<div id="settings_btn" ng-show="(view=='grid') && !busy">
+		<div class="toolbtn" ng-show="(view=='grid') && !busy">
+			<img src="print.png" title="Print View" draggable="false" ng-click="onclickPrintView()">
+		</div>
+		<div class="toolbtn" ng-show="(view=='grid') && !busy">
 			<img src="settings.png" title="Settings" draggable="false" ng-click="onclickSettings()">
 		</div>
 		<span ng-show="busy"><i>Saving...</i></span>

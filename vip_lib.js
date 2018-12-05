@@ -23,6 +23,11 @@ VipObject.prototype.addClass = function(cls)
 	this.div.classList.add(cls);
 }
 
+VipObject.prototype.hasClass = function(cls)
+{
+	return this.div.classList.contains(cls);
+}
+
 VipObject.prototype.ClearContent = function()
 {
 	if (this.div)
@@ -821,6 +826,48 @@ VipGrid.prototype.setLocalStorage = function(stg)
 		window.localStorage.vip = JSON.stringify(stg);
 }
 
+VipGrid.prototype.getPrintViewInfo = function()
+{
+	var info = {title: document.title, fontsize: this.div.style.fontSize, maxrows: 0, cols: []};
+	
+	var vipcol = this.First();
+	while (vipcol)
+	{
+		if (!vipcol.hasClass("buffer"))
+		{
+			var col = {hdr: vipcol.viphdr.div.textContent, offset: vipcol.offsetday, cells: []};
+			
+			var rowcount = (vipcol.vipcells.div.childElementCount + col.offset);
+			if (rowcount > info.maxrows)
+				info.maxrows = rowcount;
+			
+			var vipcell = vipcol.vipcells.First();
+			while (vipcell)
+			{
+				var cell = {num: vipcell.vipnum.div.textContent, weekend: vipcell.hasClass("weekend"), evts: []};
+			
+				var vipevt = vipcell.vipevts.First();
+				while (vipevt)
+				{
+					if (getComputedStyle(vipevt.div).display != "none")
+						cell.evts.push(vipevt.div.title);
+
+					vipevt = vipevt.Next();
+				}
+
+				col.cells.push(cell);
+				vipcell = vipcell.Next();
+			}
+
+			info.cols.push(col);
+		}
+
+		vipcol = vipcol.Next();
+	}
+	
+	return info;
+}
+
 
 
 //////////////////////////////////////////////////////////////////////
@@ -842,9 +889,9 @@ function VipCol(parent, ymd)
 			this.div.style.opacity = vipgrid.cfg.past_opacity;
 	}
 
+	this.offsetday = vipgrid.cfg.align_weekends ? vdt.DayOfWeek() : 0;
 	this.vipcoloffset = new VipDiv(this.vipcolcontent, "vipcoloffset");
-	if (vipgrid.cfg.align_weekends)
-		this.vipcoloffset.div.style.setProperty('--offsetday', vdt.DayOfWeek());
+	this.vipcoloffset.div.style.setProperty('--offsetday', this.offsetday);
 
 	this.vipcells = new VipDiv(this.vipcoloffset, "vipcells");
 	

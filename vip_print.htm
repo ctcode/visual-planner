@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="vp.png">
+<style>
+body {
+	margin: 0;
+	font-family: Arial;
+}
+table {
+	width: 100%;
+	border-spacing: 1px;
+	table-layout: fixed;
+}
+td {
+	width: 100%;
+}
+td.printhdr {
+	text-align: center;
+	padding: 1em;
+}
+td.printcell {
+	padding: 0.2em;
+	background-color: #eeeeee;
+}
+td.printcell.weekend {
+	background-color: #dddddd;
+}
+td.printcellnum {
+	font-size: 0.8em;
+	text-align: center;
+	width: 2em;
+}
+div.printcellevt {
+	word-wrap: break-word;
+}
+</style>
+<head>
+<body>
+<script type='text/javascript'>
+	var info = window.opener.vipgrid.getPrintViewInfo();
+	document.title = info.title;
+	var t = document.createElement("table");
+	document.body.appendChild(t);
+	t.style.fontSize = info.fontsize;
+	var thead = t.createTHead();
+	thead.insertRow(0);
+	var tbody = t.createTBody();
+	for (var i=0; i < info.maxrows; i++)
+		tbody.insertRow(i);
+	for (var icol=0; icol < info.cols.length; icol++)
+	{
+		var col = info.cols[icol];
+		var hdr = thead.rows[0].insertCell(icol);
+		hdr.classList.add("printhdr");
+		hdr.textContent = col.hdr;
+		for (var i=0; i < tbody.rows.length; i++)
+			tbody.rows[i].insertCell(icol);
+		for (var icell=0; icell < col.cells.length; icell++)
+		{
+			var cell = col.cells[icell];
+			var printcell = tbody.rows[icell + col.offset].cells[icol];
+			printcell.classList.add("printcell");
+			if (cell.weekend)
+				printcell.classList.add("weekend");
+			var printcelltable = document.createElement("table");
+			var printcelltbody = printcelltable.createTBody();
+			var printcellrow = printcelltbody.insertRow(0);
+			var printcellnum = printcellrow.insertCell(0);
+			var printcellevts = printcellrow.insertCell(1);
+			printcell.appendChild(printcelltable);
+			printcellnum.classList.add("printcellnum");
+			printcellnum.textContent = cell.num;
+			for (var ievt=0; ievt < cell.evts.length; ievt++)
+			{
+				var evt = cell.evts[ievt];
+				var printevt = document.createElement("div");
+				printevt.classList.add("printcellevt");
+				printevt.textContent = evt;
+				printcellevts.appendChild(printevt);
+			}
+		}
+	}
+</script>
+</body>
+</html>

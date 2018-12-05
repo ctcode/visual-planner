@@ -45,6 +45,10 @@ function vp_main($scope)
 
 	gAccount.Connect();
 
+	$scope.onclickPrintView = function() {
+		window.open("vip_print.htm", "_blank", "toolbar=no,scrollbars=yes,resizable=yes,top=50,left=50,width=1000,height=600");
+	}
+
 	$scope.onclickSettings = function() {
 		$scope.view = 'settings';
 		$scope.g_signbtn_ok = (document.getElementById("g_signbtn").textContent.length > 0);
