@@ -14,9 +14,6 @@ table {
 	border-spacing: 1px;
 	table-layout: fixed;
 }
-td {
-	width: 100%;
-}
 td.printhdr {
 	text-align: center;
 	padding: 1em;
@@ -33,7 +30,8 @@ td.printcellnum {
 	text-align: center;
 	width: 2em;
 }
-div.printcellevt {
+div.printevt {
+	padding: 0.2em 0;
 	word-wrap: break-word;
 }
 </style>
@@ -66,20 +64,24 @@ div.printcellevt {
 			if (cell.weekend)
 				printcell.classList.add("weekend");
 			var printcelltable = document.createElement("table");
+			printcell.appendChild(printcelltable);
 			var printcelltbody = printcelltable.createTBody();
 			var printcellrow = printcelltbody.insertRow(0);
 			var printcellnum = printcellrow.insertCell(0);
 			var printcellevts = printcellrow.insertCell(1);
-			printcell.appendChild(printcelltable);
 			printcellnum.classList.add("printcellnum");
 			printcellnum.textContent = cell.num;
 			for (var ievt=0; ievt < cell.evts.length; ievt++)
 			{
 				var evt = cell.evts[ievt];
 				var printevt = document.createElement("div");
-				printevt.classList.add("printcellevt");
-				printevt.textContent = evt;
 				printcellevts.appendChild(printevt);
+				printevt.classList.add("printevt");
+				var printevtmarker = document.createElement("span");
+				printevt.appendChild(printevtmarker);
+				printevtmarker.textContent = String.fromCharCode(0x25fc);
+				printevtmarker.style.color = evt.colour;
+				printevt.appendChild(document.createTextNode(evt.title));
 			}
 		}
 	}

@@ -850,7 +850,7 @@ VipGrid.prototype.getPrintViewInfo = function()
 				while (vipevt)
 				{
 					if (getComputedStyle(vipevt.div).display != "none")
-						cell.evts.push(vipevt.div.title);
+						cell.evts.push({title: vipevt.div.title, colour: vipevt.info.colour});
 
 					vipevt = vipevt.Next();
 				}
