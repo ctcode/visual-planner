@@ -828,7 +828,7 @@ VipGrid.prototype.setLocalStorage = function(stg)
 
 VipGrid.prototype.getPrintViewInfo = function()
 {
-	var info = {title: document.title, fontsize: this.div.style.fontSize, maxrows: 0, cols: []};
+	var info = {fontsize: this.div.style.fontSize, maxrows: 0, cols: []};
 	
 	var vipcol = this.First();
 	while (vipcol)
@@ -844,7 +844,11 @@ VipGrid.prototype.getPrintViewInfo = function()
 			var vipcell = vipcol.vipcells.First();
 			while (vipcell)
 			{
-				var cell = {num: vipcell.vipnum.div.textContent, weekend: vipcell.hasClass("weekend"), evts: []};
+				var cell = {
+					num: vipcell.vipnum.div.textContent,
+					colour: getComputedStyle(vipcell.div)['background-color'],
+					evts: []
+				};
 			
 				var vipevt = vipcell.vipevts.First();
 				while (vipevt)

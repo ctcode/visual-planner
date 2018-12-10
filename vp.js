@@ -1,4 +1,4 @@
-function vp_main($scope)
+function vp_main($scope, $timeout, $window)
 {
 	var gAccount = new AuthAccount();
 	gAccount.authClientID = '304094492573-vgmnc6pr5tf1va809qpoc6sri6amiptk.apps.googleusercontent.com';  // vp
@@ -34,7 +34,7 @@ function vp_main($scope)
 		$scope.form.$setPristine(true);
 		$scope.sign_msg = "Signed Out";
 		$scope.signed_in = false;
-		$scope.view = 'grid';
+		setView('home');
 		$scope.$apply();
 		initGrid();
 	}
@@ -43,15 +43,21 @@ function vp_main($scope)
 		alert("Account Error: " + msg);
 	}
 
+	setView('home');
 	gAccount.Connect();
 
 	$scope.onclickPrintView = function() {
-		window.open("vip_print.htm", "_blank", "toolbar=no,scrollbars=yes,resizable=yes,top=50,left=50,width=1000,height=600");
+		setView('print');
+		initPrintView();
 		ga_hit("feature", "print_view");
 	}
 
+	$scope.onclickClosePrintView = function() {
+		setView('home');
+	}
+
 	$scope.onclickSettings = function() {
-		$scope.view = 'settings';
+		setView('settings');
 		$scope.g_signbtn_ok = (document.getElementById("g_signbtn").textContent.length > 0);
 	}
 
@@ -71,7 +77,7 @@ function vp_main($scope)
 	$scope.onclickCancel = function() {
 		$scope.settings = gAppData.getAppData();
 		$scope.form.$setPristine(true);
-		$scope.view = 'grid';
+		setView('home');
 	}
 
 	function ReadAppdata() {
@@ -80,7 +86,7 @@ function vp_main($scope)
 				$scope.settings = gAppData.getAppData();
 				$scope.form.$setPristine(true);
 				$scope.signed_in = true;
-				$scope.view = 'grid';
+				setView('home');
 				$scope.$apply();
 				initGrid();
 			},
@@ -97,7 +103,7 @@ function vp_main($scope)
 			function() {
 				$scope.busy = false;
 				$scope.form.$setPristine(true);
-				$scope.view = 'grid';
+				setView('home');
 				$scope.$apply();
 				initGrid();
 			},
@@ -125,6 +131,13 @@ function vp_main($scope)
 		vg.init();
 	}
 
+	function setView(view) {
+		$scope.view = view;
+		
+		if (view == 'home')
+			$timeout(function(){$window.onresize();}, 100);
+	}
+
 	var cal_error_notified = false;
 	function onCalError(msg) {
 		if (cal_error_notified)
@@ -134,5 +147,44 @@ function vp_main($scope)
 		ga_hit("calendar_error", msg);
 
 		cal_error_notified = true;
+	}
+
+	function initPrintView() {
+		var vipinfo = $window.vipgrid.getPrintViewInfo();
+		$scope.printinfo = {cols: [], rows: [], fontsize: vipinfo.fontsize};
+
+		for (var i=0; i < vipinfo.maxrows; i++)
+		{
+			var row = {cells: []};
+
+			for (var j=0; j < vipinfo.cols.length; j++)
+				row.cells.push({days: []});
+
+			$scope.printinfo.rows.push(row);
+		}
+
+		for (var icol=0; icol < vipinfo.cols.length; icol++)
+		{
+			var vipcol = vipinfo.cols[icol];
+			$scope.printinfo.cols.push(vipcol.hdr);
+
+			for (var icell=0; icell < vipcol.cells.length; icell++)
+			{
+				var vipcell = vipcol.cells[icell];
+
+				var printcell = $scope.printinfo.rows[icell + vipcol.offset].cells[icol];
+				printcell.colour = vipcell.colour;
+
+				var day = {num: vipcell.num, evts: []};
+
+				for (var ievt=0; ievt < vipcell.evts.length; ievt++)
+				{
+					var vipevt = vipcell.evts[ievt];
+					day.evts.push({title: vipevt.title, colour: vipevt.colour});
+				}
+
+				printcell.days.push(day);
+			}
+		}
 	}
 }
