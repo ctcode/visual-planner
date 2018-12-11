@@ -43,7 +43,6 @@ function vp_main($scope, $timeout, $window)
 		alert("Account Error: " + msg);
 	}
 
-	setView('home');
 	gAccount.Connect();
 
 	$scope.onclickPrintView = function() {
