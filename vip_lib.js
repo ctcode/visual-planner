@@ -163,6 +163,7 @@ function VipGrid(gid, cbid)
 	this.selection = {enabled: false, drag: false, span: null};
 	this.touch = {id: null, start: {x:0, y:0}};
 	this.priority = null;
+	this.lastWheelEvent = 0;
 
 	if (cbid)
 		this.calbar = new VipCalendarBar(cbid);
@@ -447,7 +448,14 @@ VipGrid.prototype.onkeydown = function(event)
 
 VipGrid.prototype.onwheel = function(event)
 {
-	this.scroll(event.deltaY > 0);
+	var t = Math.floor(event.timeStamp);
+
+	if ((t - this.lastWheelEvent) > 100)
+	{
+		this.scroll(event.deltaY > 0);
+		this.lastWheelEvent = t;
+	}
+
 	event.preventDefault();
 }
 
