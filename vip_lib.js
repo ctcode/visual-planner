@@ -450,7 +450,7 @@ VipGrid.prototype.onwheel = function(event)
 {
 	var t = Math.floor(event.timeStamp);
 
-	if ((t - this.lastWheelEvent) > 100)
+	if ((t - this.lastWheelEvent) > 150)
 	{
 		this.scroll(event.deltaY > 0);
 		this.lastWheelEvent = t;
