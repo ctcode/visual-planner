@@ -130,7 +130,7 @@ div.printevt {
 </head>
 <body ng-app="vp" ng-controller="main" ng-cloak>
 
-<div ng-hide="view=='print'">
+<div ng-show="view=='home' || view=='settings'">
 	<div id="account" class="noprint">{{sign_msg}}</div>
 	<div id="banner">
 		<span id="bantxt">{{settings.banner_text}}</span>
