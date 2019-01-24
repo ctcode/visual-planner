@@ -1,3 +1,6 @@
+vp_oauthClientID = '304094492573-vgmnc6pr5tf1va809qpoc6sri6amiptk.apps.googleusercontent.com';  // vp
+vp_unauthAPIKey = "AIzaSyAHbw39l4a3ZHosnTKGmMpVkKEozKnBVMU";  // vp
+
 // google analytics
 (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
 (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
