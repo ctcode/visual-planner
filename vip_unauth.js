@@ -9,19 +9,16 @@ function UnAuthCal()
 
 	// private
 	this.calendars = {};
-	this.last_cal_id = null;
 }
 
 UnAuthCal.prototype.addCal = function(id)
 {
 	this.calendars[id] = {clr: "#2b67cf"};
-	this.last_cal_id = id;
 }
 
-UnAuthCal.prototype.setClr = function(clr)
+UnAuthCal.prototype.setCalClr = function(id, clr)
 {
-	if (this.last_cal_id)
-		this.calendars[this.last_cal_id].clr = clr;
+	this.calendars[id].clr = clr;
 }
 
 UnAuthCal.prototype.loadEvents = function()
@@ -70,7 +67,6 @@ UnAuthCal.prototype.rcvEvents = function(xhttp, callsign)
 				var evt = {
 					id: item.id,
 					title: item.summary,
-					htmlLink: item.htmlLink,
 					colour: cal.clr,
 					calendar: response.summary
 				};

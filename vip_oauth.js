@@ -473,7 +473,7 @@ AuthCal.prototype.createEvent = function(cal, item)
 		var evt = {
 			id: item.id,
 			title: item.summary,
-			htmlLink: item.htmlLink,
+			eid: item.htmlLink,
 			calclass: cal.cls,
 			colour: cal.colour,
 			calendar: cal.name

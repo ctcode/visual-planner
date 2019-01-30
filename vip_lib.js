@@ -701,12 +701,14 @@ VipGrid.prototype.createGridEvent = function(evt)
 	var info = {
 		id: evt.id,
 		title: evt.title,
-		eid: evt.htmlLink.substr(evt.htmlLink.indexOf("eid=")+4),
 		colour: evt.colour,
 		calendar: evt.calendar,
 		calclass: evt.calclass,
 		timed: evt.timed
 	};
+
+	if (evt.eid)
+		info.htmlLink = evt.eid.substr(evt.eid.indexOf("eid=")+4);
 
 	if (evt.timed)
 	{
@@ -1160,7 +1162,8 @@ VipMultiDayEvent.prototype.nextSlot = function()
 
 VipMultiDayEvent.prototype.edit = function()
 {
-	window.open("https://calendar.google.com/calendar/r/eventedit/" + this.info.eid);
+	if (this.info.htmlLink)
+		window.open("https://calendar.google.com/calendar/r/eventedit/" + this.info.htmlLink);
 }
 
 
@@ -1255,7 +1258,8 @@ VipSingleDayEvent.prototype.calcProportionalMarker = function()
 
 VipSingleDayEvent.prototype.edit = function()
 {
-	window.open("https://calendar.google.com/calendar/r/eventedit/" + this.info.eid);
+	if (this.info.htmlLink)
+		window.open("https://calendar.google.com/calendar/r/eventedit/" + this.info.htmlLink);
 }
 
 

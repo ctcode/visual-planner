@@ -28,6 +28,7 @@ body {
 	var gCal = new UnAuthCal();
 
 	var options = decodeURIComponent(window.location.search.substr(1)).split('&');
+	var last_cal_id = null;
 	for (var i=0; i < options.length; i++)
 	{
 		var opt = options[i].split('=');
@@ -38,9 +39,15 @@ body {
 		var val = opt[1];
 
 		if (key == "cal")
+		{
 			gCal.addCal(val);
+			last_cal_id = val;
+		}
 		else if (key == "clr")
-			gCal.setClr("#" + val);
+		{
+			if (last_cal_id)
+				gCal.setCalClr(last_cal_id, "#" + val);
+		}
 		else
 		{
 			var property_val = val.replace(/'/g, '"');

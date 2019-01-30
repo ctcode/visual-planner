@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+
+<!-- This example demonstrates how to embed visual-planner in a web page with events loaded from Google Calendar -->
+<!-- The embedded planner is configured by specifying key=value pairs in the search string component of the iframe url, separated by an '&' character -->
+<!-- If the key is "cal", the value is the id of a Google Calendar which MUST be shared publicly -->
+<!-- If the key is "clr", the value is the calendar's HTML hex color value without the '#' character [optional] -->
+<!-- Otherwise, the key specifies the property name of one of the planner's settings - see the visual-planner page source to see which settings correspond to which property names -->
+<!-- String setting values must be single quoted -->
+
+<!-- eg To configure the planner with 4 columns showing calendars x and y and events from x coloured #ffa500, the following key=values would be required: -->
+<!-- multi_col_count=4 -->
+<!-- cal=xxxxxxxxxxxx@group.calendar.google.com -->
+<!-- clr=ffa500 -->
+<!-- cal=yyyyyyyyyyyy@group.calendar.google.com -->
+
+<html>
+<head>
+<meta charset="utf-8">
+</head>
+<body>
+<h1>visual-planner embedded<h1>
+<iframe src="https://ctcode.github.io/visual-planner/vp_embed.htm?multi_col_count=4&cal=xxxxxxxxxxxx@group.calendar.google.com&clr=ffa500&cal=yyyyyyyyyyyy@group.calendar.google.com" style="border: 0" width="800" height="600" frameborder="0" scrolling="no"></iframe>
+</body>
+</html>
