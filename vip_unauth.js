@@ -81,9 +81,9 @@ UnAuthCal.prototype.rcvEvents = function(xhttp, callsign)
 					evt.timed = false;
 					evt.datespan = {start: item.start.date, end: item.end.date};
 				}
-			}
 
-			this.forwardEvent(evt);
+				this.forwardEvent(evt);
+			}
 		}
 
 		if (response.nextPageToken)
