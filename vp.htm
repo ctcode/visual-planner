@@ -132,9 +132,9 @@ div.printevt {
 
 <div ng-show="view=='home' || view=='settings'">
 	<div id="account" class="noprint">{{sign_msg}}</div>
-	<div id="banner">
+	<div id="banner" class="noprint">
 		<span id="bantxt">{{settings.banner_text}}</span>
-		<div id="buttons" class="noprint">
+		<div id="buttons">
 			<button ng-hide="form.$pristine || busy" ng-click="onclickSave()">Save</button>
 			<button ng-show="(view=='settings') && !busy" ng-click="onclickCancel()">Cancel</button>
 			<div class="toolbtn" ng-show="(view=='home') && !busy">
