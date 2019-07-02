@@ -434,6 +434,12 @@ VipGrid.prototype.onkeydown = function(event)
 			this.scroll(true);
 			break;
 		case "r":
+			if (event.shiftKey)
+				return;
+			if (event.altKey)
+				return;
+			if (event.metaKey)
+				return;
 			if (event.ctrlKey)
 				this.ReloadEvents();
 			else
