@@ -1,4 +1,4 @@
-vp_oauthClientID = '304094492573-vgmnc6pr5tf1va809qpoc6sri6amiptk.apps.googleusercontent.com';  // vp
+vp_oauthClientID = '555605030765-fp6tp7j4mquvfu2c4451mse30v06cp2h.apps.googleusercontent.com';  // vp
 vp_unauthAPIKey = "AIzaSyAHbw39l4a3ZHosnTKGmMpVkKEozKnBVMU";  // vp
 
 // google analytics
