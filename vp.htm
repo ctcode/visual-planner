@@ -5,11 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="vp.png">
 <link rel="manifest" href="vp_manifest.json">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto" type="text/css"/>
 <link rel="stylesheet" href="vip.css" type="text/css"/>
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
 <script src="https://apis.google.com/js/api.js"></script>
 <script src="https://apis.google.com/js/platform.js"></script>
-<script src="vip_analytics.js" type='text/javascript'></script>
+<script src="vp_config.js" type='text/javascript'></script>
 <script src="vip_oauth.js" type='text/javascript'></script>
 <script src="vip_lib.js" type='text/javascript'></script>
 <script src="vp.js" type='text/javascript'></script>
@@ -24,12 +25,14 @@ body {
 	flex-direction: column;
 }
 #account {
+	font-family: Roboto;
 	font-size: 0.8em;
 	line-height: 2em;
 	margin-right: 1em;
 	text-align: right;
 }
 #banner {
+	font-family: Roboto;
 	font-size: 0.8em;
 	text-align: center;
 	line-height: 3em;
@@ -37,25 +40,37 @@ body {
 	background-color: #DAE4EB;
 	position: relative;
 }
+#banner #bantxt {
+	font-weight: 800;
+	opacity: 0.6;
+}
 #buttons {
 	top: 0;
 	right: 1em;
 	height: 100%;
 	position: absolute;
 }
-#buttons #settings_btn {
+#buttons .toolbtn {
 	height: 100%;
-	display: flex;
+	display: inline-flex;
 	align-items: center;
+	width: 2em;
 }
-#buttons #settings_btn img {
-	opacity: 0.6;
+.toolbtn img {
+	opacity: 0.5;
 }
-#buttons #settings_btn img:hover {
+.toolbtn img:hover {
 	opacity: 1;
 }
-#buttons #settings_btn img:hover:active {
-	filter: brightness(0.8);
+.staticbtn {
+	position: fixed;
+	top: 0.5em;
+	right: 0.5em;
+}
+#home {
+	flex-grow: 1;
+	display: flex;
+	flex-direction: column;
 }
 #grid {
 	flex-grow: 1;
@@ -64,6 +79,27 @@ body {
 	font-size: 0.6em;
 	min-height: 2.8em;
 	background-color: gainsboro;
+}
+table {
+	width: 100%;
+	border-spacing: 1px;
+	table-layout: fixed;
+}
+td.printhdr {
+	text-align: center;
+	padding: 1em;
+}
+td.printcell {
+	padding: 0.2em;
+}
+td.printcellnum {
+	font-size: 0.8em;
+	text-align: center;
+	width: 2em;
+}
+div.printevt {
+	padding: 0.2em 0;
+	word-wrap: break-word;
 }
 #settings {
 	padding-left: 2em;
@@ -86,10 +122,7 @@ body {
 }
 @media only print
 {
-	#account {
-		display: none;
-	}
-	#buttons {
+	.noprint {
 		display: none;
 	}
 }
@@ -97,20 +130,49 @@ body {
 </head>
 <body ng-app="vp" ng-controller="main" ng-cloak>
 
-<div id="account">{{sign_msg}}</div>
-<div id="banner">
-	<b>{{settings.banner_text}}</b>
-	<div id="buttons">
-		<button ng-hide="form.$pristine || busy" ng-click="onclickSave()">Save</button>
-		<button ng-show="(view=='settings') && !busy" ng-click="onclickCancel()">Cancel</button>
-		<div id="settings_btn" ng-show="(view=='grid') && !busy">
-			<img src="settings.png" title="Settings" draggable="false" ng-click="onclickSettings()">
+<div ng-show="view=='home' || view=='settings'">
+	<div id="account" class="noprint">{{sign_msg}}</div>
+	<div id="banner" class="noprint">
+		<span id="bantxt">{{settings.banner_text}}</span>
+		<div id="buttons">
+			<button ng-hide="form.$pristine || busy" ng-click="onclickSave()">Save</button>
+			<button ng-show="(view=='settings') && !busy" ng-click="onclickCancel()">Cancel</button>
+			<div class="toolbtn" ng-show="(view=='home') && !busy">
+				<img src="print.png" title="Print View" draggable="false" ng-click="onclickPrintView()">
+			</div>
+			<div class="toolbtn" ng-show="(view=='home') && !busy">
+				<img src="settings.png" title="Settings" draggable="false" ng-click="onclickSettings()">
+			</div>
+			<span ng-show="busy"><i>Saving...</i></span>
 		</div>
-		<span ng-show="busy"><i>Saving...</i></span>
 	</div>
 </div>
-<div id="grid" ng-show="view=='grid'"></div>
-<div id="calendarbar" ng-show="view=='grid'"></div>
+<div id="home" ng-show="view=='home'">
+	<div id="grid"></div>
+	<div id="calendarbar"></div>
+</div>
+<div id="printview" ng-show="view=='print'" ng-style="{'font-size': printinfo.fontsize}">
+	<div class="toolbtn staticbtn noprint">
+		<img src="close.png" title="Close" draggable="false" ng-click="onclickClosePrintView()">
+	</div>
+	<table>
+		<thead>
+			<tr><td class="printhdr" ng-repeat="hdr in printinfo.cols">{{hdr}}</td></tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat="row in printinfo.rows">
+				<td class="printcell" ng-repeat="cell in row.cells" ng-style="{'background-color': cell.colour}">
+					<table ng-repeat="day in cell.days">
+						<tr>
+							<td class="printcellnum">{{day.num}}</td>
+							<td><div class="printevt" ng-repeat="evt in day.evts"><span ng-style="{color: evt.colour}">&#x25fc;</span>{{evt.title}}</div></td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+</div>
 <div id="settings" ng-show="view=='settings'">
 	<div class="sub group"><b>Account</b>
 		<div class="sub">{{sign_msg}}</div>
@@ -137,8 +199,8 @@ body {
 				First month of year.
 			</div>
 		</div>
-		<div class="sub"><input ng-model="settings.vipconfig.show_weekends" type="checkbox">
-			Show weekends.
+		<div class="sub"><input ng-model="settings.vipconfig.weekends">
+			Weekends.  (0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat)
 		</div>
 		<div class="sub"><input ng-model="settings.vipconfig.align_weekends" type="checkbox">
 			Align weekends.

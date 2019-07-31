@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="vip.css" type="text/css"/>
+<script src="vp_config.js" type='text/javascript'></script>
+<script src="vip_unauth.js" type='text/javascript'></script>
+<script src="vip_lib.js" type='text/javascript'></script>
+<style>
+body {
+	font-family: Arial;
+	margin: 0;
+}
+#grid {
+	width: 100vw;
+	height: 100vh;
+	min-width: 600px;
+	min-height: 400px;
+}
+</style>
+</head>
+<body>
+<div id="grid"></div>
+</body>
+<script>
+
+	var vg = new VipGrid("grid");
+	var gCal = new UnAuthCal();
+
+	var options = decodeURIComponent(window.location.search.substr(1)).split('&');
+	var last_cal_id = null;
+	for (var i=0; i < options.length; i++)
+	{
+		var opt = options[i].split('=');
+		if (opt.length < 2)
+			continue;
+
+		var key = opt[0];
+		var val = opt[1];
+
+		if (key == "cal")
+		{
+			gCal.addCal(val);
+			last_cal_id = val;
+		}
+		else if (key == "clr")
+		{
+			if (last_cal_id)
+				gCal.setCalClr(last_cal_id, "#" + val);
+		}
+		else
+		{
+			var property_val = val.replace(/'/g, '"');
+			var property = JSON.parse('{\"value\":' + property_val + '}');
+			vg.cfg[key] = property.value;
+		}
+	}
+
+	gCal.api_key = vp_unauthAPIKey;
+	vg.registerEventSource(gCal);
+	vg.enable_links = false;
+	vg.init();
+
+	ga_hit("feature", "embed");
+
+</script>
+</html>

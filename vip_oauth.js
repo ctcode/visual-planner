@@ -274,7 +274,7 @@ AuthAppData.prototype.Fail = function(reason)
 	console.error(reason);
 	
 	try {this.onError(reason.result.error.message);}
-	catch {this.onError(reason.status);}
+	catch(e) {this.onError(reason.status);}
 }
 
 
@@ -348,7 +348,7 @@ AuthCal.prototype.rcvCalList = function(callsign, response)
 {
 	try
 	{
-		for (i in response.result.items)
+		for (var i in response.result.items)
 		{
 			var cal = response.result.items[i];
 			
@@ -383,13 +383,13 @@ AuthCal.prototype.rcvCalList = function(callsign, response)
 
 AuthCal.prototype.reqLoadEvents = function()
 {
-	for (cal_id in this.calendars)
+	for (var cal_id in this.calendars)
 		this.reqEvents({timeMin: this.isoStart, timeMax: this.isoEnd}, this.rcvLoadEvents, cal_id);
 }
 
 AuthCal.prototype.reqSyncEvents = function()
 {
-	for (cal_id in this.calendars)
+	for (var cal_id in this.calendars)
 	{
 		var tok = this.calendars[cal_id].synctok;
 		
@@ -402,7 +402,7 @@ AuthCal.prototype.rcvLoadEvents = function(callsign, response)
 {
 	var cal = this.calendars[callsign];
 	
-	for (i in response.result.items)
+	for (var i in response.result.items)
 	{
 		var evt = this.createEvent(cal, response.result.items[i]);
 
@@ -421,7 +421,7 @@ AuthCal.prototype.rcvSyncEvents = function(callsign, response)
 {
 	var cal = this.calendars[callsign];
 	
-	for (i in response.result.items)
+	for (var i in response.result.items)
 	{
 		var evt = this.createEvent(cal, response.result.items[i]);
 
@@ -473,7 +473,7 @@ AuthCal.prototype.createEvent = function(cal, item)
 		var evt = {
 			id: item.id,
 			title: item.summary,
-			htmlLink: item.htmlLink,
+			eid: item.htmlLink,
 			calclass: cal.cls,
 			colour: cal.colour,
 			calendar: cal.name
@@ -514,5 +514,5 @@ AuthCal.prototype.Fail = function(reason)
 	}
 	
 	try {this.onError(reason.result.error.message);}
-	catch {this.onError(reason.status);}
+	catch(e) {this.onError(reason.status);}
 }
