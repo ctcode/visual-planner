@@ -36,7 +36,8 @@ UnAuthCal.prototype.reqEvents = function(id, tok)
 		"https://www.googleapis.com/calendar/v3/calendars/" + encodeURIComponent(id) + "/events" +
 		"?timeMin=" + this.isoStart +
 		"&timeMax=" + this.isoEnd +
-		"&key=" + this.api_key
+		"&key=" + this.api_key +
+		"&singleEvents=true"
 	;
 	
 	if (tok)
