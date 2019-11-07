@@ -119,6 +119,7 @@ function VipGridConfig()
 	this.auto_scroll_offset = -1;
 	this.first_month = 1;
 	this.weekends = "6,0";
+	this.first_day_of_week = 0;
 	this.align_weekends = true;
 	this.font_scale = 0.6;
 	this.past_opacity = 0.7;
@@ -916,7 +917,15 @@ function VipCol(parent, ymd)
 			this.div.style.opacity = vipgrid.cfg.past_opacity;
 	}
 
-	this.offsetday = vipgrid.cfg.align_weekends ? vdt.DayOfWeek() : 0;
+	this.offsetday = 0;
+	if (vipgrid.cfg.align_weekends)
+	{
+		this.offsetday = vdt.DayOfWeek() - vipgrid.cfg.first_day_of_week;
+
+		if (this.offsetday < 0)
+			this.offsetday += 7;
+	}
+
 	this.vipcoloffset = new VipDiv(this.vipcolcontent, "vipcoloffset");
 	this.vipcoloffset.div.style.setProperty('--offsetday', this.offsetday);
 
