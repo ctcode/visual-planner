@@ -41,6 +41,15 @@ AuthAccount.prototype.status_listener = function()
 		this.onSignIn();
 	else
 		this.onSignOut();
+
+	if (this.isSignedIn()) {
+		// calendar.settings.watch error
+		gapi.client.request({
+			path: "https://www.googleapis.com/calendar/v3/users/me/settings/watch",
+			method: "POST"
+		})
+		.then(function(){}, function(){});
+	}
 }
 
 AuthAccount.prototype.SignIn = function()
