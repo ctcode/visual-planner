@@ -1,9 +1,15 @@
 # visual-planner
 A standalone Web App which provides a 'year-view wall planner' visualisation of Google Calendar events.
 
-#### Help
-For more information, please visit the [discussion group.](https://groups.google.com/group/visual-planner-discuss)
+### User Guide and Help
+Please visit the [discussion group.](https://groups.google.com/group/visual-planner-discuss)
 
 <a name="privacy"></a>
 ### Privacy Policy
-tba
+This app reads your email address, calendar and event data so that the information can be displayed in your browser.
+
+The app **DOES NOT** transfer, store or share any of this data or any other personal information.
+
+The app **DOES** store it's own settings data in your Google Drive.
+
+The app **DOES** use Google Analytics to monitor application usage statistics and server error messages.
