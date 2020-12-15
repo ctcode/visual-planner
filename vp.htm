@@ -44,9 +44,17 @@ body {
 	font-weight: 800;
 	opacity: 0.6;
 }
+#banner #v2msg {
+	float: right;
+	margin-right: 2em;
+	font-size: 0.8em;
+	font-weight: bold;
+	text-decoration: none;
+	color: red;
+}
 #buttons {
 	top: 0;
-	right: 1em;
+	right: 4em;
 	height: 100%;
 	position: absolute;
 }
@@ -145,6 +153,7 @@ div.printevt {
 			</div>
 			<span ng-show="busy"><i>Saving...</i></span>
 		</div>
+		<a id="v2msg" href="https://visual-planner.github.io" title="visual-planner Version 2">New!</a>
 	</div>
 </div>
 <div id="home" ng-show="view=='home'">
