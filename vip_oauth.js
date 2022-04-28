@@ -5,12 +5,12 @@ function AuthAccount()
 	// initialise
 	this.authClientID = undefined;
 	this.authScope = undefined;
-	
+
 	// public
 	this.onSignIn = function(){};
 	this.onSignOut = function(){};
 	this.onError = function(msg){};
-	
+
 	// private
 	this.auth = null;
 }
@@ -25,7 +25,13 @@ AuthAccount.prototype.Connect = function()
 
 AuthAccount.prototype.onLoadAuth = function()
 {
-	gapi.auth2.init({client_id: this.authClientID, scope: this.authScope}).then(this.onInitAuth.bind(this), this.Fail.bind(this));
+	try {
+		gapi.auth2.init({client_id: this.authClientID, scope: this.authScope}).then(this.onInitAuth.bind(this), this.Fail.bind(this));
+	}
+	catch(e) {
+		this.onError("[Sign In]\n\n" + e.message);
+		this.onSignOut();
+	}
 }
 
 AuthAccount.prototype.onInitAuth = function(auth)
@@ -78,17 +84,17 @@ AuthAccount.prototype.getEmail = function()
 	{
 		var gu = this.auth.currentUser.get();
 		var bp = gu.getBasicProfile();
-		
+
 		return bp.getEmail();
 	}
-	
+
 	return null;
 }
 
 AuthAccount.prototype.Fail = function(reason)
 {
 	var msg = "";
-	
+
 	if (reason.error)
 	{
 		msg = "[" + reason.error + "]";
@@ -111,7 +117,7 @@ function AuthAppData()
 	// initialise
 	this.file_name = null;
 	this.Patch = function(){};
-	
+
 	// private
 	this.file_id = null;
 	this.appdata = null;
@@ -146,7 +152,7 @@ AuthAppData.prototype.LoadFile = function(thenDoThis)
 {
 	this.file_id = null;
 	this.onLoad = thenDoThis;
-	
+
 	var file_query = "name = '" + this.file_name + "'";
 
 	this.makeReq ({
@@ -170,7 +176,7 @@ AuthAppData.prototype.Read = function(thenDoThis, thenFail)
 {
 	this.appdata = null;
 	this.onRead = thenDoThis;
-	
+
 	if (thenFail)
 		this.onError = thenFail;
 
@@ -211,7 +217,7 @@ AuthAppData.prototype.setDefault = function(appdataobj)
 AuthAppData.prototype.getAppData = function()
 {
 	var d = null;
-	
+
 	if (this.appdata)
 		d = JSON.parse(this.appdata);
 	else if (this.appdata_default)
@@ -227,7 +233,7 @@ AuthAppData.prototype.Write = function(appdataobj, thenDoThis, thenFail)
 {
 	this.setAppData(appdataobj);
 	this.onWrite = thenDoThis;
-	
+
 	if (thenFail)
 		this.onError = thenFail;
 
@@ -281,7 +287,7 @@ AuthAppData.prototype.makeReq = function(req, callback)
 AuthAppData.prototype.Fail = function(reason)
 {
 	console.error(reason);
-	
+
 	try {this.onError(reason.result.error.message);}
 	catch(e) {this.onError(reason.status);}
 }
@@ -311,7 +317,7 @@ AuthCal.prototype.loadEvents = function()
 {
 	this.isoStart = this.datespan.dtStart.toISOString();
 	this.isoEnd = this.datespan.dtEnd.toISOString();
-	
+
 	if (this.calendars)
 	{
 		if (this.run)
@@ -360,7 +366,7 @@ AuthCal.prototype.rcvCalList = function(callsign, response)
 		for (var i in response.result.items)
 		{
 			var cal = response.result.items[i];
-			
+
 			if (cal.selected)
 			{
 				this.calendars[cal.id] = {cls: this.calclass_prefix + i, name: cal.summary, colour: cal.backgroundColor, synctok: null};
@@ -401,7 +407,7 @@ AuthCal.prototype.reqSyncEvents = function()
 	for (var cal_id in this.calendars)
 	{
 		var tok = this.calendars[cal_id].synctok;
-		
+
 		if (tok)
 			this.reqEvents({syncToken: tok}, this.rcvSyncEvents, cal_id);
 	}
@@ -410,7 +416,7 @@ AuthCal.prototype.reqSyncEvents = function()
 AuthCal.prototype.rcvLoadEvents = function(callsign, response)
 {
 	var cal = this.calendars[callsign];
-	
+
 	for (var i in response.result.items)
 	{
 		var evt = this.createEvent(cal, response.result.items[i]);
@@ -429,7 +435,7 @@ AuthCal.prototype.rcvLoadEvents = function(callsign, response)
 AuthCal.prototype.rcvSyncEvents = function(callsign, response)
 {
 	var cal = this.calendars[callsign];
-	
+
 	for (var i in response.result.items)
 	{
 		var evt = this.createEvent(cal, response.result.items[i]);
@@ -452,7 +458,7 @@ AuthCal.prototype.rcvSyncEvents = function(callsign, response)
 AuthCal.prototype.reqEvents = function(req_params, callback, cal_id)
 {
 	req_params.singleEvents = true;
-	
+
 	this.makeReq ({
 			path: "https://www.googleapis.com/calendar/v3/calendars/" + encodeURIComponent(cal_id) + "/events",
 			method: "GET",
@@ -469,7 +475,7 @@ AuthCal.prototype.createEvent = function(cal, item)
 	{
 		if (item.kind != "calendar#event")
 			return null;
-		
+
 		if (item.status == "cancelled")
 			return {id: item.id, deleted: true};
 
@@ -478,7 +484,7 @@ AuthCal.prototype.createEvent = function(cal, item)
 
 		if (!item.hasOwnProperty("start"))
 			return null;
-		
+
 		var evt = {
 			id: item.id,
 			title: item.summary,
@@ -487,7 +493,7 @@ AuthCal.prototype.createEvent = function(cal, item)
 			colour: cal.colour,
 			calendar: cal.name
 		};
-		
+
 		if ("dateTime" in item.start)
 		{
 			evt.timed = true;
@@ -498,7 +504,7 @@ AuthCal.prototype.createEvent = function(cal, item)
 			evt.timed = false;
 			evt.datespan = {start: item.start.date, end: item.end.date};
 		}
-		
+
 		return evt;
 	}
 	catch(e)
@@ -515,13 +521,13 @@ AuthCal.prototype.makeReq = function(req, callback, callsign)
 AuthCal.prototype.Fail = function(reason)
 {
 	console.error(reason);
-	
+
 	if (reason.status == 410)
 	{
 		this.forwardEventReloadReq();
 		return;
 	}
-	
+
 	try {this.onError(reason.result.error.message);}
 	catch(e) {this.onError(reason.status);}
 }
